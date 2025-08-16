@@ -1,6 +1,8 @@
 # Xal's Path
 
-![Story Animation](Assets/Resources/story-animation.gif)
+<p align="center">
+  <img src="Assets/Resources/story-animation.gif" alt="Story Animation">
+</p>
 
 A story-driven clicker game designed in Unity, independently developed by Kevin Logan.
 
@@ -68,5 +70,7 @@ This project was a solo endeavor, built from the ground up using the Unity Engin
 *   **Original Google Play Listing:** [Android](https://play.google.com/store/apps/details?id=com.IntrigueGames.XalsPath)
 
 ---
+
+![Intrigue Games Logo](Assets/Resources/logo.png)
 
 *Property of Intrigue Games*
