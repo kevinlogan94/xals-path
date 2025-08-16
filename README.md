@@ -65,6 +65,8 @@ This project was a solo endeavor, built from the ground up using the Unity Engin
 
 ## Links
 
+*(Please note: As the game is no longer available, these links are for historical purposes and may be inactive.)*
+
 *   **Developer Website:** [Intrigue Games](https://www.intrigue-games.com/)
 *   **Original App Store Listing:** [iOS](https://apps.apple.com/us/app/xals-path/id1566474908)
 *   **Original Google Play Listing:** [Android](https://play.google.com/store/apps/details?id=com.IntrigueGames.XalsPath)
