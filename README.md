@@ -1,5 +1,7 @@
 # Xal's Path
 
+![Story Animation](Assets/Resources/story-animation.gif)
+
 A story-driven clicker game designed in Unity, independently developed by Kevin Logan.
 
 ---
