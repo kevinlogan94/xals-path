@@ -39,8 +39,7 @@ public class SavedData
     public float ClickerGoal;
     public int CurrentHelperAmount;
     public float HelperGoal;
-    public int CurrentVideoAmount;
-    public float VideoGoal;
+    // Removed: CurrentVideoAmount and VideoGoal - ads functionality removed
     public int CurrentAchievementAmount;
     public float AchievementGoal;
     public int CurrentStoryAmount;
@@ -84,21 +83,23 @@ public class SavedData
         // ShopManager
         foreach (var helper in ShopManager.Instance.Helpers)
         {
-            var savedHelper = new SavedHelper();
-            savedHelper.Name = helper.Name;
-            savedHelper.AmountOwned = helper.AmountOwned;
-            savedHelper.DynamicCost = helper.DynamicCost;
-            savedHelper.DynamicIncrement = helper.DynamicIncrement;
-            Helpers.Add(savedHelper);
+            Helpers.Add(new SavedHelper
+            {
+                Name = helper.Name,
+                AmountOwned = helper.AmountOwned,
+                DynamicCost = helper.DynamicCost,
+                DynamicIncrement = helper.DynamicIncrement
+            });
         }
         
         // NewsManager
         foreach (var log in NewsManager.Instance.Logs)
         {
-            var savedLog = new SavedLog();
-            savedLog.Name = log.Name;
-            savedLog.Displayed = log.Displayed;
-            Logs.Add(savedLog);
+            Logs.Add(new SavedLog
+            {
+                Name = log.Name,
+                Displayed = log.Displayed
+            });
         }
         
         // AchievementManager
@@ -109,8 +110,7 @@ public class SavedData
         ClickerGoal = AchievementManager.Instance.ClickerGoal;
         CurrentHelperAmount = AchievementManager.Instance.CurrentHelperAmount;
         HelperGoal = AchievementManager.Instance.HelperGoal;
-        CurrentVideoAmount = AchievementManager.Instance.CurrentVideoAmount;
-        VideoGoal = AchievementManager.Instance.VideoGoal;
+        // Removed: CurrentVideoAmount and VideoGoal - ads functionality removed
         CurrentAchievementAmount = AchievementManager.Instance.CurrentAchievementAmount;
         AchievementGoal = AchievementManager.Instance.AchievementGoal;
         CurrentStoryAmount = AchievementManager.Instance.CurrentStoryAmount;
@@ -122,10 +122,11 @@ public class SavedData
         // SceneManager
         foreach (var chapter in SceneManager.Instance.Chapters)
         {
-            var savedChapter = new SavedChapter();
-            savedChapter.Number = chapter.Number;
-            savedChapter.SceneViewed = chapter.SceneViewed;
-            Chapters.Add(savedChapter);
+            Chapters.Add(new SavedChapter
+            {
+                Number = chapter.Number,
+                SceneViewed = chapter.SceneViewed
+            });
         }
         InfluenceCrystalAdTriggeredThisLevel = SceneManager.Instance.InfluenceCrystalAdTriggeredThisLevel;
 
@@ -185,8 +186,7 @@ public class SavedData
         AchievementManager.Instance.ClickerGoal = ClickerGoal;
         AchievementManager.Instance.CurrentHelperAmount = CurrentHelperAmount;
         AchievementManager.Instance.HelperGoal = HelperGoal;
-        AchievementManager.Instance.CurrentVideoAmount = CurrentVideoAmount;
-        AchievementManager.Instance.VideoGoal = VideoGoal;
+        // Removed: CurrentVideoAmount and VideoGoal - ads functionality removed
         AchievementManager.Instance.CurrentAchievementAmount = CurrentAchievementAmount;
         AchievementManager.Instance.AchievementGoal = AchievementGoal;
         AchievementManager.Instance.CurrentStoryAmount = CurrentStoryAmount;
@@ -211,8 +211,7 @@ public class SavedData
         BuffManager.Instance.BuffTutorialCompleted = BuffTutorialCompleted;
         BuffManager.Instance.BuffedThisLevel = BuffedThisLevel;
         
-        //advertisementManager
-        AdvertisementManager.Instance.FinishedAds = CurrentVideoAmount;
+        // Removed: AdvertisementManager reference - ads functionality removed
     }
 
     public static void RefreshData()
@@ -263,7 +262,7 @@ public class SavedData
         AchievementManager.Instance.LastLoginDate = DateTime.UtcNow;
         AchievementManager.Instance.CurrentClickedAmount = 0;
         AchievementManager.Instance.CurrentHelperAmount = 0;
-        AchievementManager.Instance.CurrentVideoAmount = 0;
+        // Removed: CurrentVideoAmount - ads functionality removed
         AchievementManager.Instance.CurrentAchievementAmount = 0;
         AchievementManager.Instance.SetAchievementGoalDefaults();
         // AchievementManager.Instance.CurrentStoryAmount -- We want this to stay what it already is.

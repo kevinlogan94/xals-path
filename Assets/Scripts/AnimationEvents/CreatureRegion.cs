@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Analytics;
+// Removed: using UnityEngine.Analytics - migrated to Unity Gaming Services
 using Random = UnityEngine.Random;
 
 //Note: The Magic and CreatureRegion gameobjects share this.
@@ -101,7 +101,7 @@ public class CreatureRegion : MonoBehaviour
 
         if (IncrementPanel.ClickCount%10 == 0 && Monitor.UseAnalytics)
         {
-            Analytics.CustomEvent("ClickIncrementButton", new Dictionary<string, object>
+            AnalyticsManager.RecordEvent("ClickIncrementButton", new Dictionary<string, object>
             {
                 {"ClickCount", IncrementPanel.ClickCount}
             });

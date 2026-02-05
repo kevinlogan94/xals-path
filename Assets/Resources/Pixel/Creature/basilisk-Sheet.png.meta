@@ -39,7 +39,7 @@ TextureImporter:
       213: 2951907491072204884
     second: basilisk-Sheet_11
   externalObjects: {}
-  serializedVersion: 11
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -59,6 +59,8 @@ TextureImporter:
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -67,9 +69,9 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: -1
-    aniso: -1
-    mipBias: -100
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
     wrapU: 1
     wrapV: 1
     wrapW: 1
@@ -90,10 +92,14 @@ TextureImporter:
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
   maxTextureSizeSet: 0
   compressionQualitySet: 0
   textureFormatSet: 0
+  ignorePngGamma: 0
   applyGammaDecoding: 0
+  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -396,6 +402,19 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      basilisk-Sheet_0: 8818160754169419192
+      basilisk-Sheet_1: -621522476760610471
+      basilisk-Sheet_10: -4311585636809233156
+      basilisk-Sheet_11: 2951907491072204884
+      basilisk-Sheet_2: -1267430468917648100
+      basilisk-Sheet_3: 8777433535713469490
+      basilisk-Sheet_4: 8459810152153850319
+      basilisk-Sheet_5: 5486937505576667411
+      basilisk-Sheet_6: -197629042868245401
+      basilisk-Sheet_7: -3765393725357399429
+      basilisk-Sheet_8: 4923473523111060260
+      basilisk-Sheet_9: 4643001997283257849
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

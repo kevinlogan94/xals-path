@@ -231,7 +231,7 @@ TextureImporter:
       213: -7602390523432861491
     second: Phoenix2-Sheet_75
   externalObjects: {}
-  serializedVersion: 11
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -251,6 +251,8 @@ TextureImporter:
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -259,9 +261,9 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: -1
-    aniso: -1
-    mipBias: -100
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
     wrapU: 1
     wrapV: 1
     wrapW: 1
@@ -282,10 +284,14 @@ TextureImporter:
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
   maxTextureSizeSet: 0
   compressionQualitySet: 0
   textureFormatSet: 0
+  ignorePngGamma: 0
   applyGammaDecoding: 0
+  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -693,6 +699,24 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      Phoenix2-Sheet_0: -4138449235230419455
+      Phoenix2-Sheet_1: -4890173574810241981
+      Phoenix2-Sheet_10: 3280819617501772737
+      Phoenix2-Sheet_11: 8891661763325812193
+      Phoenix2-Sheet_12: 175620034382410982
+      Phoenix2-Sheet_13: 8335464693357359364
+      Phoenix2-Sheet_14: -8835006057867296065
+      Phoenix2-Sheet_15: 1480480198320983418
+      Phoenix2-Sheet_16: -949991718748466535
+      Phoenix2-Sheet_2: 7445418094802584937
+      Phoenix2-Sheet_3: 3861841688007816058
+      Phoenix2-Sheet_4: -8003636956681114532
+      Phoenix2-Sheet_5: -3131404123598832849
+      Phoenix2-Sheet_6: -6303731974956308460
+      Phoenix2-Sheet_7: 522291603841179037
+      Phoenix2-Sheet_8: 5937046210481754047
+      Phoenix2-Sheet_9: 302106260708366985
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

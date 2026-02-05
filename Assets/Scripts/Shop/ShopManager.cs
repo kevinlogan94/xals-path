@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Analytics;
 using Random = UnityEngine.Random;
 
 public class ShopManager : MonoBehaviour
@@ -69,7 +68,7 @@ public class ShopManager : MonoBehaviour
                 helper.AmountOwned++;
                 if (Monitor.UseAnalytics)
                 {
-                    Analytics.CustomEvent("HelperCount", new Dictionary<string, object>
+                    AnalyticsManager.RecordEvent("HelperCount", new Dictionary<string, object>
                     {
                         {"Count", Helpers.Sum(x => x.AmountOwned)}
                     });

@@ -42,7 +42,7 @@ TextureImporter:
       213: 5606425396339493231
     second: Wraith-Sheet_12
   externalObjects: {}
-  serializedVersion: 11
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -62,6 +62,8 @@ TextureImporter:
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -70,9 +72,9 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: -1
-    aniso: -1
-    mipBias: -100
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
     wrapU: 1
     wrapV: 1
     wrapW: 1
@@ -93,10 +95,14 @@ TextureImporter:
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
   maxTextureSizeSet: 0
   compressionQualitySet: 0
   textureFormatSet: 0
+  ignorePngGamma: 0
   applyGammaDecoding: 0
+  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -420,6 +426,20 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      Wraith-Sheet_0: -5505705935328658857
+      Wraith-Sheet_1: 3429653825052420727
+      Wraith-Sheet_10: 2635706820013992732
+      Wraith-Sheet_11: 8662585943799171668
+      Wraith-Sheet_12: 5606425396339493231
+      Wraith-Sheet_2: 7464701600310037833
+      Wraith-Sheet_3: -8258307080066547200
+      Wraith-Sheet_4: 5829009153643580726
+      Wraith-Sheet_5: -3873536813202527603
+      Wraith-Sheet_6: 6427715797854371101
+      Wraith-Sheet_7: 5234878443883548306
+      Wraith-Sheet_8: -5269592036034675585
+      Wraith-Sheet_9: -4805200814718927414
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

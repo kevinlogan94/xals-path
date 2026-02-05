@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Analytics;
+// Removed: using UnityEngine.Analytics - migrated to Unity Gaming Services
 using UnityEngine.UI;
 using Random = Unity.Mathematics.Random;
 
@@ -23,7 +23,6 @@ public class LevelUp : MonoBehaviour
     private AudioManager _audioManager;
     private const int MaxLevel = 50;
 
-    public bool LevelUpAdInProgress = false;
     public bool LevelUpInProgress;
 
     #region Singleton
@@ -53,32 +52,18 @@ public class LevelUp : MonoBehaviour
         if (ReadyToLevelUp() && !LevelUpInProgress)
         {
             LevelUpInProgress = true;
-            //level up reward 
-            if (!watchAd)
-            {
-                LevelUpAdInProgress = false;
-                Monitor.Instance.IncrementInfluence(LevelUpReward);
-            }
-            else 
-            {
-                LevelUpAdInProgress = true;
-                var bonusReward = LevelUpReward * 3;
-                if (Application.platform == RuntimePlatform.Android)
-                {
-                    AdvertisementManager.Instance.ShowSkippableRewardAd(bonusReward);
-                }
-                else
-                {
-                    AdvertisementManager.Instance.ShowStandardRewardAd(bonusReward);
-                }
-            }
+            
+            // Ads removed - always give bonus reward (3x) since no ad option exists
+            var bonusReward = LevelUpReward * 3;
+            Monitor.Instance.IncrementInfluence(bonusReward);
+            
             StartCoroutine(WaitForAdAndTriggerLevelUp());   
         }
     }
     
     IEnumerator WaitForAdAndTriggerLevelUp()
     {
-        yield return new WaitUntil(() => !LevelUpAdInProgress);
+        yield return null;
         
         //Update Level up progress bar
         const float levelMultiplier = 3.25f;
@@ -95,7 +80,7 @@ public class LevelUp : MonoBehaviour
 
         if (Monitor.UseAnalytics)
         {
-            Analytics.CustomEvent("TotalInfluenceEarnedThisLevel", new Dictionary<string, object>
+            AnalyticsManager.RecordEvent("TotalInfluenceEarnedThisLevel", new Dictionary<string, object>
             {
                 {"Influence", Monitor.TotalInfluenceEarned}
             });
@@ -107,7 +92,7 @@ public class LevelUp : MonoBehaviour
         Monitor.PlayerLevel++;
         if (Monitor.UseAnalytics)
         {
-            AnalyticsEvent.LevelStart(Monitor.PlayerLevel);
+            AnalyticsManager.LevelStart(Monitor.PlayerLevel);
         }
 
         BuffManager.Instance.BuffedThisLevel = false;
@@ -173,10 +158,7 @@ public class LevelUp : MonoBehaviour
         {
             _audioManager.Play("LevelUp2");
             LevelUpPanelGameObject.SetActive(true);
-            if (Monitor.UseAnalytics)
-            {
-                AnalyticsEvent.AdOffer(true);
-            }
+            // Removed: Ad offer analytics - ads functionality removed
         }
     }
 

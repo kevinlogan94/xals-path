@@ -1,12 +1,10 @@
 ﻿using System.Linq;
 using UnityEngine;
-using UnityEngine.Analytics;
 
 public class SplashManager : MonoBehaviour
 {
     public GameObject SplashPanel;
     public GameObject AchievementPanel;
-    public GameObject AdvertisementPanel;
     public GameObject InfluenceOverTimePanel;
     public GameObject EndGamePanel;
     public GameObject BuffPanel;
@@ -92,14 +90,6 @@ public class SplashManager : MonoBehaviour
         {
             PortalPanel.SetActive(true);
         }
-        else
-        {
-            AdvertisementPanel.SetActive(true);
-            if (Monitor.UseAnalytics)
-            {
-                AnalyticsEvent.AdOffer(true);
-            }
-        }
     }
 
     public void CloseSplash()
@@ -107,20 +97,12 @@ public class SplashManager : MonoBehaviour
         SplashPanel.SetActive(false);
         CreaturePanel.SetActive(false);
         CreatureUIPanel.SetActive(false);
-        AdvertisementPanel.SetActive(false);
         InfluenceOverTimePanel.SetActive(false);
         EndGamePanel.SetActive(false);
         BuffPanel.SetActive(false);
         SurveyPanel.SetActive(false);
         PortalPanel.SetActive(false);
         
-        // show ad after speaking to Xal
-        if (AchievementPanelScript.Instance != null 
-            && AchievementPanelScript.Instance.Achievement.Name == "Xal"
-            && AchievementPanel.activeSelf)
-        {
-            AdvertisementManager.Instance.ShowSkippableAd();
-        }
         AchievementPanel.SetActive(false);
         FindObjectOfType<AudioManager>().Play("Pop");
         // AchievementUIPanel.SetActive(false);
@@ -131,7 +113,6 @@ public enum SplashType
 {
     Creature,
     Achievement,
-    Advertisement,
     InfluenceOverTime,
     Buff,
     EndGame,

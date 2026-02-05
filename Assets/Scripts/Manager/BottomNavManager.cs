@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Analytics;
+// Removed: using UnityEngine.Analytics - migrated to Unity Gaming Services
 using UnityEngine.UI;
 
 public class BottomNavManager : MonoBehaviour
@@ -68,7 +69,7 @@ public class BottomNavManager : MonoBehaviour
                 SettingsButton.image.sprite = _activeImage;
                 if (Monitor.UseAnalytics)
                 {
-                    AnalyticsEvent.ScreenVisit(Views.settings.ToString());
+                    AnalyticsManager.RecordEvent("screen_visit", new Dictionary<string, object> { {"screen_name", Views.settings.ToString()} });
                 };
                 break;
             case "shop":
@@ -76,7 +77,7 @@ public class BottomNavManager : MonoBehaviour
                 ShopButton.image.sprite = _activeImage;
                 if (Monitor.UseAnalytics)
                 {
-                    AnalyticsEvent.ScreenVisit(Views.shop.ToString());
+                    AnalyticsManager.RecordEvent("screen_visit", new Dictionary<string, object> { {"screen_name", Views.shop.ToString()} });
                 }
                 break;
             case "achievements":
@@ -84,7 +85,7 @@ public class BottomNavManager : MonoBehaviour
                 AchievementButton.image.sprite = _activeImage;
                 if (Monitor.UseAnalytics)
                 {
-                    AnalyticsEvent.ScreenVisit(Views.achievements.ToString());
+                    AnalyticsManager.RecordEvent("screen_visit", new Dictionary<string, object> { {"screen_name", Views.achievements.ToString()} });
                 };
                 break;
             case "scene":
@@ -92,14 +93,14 @@ public class BottomNavManager : MonoBehaviour
                 SceneButton.image.sprite = _activeImage;
                 if (Monitor.UseAnalytics)
                 {
-                    AnalyticsEvent.ScreenVisit(Views.scene.ToString());
+                    AnalyticsManager.RecordEvent("screen_visit", new Dictionary<string, object> { {"screen_name", Views.scene.ToString()} });
                 };
                 break;
             default:
                 OutlookButton.image.sprite = _activeImage;
                 if (Monitor.UseAnalytics)
                 {
-                    AnalyticsEvent.ScreenVisit(Views.outlook.ToString());
+                    AnalyticsManager.RecordEvent("screen_visit", new Dictionary<string, object> { {"screen_name", Views.outlook.ToString()} });
                 }
                 break;
         }

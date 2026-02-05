@@ -3,7 +3,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using CloudOnce;
 using UnityEngine;
-using UnityEngine.Analytics;
 
 // https://gamegorillaz.com/blog/game-center-setup-in-unity/
 public class GameCenterManager : MonoBehaviour
@@ -51,7 +50,7 @@ public class GameCenterManager : MonoBehaviour
                 Debug.Log($"Progress reported successfully for {Cloud.PlayerDisplayName} on achievement: {achievementId}");
                 if (Monitor.UseAnalytics)
                 {
-                    AnalyticsEvent.AchievementUnlocked(achievementId);
+                    AnalyticsManager.AchievementUnlocked(achievementId);
                 }
                 return;
             }

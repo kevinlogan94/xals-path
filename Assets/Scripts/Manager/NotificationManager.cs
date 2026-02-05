@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Analytics;
+// Removed: using UnityEngine.Analytics - migrated to Unity Gaming Services
 
 //https://docs.unity3d.com/Manual/PlatformDependentCompilation.html
 #if UNITY_IOS
@@ -61,7 +61,7 @@ public class NotificationManager : MonoBehaviour
             Debug.Log("Notification Removed");
             if (Monitor.UseAnalytics)
             {
-                Analytics.CustomEvent("Notification_ReScheduled", new Dictionary<string, object> {{"Device", "iOS"}});
+                AnalyticsManager.RecordEvent("Notification_ReScheduled", new Dictionary<string, object> {{"Device", "iOS"}});
             }
         }
         
@@ -84,7 +84,7 @@ public class NotificationManager : MonoBehaviour
         iOSNotificationCenter.ScheduleNotification(notification);
         if (Monitor.UseAnalytics)
         {
-            Analytics.CustomEvent("Notification_Scheduled", new Dictionary<string, object> {{"Device", "iOS"}});
+            AnalyticsManager.RecordEvent("Notification_Scheduled", new Dictionary<string, object> {{"Device", "iOS"}});
         }
         Debug.Log("Timed Notification Scheduled");
     }
@@ -110,7 +110,7 @@ public class NotificationManager : MonoBehaviour
 
             if (Monitor.UseAnalytics)
             {
-                AnalyticsEvent.PushNotificationEnable(new Dictionary<string, object>
+                AnalyticsManager.PushNotificationEnable(new Dictionary<string, object>
                 {
                     {"OS", "iOS"}
                 });
@@ -160,7 +160,7 @@ public class NotificationManager : MonoBehaviour
         // https://docs.unity3d.com/Packages/com.unity.mobile.notifications@1.0/manual/index.html#android
         if (Monitor.UseAnalytics)
         {
-            Analytics.CustomEvent("Notification_Scheduled", new Dictionary<string, object> {{"Device", "Android"}});
+            AnalyticsManager.RecordEvent("Notification_Scheduled", new Dictionary<string, object> {{"Device", "Android"}});
         }
         AndroidNotificationCenter.SendNotification(notification, AndroidChannelId);
         Debug.Log("Timed Notification Scheduled");

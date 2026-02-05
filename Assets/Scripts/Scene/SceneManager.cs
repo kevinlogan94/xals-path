@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Analytics;
 using UnityEngine.UI;
 
 public class SceneManager : MonoBehaviour
@@ -104,7 +103,7 @@ public class SceneManager : MonoBehaviour
         }
         if (ActiveChapter == 0 && Monitor.UseAnalytics)
         {
-            Analytics.CustomEvent("ChapterTriggered", new Dictionary<string, object>
+            AnalyticsManager.RecordEvent("ChapterTriggered", new Dictionary<string, object>
             {
                 {"Chapter", chapterNumber}
             });
@@ -259,7 +258,7 @@ public class SceneManager : MonoBehaviour
             TriggerChapter(1);
             if (Monitor.UseAnalytics)
             {
-                AnalyticsEvent.FirstInteraction();
+                AnalyticsManager.RecordEvent("first_interaction");
             }
         } 
         else if (TutorialActive)
@@ -278,14 +277,7 @@ public class SceneManager : MonoBehaviour
 
     public void ClickInfluenceCrystal()
     {
-        if (Chapters.Any(x=>x.SceneViewed))
-        {
-            SplashManager.Instance.TriggerSplash(SplashType.Advertisement.ToString());
-        }
-        else
-        {
-            TriggerChat();
-        }
+        TriggerChat();
     }
 
     public void TriggerBackButton()
@@ -317,7 +309,7 @@ public class SceneManager : MonoBehaviour
     {
         if (!TutorialActive && Monitor.UseAnalytics)
         {
-            AnalyticsEvent.TutorialStart();
+            AnalyticsManager.RecordEvent("tutorial_start");
         }
         TutorialActive = true;
         SceneBackgroundController.Instance.UpdateSceneBackground(Expression.Generic);
@@ -358,7 +350,7 @@ public class SceneManager : MonoBehaviour
             TextBox.SetActive(false);
             if (Monitor.UseAnalytics)
             {
-                AnalyticsEvent.TutorialComplete();
+                AnalyticsManager.RecordEvent("tutorial_complete");
             }
             GameCenterManager.ReportAchievementUnlocked(GameCenterManager.GameCenterAchievement.Beginning.Value());
         }
@@ -479,7 +471,7 @@ public class SceneManager : MonoBehaviour
         ActiveChapter = 6;
         if (ActiveChapter == 0 && Monitor.UseAnalytics)
         {
-            Analytics.CustomEvent("ChapterTriggered", new Dictionary<string, object>
+            AnalyticsManager.RecordEvent("ChapterTriggered", new Dictionary<string, object>
             {
                 {"Chapter", 6}
             });

@@ -57,7 +57,7 @@ TextureImporter:
       213: 7751313674385320179
     second: energyBallSpriteSheet_2
   externalObjects: {}
-  serializedVersion: 11
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -77,6 +77,8 @@ TextureImporter:
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -85,9 +87,9 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: -1
-    aniso: -1
-    mipBias: -100
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
     wrapU: 1
     wrapV: 1
     wrapW: 1
@@ -108,10 +110,14 @@ TextureImporter:
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
   maxTextureSizeSet: 0
   compressionQualitySet: 0
   textureFormatSet: 0
+  ignorePngGamma: 0
   applyGammaDecoding: 0
+  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -168,7 +174,7 @@ TextureImporter:
       tessellationDetail: 0
       bones: []
       spriteID: 48140846afa816870800000000000000
-      internalID: 8674367165324870020
+      internalID: 5247444062554728244
       vertices: []
       indices: 
       edges: []
@@ -189,7 +195,7 @@ TextureImporter:
       tessellationDetail: 0
       bones: []
       spriteID: 0d99bebe1f1942600800000000000000
-      internalID: 442639131620383184
+      internalID: -6111582444435436804
       vertices: []
       indices: 
       edges: []
@@ -210,7 +216,7 @@ TextureImporter:
       tessellationDetail: 0
       bones: []
       spriteID: 3f86d58f7b2329b60800000000000000
-      internalID: 7751313674385320179
+      internalID: 7605180616784054902
       vertices: []
       indices: 
       edges: []
@@ -225,6 +231,10 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      energyBallSpriteSheet_0: 5247444062554728244
+      energyBallSpriteSheet_1: -6111582444435436804
+      energyBallSpriteSheet_2: 7605180616784054902
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

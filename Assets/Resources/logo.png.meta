@@ -1,19 +1,7 @@
 fileFormatVersion: 2
-guid: 7fd93c14e1994864d9b522231c7793d1
+guid: 8a6e30a5f5ff24fdc99be4e1af146b0f
 TextureImporter:
-  internalIDToNameTable:
-  - first:
-      213: -8000884860228919288
-    second: Void Spawn-Sheet_0
-  - first:
-      213: 8171715930621310596
-    second: Void Spawn-Sheet_1
-  - first:
-      213: -2334505379417292170
-    second: Void Spawn-Sheet_2
-  - first:
-      213: 7709077516898057438
-    second: Void Spawn-Sheet_3
+  internalIDToNameTable: []
   externalObjects: {}
   serializedVersion: 12
   mipmaps:
@@ -54,7 +42,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -75,7 +63,7 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
-  cookieLightType: 1
+  cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -115,91 +103,7 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites:
-    - serializedVersion: 2
-      name: Void Spawn-Sheet_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 66
-        height: 66
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 80021413c9527f090800000000000000
-      internalID: -8000884860228919288
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Void Spawn-Sheet_1
-      rect:
-        serializedVersion: 2
-        x: 66
-        y: 0
-        width: 66
-        height: 66
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 4867512e754c76170800000000000000
-      internalID: 8171715930621310596
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Void Spawn-Sheet_2
-      rect:
-        serializedVersion: 2
-        x: 132
-        y: 0
-        width: 66
-        height: 66
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 6720895e9bb2a9fd0800000000000000
-      internalID: -2334505379417292170
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Void Spawn-Sheet_3
-      rect:
-        serializedVersion: 2
-        x: 198
-        y: 0
-        width: 66
-        height: 66
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: edcb8ac38252cfa60800000000000000
-      internalID: 7709077516898057438
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
+    sprites: []
     outline: []
     physicsShape: []
     bones: []
@@ -210,11 +114,7 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable:
-      Void Spawn-Sheet_0: -8000884860228919288
-      Void Spawn-Sheet_1: 8171715930621310596
-      Void Spawn-Sheet_2: -2334505379417292170
-      Void Spawn-Sheet_3: 7709077516898057438
+    nameFileIdTable: {}
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

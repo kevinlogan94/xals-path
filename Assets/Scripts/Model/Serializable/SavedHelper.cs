@@ -3,8 +3,8 @@
 [Serializable]
 public class SavedHelper
 {
-    public string Name { get; set; }
-    public int AmountOwned { get; set; }
-    public long DynamicCost { get; set; }
-    public long DynamicIncrement { get; set; }
+    public string Name;
+    public int AmountOwned;
+    public long DynamicCost;
+    public long DynamicIncrement;
 }

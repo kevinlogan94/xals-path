@@ -21,9 +21,7 @@ public class AchievementManager : MonoBehaviour
     public int CurrentHelperAmount;
     public float HelperGoal;
 
-    //video/advertisement
-    public int CurrentVideoAmount;
-    public float VideoGoal;
+    // Removed: CurrentVideoAmount and VideoGoal - ads functionality removed
     
     //achievements
     public int CurrentAchievementAmount;
@@ -80,7 +78,7 @@ public class AchievementManager : MonoBehaviour
     {
         ClickerGoal = 150;
         HelperGoal = 30;
-        VideoGoal = 10;
+        // Removed: VideoGoal - ads functionality removed
         AchievementGoal = 10;
         LoginCount = 1;
         LoginGoal = 2;
@@ -123,9 +121,6 @@ public class AchievementManager : MonoBehaviour
         {
             ready = true;
         } else if (LoginGoal <= LoginCount)
-        {
-            ready = true;
-        } else if (VideoGoal <= CurrentVideoAmount)
         {
             ready = true;
         }

@@ -39,7 +39,7 @@ TextureImporter:
       213: -1888581980459216361
     second: Pegasus-Sheet_11
   externalObjects: {}
-  serializedVersion: 11
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -59,6 +59,8 @@ TextureImporter:
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -67,9 +69,9 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: -1
-    aniso: -1
-    mipBias: -100
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
     wrapU: 1
     wrapV: 1
     wrapW: 1
@@ -90,10 +92,14 @@ TextureImporter:
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
   maxTextureSizeSet: 0
   compressionQualitySet: 0
   textureFormatSet: 0
+  ignorePngGamma: 0
   applyGammaDecoding: 0
+  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -396,6 +402,19 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      Pegasus-Sheet_0: 1233660247991037178
+      Pegasus-Sheet_1: -5264144194466314378
+      Pegasus-Sheet_10: -2897102972282271015
+      Pegasus-Sheet_11: -1888581980459216361
+      Pegasus-Sheet_2: -6737539477956070000
+      Pegasus-Sheet_3: 4925986465147219205
+      Pegasus-Sheet_4: 4968355033093436830
+      Pegasus-Sheet_5: -8487964483676875468
+      Pegasus-Sheet_6: 7854352725079718106
+      Pegasus-Sheet_7: -3475868328087526244
+      Pegasus-Sheet_8: -6265092224246658857
+      Pegasus-Sheet_9: 2802807505435373010
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0
