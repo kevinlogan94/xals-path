@@ -8,7 +8,7 @@ public class AdvertisementManager : MonoBehaviour, IUnityAdsInitializationListen
     private const string AndroidGameId = "3857319";
     private const string RewardVideoPlacementId = "rewardedVideo";
     public int FinishedAds = 0;
-    public const bool TestMode = false;
+    public const bool TestMode = true;
 
     private long _reward;
     private BuffType _buffType;
