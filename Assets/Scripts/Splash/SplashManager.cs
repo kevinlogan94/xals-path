@@ -5,6 +5,7 @@ public class SplashManager : MonoBehaviour
 {
     public GameObject SplashPanel;
     public GameObject AchievementPanel;
+    public GameObject AdvertisementPanel;
     public GameObject InfluenceOverTimePanel;
     public GameObject EndGamePanel;
     public GameObject BuffPanel;
@@ -90,6 +91,17 @@ public class SplashManager : MonoBehaviour
         {
             PortalPanel.SetActive(true);
         }
+        else if (type == SplashType.Advertisement.ToString())
+        {
+            AdvertisementPanel.SetActive(true);
+            if (Monitor.UseAnalytics)
+            {
+                AnalyticsManager.RecordEvent("AdOffer", new System.Collections.Generic.Dictionary<string, object>
+                {
+                    {"rewarded", true}
+                });
+            }
+        }
     }
 
     public void CloseSplash()
@@ -97,6 +109,7 @@ public class SplashManager : MonoBehaviour
         SplashPanel.SetActive(false);
         CreaturePanel.SetActive(false);
         CreatureUIPanel.SetActive(false);
+        AdvertisementPanel.SetActive(false);
         InfluenceOverTimePanel.SetActive(false);
         EndGamePanel.SetActive(false);
         BuffPanel.SetActive(false);
@@ -113,6 +126,7 @@ public enum SplashType
 {
     Creature,
     Achievement,
+    Advertisement,
     InfluenceOverTime,
     Buff,
     EndGame,

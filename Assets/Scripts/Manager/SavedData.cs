@@ -39,7 +39,8 @@ public class SavedData
     public float ClickerGoal;
     public int CurrentHelperAmount;
     public float HelperGoal;
-    // Removed: CurrentVideoAmount and VideoGoal - ads functionality removed
+    public int CurrentVideoAmount;
+    public float VideoGoal;
     public int CurrentAchievementAmount;
     public float AchievementGoal;
     public int CurrentStoryAmount;
@@ -110,7 +111,8 @@ public class SavedData
         ClickerGoal = AchievementManager.Instance.ClickerGoal;
         CurrentHelperAmount = AchievementManager.Instance.CurrentHelperAmount;
         HelperGoal = AchievementManager.Instance.HelperGoal;
-        // Removed: CurrentVideoAmount and VideoGoal - ads functionality removed
+        CurrentVideoAmount = AchievementManager.Instance.CurrentVideoAmount;
+        VideoGoal = AchievementManager.Instance.VideoGoal;
         CurrentAchievementAmount = AchievementManager.Instance.CurrentAchievementAmount;
         AchievementGoal = AchievementManager.Instance.AchievementGoal;
         CurrentStoryAmount = AchievementManager.Instance.CurrentStoryAmount;
@@ -186,7 +188,8 @@ public class SavedData
         AchievementManager.Instance.ClickerGoal = ClickerGoal;
         AchievementManager.Instance.CurrentHelperAmount = CurrentHelperAmount;
         AchievementManager.Instance.HelperGoal = HelperGoal;
-        // Removed: CurrentVideoAmount and VideoGoal - ads functionality removed
+        AchievementManager.Instance.CurrentVideoAmount = CurrentVideoAmount;
+        AchievementManager.Instance.VideoGoal = VideoGoal;
         AchievementManager.Instance.CurrentAchievementAmount = CurrentAchievementAmount;
         AchievementManager.Instance.AchievementGoal = AchievementGoal;
         AchievementManager.Instance.CurrentStoryAmount = CurrentStoryAmount;
@@ -262,7 +265,7 @@ public class SavedData
         AchievementManager.Instance.LastLoginDate = DateTime.UtcNow;
         AchievementManager.Instance.CurrentClickedAmount = 0;
         AchievementManager.Instance.CurrentHelperAmount = 0;
-        // Removed: CurrentVideoAmount - ads functionality removed
+        AchievementManager.Instance.CurrentVideoAmount = 0;
         AchievementManager.Instance.CurrentAchievementAmount = 0;
         AchievementManager.Instance.SetAchievementGoalDefaults();
         // AchievementManager.Instance.CurrentStoryAmount -- We want this to stay what it already is.

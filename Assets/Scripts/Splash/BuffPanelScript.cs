@@ -22,9 +22,8 @@ public class BuffPanelScript : MonoBehaviour
 
     public void WatchAdAndCloseSplash()
     {
-        // Ads removed - same as CollectAndCloseSplash now (30 seconds)
-        // Method kept for backward compatibility with UI button references
-        BuffManager.Instance.TriggerBuff(BuffType.Mana, 15);
+        // Watch ad for 30 second buff (2x longer than baseline)
+        AdvertisementManager.Instance.ShowBuffRewardAd(BuffType.Mana, 30);
         SplashManager.Instance.CloseSplash();
     }
 }

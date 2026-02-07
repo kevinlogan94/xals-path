@@ -277,7 +277,14 @@ public class SceneManager : MonoBehaviour
 
     public void ClickInfluenceCrystal()
     {
-        TriggerChat();
+        if (Chapters.Any(x=>x.SceneViewed))
+        {
+            SplashManager.Instance.TriggerSplash(SplashType.Advertisement.ToString());
+        }
+        else
+        {
+            TriggerChat();
+        }
     }
 
     public void TriggerBackButton()

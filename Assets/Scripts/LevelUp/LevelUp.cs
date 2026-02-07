@@ -53,11 +53,19 @@ public class LevelUp : MonoBehaviour
         {
             LevelUpInProgress = true;
             
-            // Ads removed - always give bonus reward (3x) since no ad option exists
-            var bonusReward = LevelUpReward * 3;
-            Monitor.Instance.IncrementInfluence(bonusReward);
-            
-            StartCoroutine(WaitForAdAndTriggerLevelUp());   
+            //level up reward 
+            if (!watchAd)
+            {
+                // Skip ad - give 1x reward (original baseline)
+                Monitor.Instance.IncrementInfluence(LevelUpReward);
+                StartCoroutine(WaitForAdAndTriggerLevelUp());
+            }
+            else 
+            {
+                // Watch ad - give 3x reward on completion
+                var bonusReward = LevelUpReward * 3;
+                AdvertisementManager.Instance.ShowStandardRewardAd(bonusReward);
+            }
         }
     }
     
@@ -158,7 +166,13 @@ public class LevelUp : MonoBehaviour
         {
             _audioManager.Play("LevelUp2");
             LevelUpPanelGameObject.SetActive(true);
-            // Removed: Ad offer analytics - ads functionality removed
+            if (Monitor.UseAnalytics)
+            {
+                AnalyticsManager.RecordEvent("AdOffer", new Dictionary<string, object>
+                {
+                    {"rewarded", true}
+                });
+            }
         }
     }
 
