@@ -10,7 +10,9 @@ A story-driven clicker game designed in Unity, independently developed by Kevin 
 
 ## About the Game
 
-In **Xal's Path**, you embody a mysterious stranger summoned to a realm afflicted by a creeping blight. Your mission is to aid Xal, a determined hero, in a quest to cleanse the land and unravel the deceitful truth behind the corruption. The game combines narrative-rich storytelling with engaging clicker mechanics.
+In **Xal's Path**, you embody a mysterious stranger summoned to a realm afflicted by a creeping blight. Your mission is to aid Xal, a determined druid, in a quest to cleanse the land and uncover the truth behind the corruption. 
+
+The story delivers a morally complex narrative about perspective, power, and the relativity of good and evil. As you progress, you'll question who the real villain is, and you might find yourself looking in a mirror. The game combines thought-provoking storytelling with engaging clicker mechanics.
 
 **Status:** *Xal's Path is no longer available on the App Store or Google Play. A heartfelt thank you to everyone who supported the game!* 
 
