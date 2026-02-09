@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Spells
   m_EditorClassIdentifier: 
   Name: Spells
-  Message: Keep casting spells to control the creatures of the land and gain influence
+  Message: Keep channeling essence to cleanse corrupted creatures and gather influence
     from the realm.
   Displayed: 0

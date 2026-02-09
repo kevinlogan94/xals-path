@@ -125,7 +125,7 @@ public class SceneManager : MonoBehaviour
             var quote = chapter.Quotes[_chapterIndex];
             UpdateDialogAndExpression();
 
-            if (quote == "BAM!" && ActiveChapter < 5)
+            if (quote == "It is done." && ActiveChapter < 5)
             {
                 switch (CanvasBackgroundController.Instance.CurrentCanvasBackground)
                 {
