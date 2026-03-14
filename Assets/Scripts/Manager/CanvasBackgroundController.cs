@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class CanvasBackgroundController : MonoBehaviour
@@ -16,9 +16,9 @@ public class CanvasBackgroundController : MonoBehaviour
     {
         Instance = this;
         
-        _meadowImage = Resources.Load<Sprite>("Backgrounds/Horizon");
-        _riverImage = Resources.Load<Sprite>("Backgrounds/River");
-        _altarImage = Resources.Load<Sprite>("Backgrounds/Altar");
+        _meadowImage = Resources.Load<Sprite>("Game/Backgrounds/meadow");
+        _riverImage = Resources.Load<Sprite>("Game/Backgrounds/river");
+        _altarImage = Resources.Load<Sprite>("Game/Backgrounds/altar");
     }
 
     void Update()
