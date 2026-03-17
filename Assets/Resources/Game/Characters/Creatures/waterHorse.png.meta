@@ -134,19 +134,19 @@ TextureImporter:
       name: waterHorse_0
       rect:
         serializedVersion: 2
-        x: 19
-        y: 200
-        width: 144
-        height: 107
+        x: 0
+        y: 183
+        width: 227
+        height: 182
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 892e5c06a1bc09550800000000000000
-      internalID: 6165651204023378584
+      spriteID: 5849d315520244a1689708ceed7a6b2a
+      internalID: 497740212
       vertices: []
       indices: 
       edges: []
@@ -155,19 +155,19 @@ TextureImporter:
       name: waterHorse_1
       rect:
         serializedVersion: 2
-        x: 234
-        y: 233
-        width: 7
-        height: 7
+        x: 227
+        y: 183
+        width: 227
+        height: 182
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: b8900ee1e9cb7a9d0800000000000000
-      internalID: -2763032459059656309
+      spriteID: b364aad514dd2440d9b05ffd4b809c52
+      internalID: -220631989
       vertices: []
       indices: 
       edges: []
@@ -176,19 +176,19 @@ TextureImporter:
       name: waterHorse_2
       rect:
         serializedVersion: 2
-        x: 237
-        y: 202
-        width: 157
-        height: 102
+        x: 454
+        y: 183
+        width: 227
+        height: 182
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 5ec067401bcc1fd20800000000000000
-      internalID: 3310652261750148325
+      spriteID: c14882da49a34452e9673170760e4df4
+      internalID: -1298361303
       vertices: []
       indices: 
       edges: []
@@ -197,19 +197,19 @@ TextureImporter:
       name: waterHorse_3
       rect:
         serializedVersion: 2
-        x: 467
-        y: 202
-        width: 158
-        height: 97
+        x: 0
+        y: 1
+        width: 227
+        height: 182
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 340341ce255de3d60800000000000000
-      internalID: 7871963750814986307
+      spriteID: e859f9d60deb44b1689befeba0ed7c28
+      internalID: 295609858
       vertices: []
       indices: 
       edges: []
@@ -218,61 +218,19 @@ TextureImporter:
       name: waterHorse_4
       rect:
         serializedVersion: 2
-        x: 17
-        y: 219
-        width: 7
-        height: 7
+        x: 227
+        y: 1
+        width: 227
+        height: 182
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: db1a2512e8ba2ede0800000000000000
-      internalID: -1305292315051253315
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: waterHorse_5
-      rect:
-        serializedVersion: 2
-        x: 11
-        y: 25
-        width: 158
-        height: 90
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 7e5f51df789b24d80800000000000000
-      internalID: -8267841972181010969
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: waterHorse_6
-      rect:
-        serializedVersion: 2
-        x: 242
-        y: 22
-        width: 150
-        height: 101
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0355a699144e0e180800000000000000
-      internalID: -9088013077635771088
+      spriteID: ef463a2189e4d4b3397925c6864dae10
+      internalID: 2017939609
       vertices: []
       indices: 
       edges: []
@@ -280,14 +238,19 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 6b2caa943560e458f877793f224996c5
     internalID: 0
     vertices: []
     indices: 
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      waterHorse_0: 497740212
+      waterHorse_1: -220631989
+      waterHorse_2: -1298361303
+      waterHorse_3: 295609858
+      waterHorse_4: 2017939609
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

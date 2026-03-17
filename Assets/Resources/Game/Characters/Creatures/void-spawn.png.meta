@@ -125,19 +125,19 @@ TextureImporter:
       name: void-spawn_0
       rect:
         serializedVersion: 2
-        x: 22
-        y: 1
-        width: 266
-        height: 299
+        x: 0
+        y: 0
+        width: 300
+        height: 300
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 7821fe217430234e0800000000000000
-      internalID: -2003535280431230329
+      spriteID: 7c0f813be0f2b4bed9f3b187776a33de
+      internalID: -1193973653
       vertices: []
       indices: 
       edges: []
@@ -146,19 +146,19 @@ TextureImporter:
       name: void-spawn_1
       rect:
         serializedVersion: 2
-        x: 323
+        x: 300
         y: 0
-        width: 269
-        height: 293
+        width: 300
+        height: 300
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 9035f4078e1dfdea0800000000000000
-      internalID: -5845722995056749815
+      spriteID: 3163157f3f04f499ab722003b7cf82f8
+      internalID: -165130803
       vertices: []
       indices: 
       edges: []
@@ -167,19 +167,19 @@ TextureImporter:
       name: void-spawn_2
       rect:
         serializedVersion: 2
-        x: 620
-        y: 11
-        width: 249
-        height: 278
+        x: 600
+        y: 0
+        width: 300
+        height: 300
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 7abd5aaf84853cb70800000000000000
-      internalID: 8918068757589777319
+      spriteID: 2c7934a38c23f426788b94abf95dabda
+      internalID: 554174614
       vertices: []
       indices: 
       edges: []
@@ -188,19 +188,19 @@ TextureImporter:
       name: void-spawn_3
       rect:
         serializedVersion: 2
-        x: 922
-        y: 9
-        width: 265
-        height: 288
+        x: 900
+        y: 0
+        width: 300
+        height: 300
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: f3a0284d8b41ddf00800000000000000
-      internalID: 1143092664493804095
+      spriteID: b1004e27af67347f1a62436dacebfda3
+      internalID: -1483377398
       vertices: []
       indices: 
       edges: []
@@ -208,14 +208,18 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 8c508043a8092455d9855b5f95c3516f
     internalID: 0
     vertices: []
     indices: 
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      void-spawn_0: -1193973653
+      void-spawn_1: -165130803
+      void-spawn_2: 554174614
+      void-spawn_3: -1483377398
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

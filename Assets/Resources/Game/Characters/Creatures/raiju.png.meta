@@ -164,19 +164,19 @@ TextureImporter:
       name: raiju_0
       rect:
         serializedVersion: 2
-        x: 4
-        y: 182
-        width: 173
-        height: 95
+        x: 0
+        y: 163
+        width: 191
+        height: 163
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 02f364b3eb29a0870800000000000000
-      internalID: 8649887380054359840
+      spriteID: b9b5743bdca9c4e25bf7779a62a9acfc
+      internalID: -133697547
       vertices: []
       indices: 
       edges: []
@@ -185,19 +185,19 @@ TextureImporter:
       name: raiju_1
       rect:
         serializedVersion: 2
-        x: 96
-        y: 271
-        width: 22
-        height: 9
+        x: 191
+        y: 163
+        width: 191
+        height: 163
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 0be37dfc2fcc4d750800000000000000
-      internalID: 6328908719603531440
+      spriteID: 68286f7dc1b454a6f912158e7aea7449
+      internalID: -606325098
       vertices: []
       indices: 
       edges: []
@@ -206,19 +206,19 @@ TextureImporter:
       name: raiju_2
       rect:
         serializedVersion: 2
-        x: 200
-        y: 176
-        width: 166
-        height: 97
+        x: 382
+        y: 163
+        width: 191
+        height: 163
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 82704308ba4891930800000000000000
-      internalID: 4114465606704826152
+      spriteID: cb4757348ee7346fea34abfa19aa8154
+      internalID: -396857885
       vertices: []
       indices: 
       edges: []
@@ -227,19 +227,19 @@ TextureImporter:
       name: raiju_3
       rect:
         serializedVersion: 2
-        x: 285
-        y: 271
-        width: 16
-        height: 9
+        x: 573
+        y: 163
+        width: 191
+        height: 163
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 14ec77691dfe108a0800000000000000
-      internalID: -6340523116909310399
+      spriteID: 39deb523b96844ca4a22a6041e1b033c
+      internalID: -567620583
       vertices: []
       indices: 
       edges: []
@@ -248,271 +248,19 @@ TextureImporter:
       name: raiju_4
       rect:
         serializedVersion: 2
-        x: 459
-        y: 266
-        width: 17
-        height: 10
+        x: 0
+        y: 0
+        width: 191
+        height: 163
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: b4d0b52151e7566b0800000000000000
-      internalID: -5303694357191520949
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: raiju_5
-      rect:
-        serializedVersion: 2
-        x: 501
-        y: 273
-        width: 11
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ed296bfa83adeb750800000000000000
-      internalID: 6322730863875756766
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: raiju_6
-      rect:
-        serializedVersion: 2
-        x: 588
-        y: 180
-        width: 156
-        height: 112
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 635f5cf68c80e6940800000000000000
-      internalID: 5291176269168637238
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: raiju_7
-      rect:
-        serializedVersion: 2
-        x: 179
-        y: 261
-        width: 16
-        height: 10
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 9751609f8aeaa0110800000000000000
-      internalID: 1227985889167545721
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: raiju_8
-      rect:
-        serializedVersion: 2
-        x: 358
-        y: 257
-        width: 13
-        height: 14
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ddf0f99182627a740800000000000000
-      internalID: 5163137451473965021
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: raiju_9
-      rect:
-        serializedVersion: 2
-        x: 383
-        y: 177
-        width: 173
-        height: 89
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3a05acf3553b26ac0800000000000000
-      internalID: -3863328351606648669
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: raiju_10
-      rect:
-        serializedVersion: 2
-        x: 197
-        y: 244
-        width: 6
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ec00e5d1f36d215d0800000000000000
-      internalID: -3093174427486125874
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: raiju_11
-      rect:
-        serializedVersion: 2
-        x: 1
-        y: 222
-        width: 7
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 46701db81248cc0c0800000000000000
-      internalID: -4554119843563894940
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: raiju_12
-      rect:
-        serializedVersion: 2
-        x: 582
-        y: 219
-        width: 7
-        height: 9
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b7b7463a04b2c24e0800000000000000
-      internalID: -2005180177467540613
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: raiju_13
-      rect:
-        serializedVersion: 2
-        x: 22
-        y: 20
-        width: 155
-        height: 102
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 9d3120f9e78dce040800000000000000
-      internalID: 4678352151276295129
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: raiju_14
-      rect:
-        serializedVersion: 2
-        x: 109
-        y: 116
-        width: 9
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 1414e544a461ba950800000000000000
-      internalID: 6461282598623527233
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: raiju_15
-      rect:
-        serializedVersion: 2
-        x: 151
-        y: 116
-        width: 13
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d3340cc41278add70800000000000000
-      internalID: 9068709376755254077
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: raiju_16
-      rect:
-        serializedVersion: 2
-        x: 20
-        y: 48
-        width: 6
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a3b72127cba14f440800000000000000
-      internalID: 4968625685566487354
+      spriteID: 2f90ff7d1033c4c58b83ffe71f5fa82d
+      internalID: -1182791686
       vertices: []
       indices: 
       edges: []
@@ -520,14 +268,19 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 501609b57727e44d191aa75bf48eb947
     internalID: 0
     vertices: []
     indices: 
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      raiju_0: -133697547
+      raiju_1: -606325098
+      raiju_2: -396857885
+      raiju_3: -567620583
+      raiju_4: -1182791686
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

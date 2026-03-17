@@ -146,19 +146,19 @@ TextureImporter:
       name: wisp-animation_0
       rect:
         serializedVersion: 2
-        x: 10
-        y: 172
-        width: 10
-        height: 10
+        x: 0
+        y: 0
+        width: 238
+        height: 262
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 8b96f61d1506a3af0800000000000000
-      internalID: -415914111055992392
+      spriteID: 9d88865daccb84379b394baafaa07a47
+      internalID: 1654749277
       vertices: []
       indices: 
       edges: []
@@ -167,19 +167,19 @@ TextureImporter:
       name: wisp-animation_1
       rect:
         serializedVersion: 2
-        x: 19
-        y: 52
-        width: 201
-        height: 168
+        x: 238
+        y: 0
+        width: 238
+        height: 262
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 7bd625425490e9260800000000000000
-      internalID: 7106127454603996599
+      spriteID: 645f189d554ac4474b196546598a1bc4
+      internalID: 19021626
       vertices: []
       indices: 
       edges: []
@@ -188,19 +188,19 @@ TextureImporter:
       name: wisp-animation_2
       rect:
         serializedVersion: 2
-        x: 250
-        y: 172
-        width: 10
-        height: 10
+        x: 476
+        y: 0
+        width: 238
+        height: 262
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 9d532a1a860b67780800000000000000
-      internalID: -8685560867902573095
+      spriteID: 09805824a733d4a3488a174c63fbc89f
+      internalID: 158405976
       vertices: []
       indices: 
       edges: []
@@ -209,166 +209,19 @@ TextureImporter:
       name: wisp-animation_3
       rect:
         serializedVersion: 2
-        x: 259
-        y: 52
-        width: 200
-        height: 168
+        x: 714
+        y: 0
+        width: 238
+        height: 262
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: cbbe60645cb8c0fc0800000000000000
-      internalID: -3527290728738264132
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wisp-animation_4
-      rect:
-        serializedVersion: 2
-        x: 486
-        y: 171
-        width: 11
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 9984c761d0ceb3940800000000000000
-      internalID: 5277070929350641817
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wisp-animation_5
-      rect:
-        serializedVersion: 2
-        x: 495
-        y: 52
-        width: 200
-        height: 168
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 7a997880b5fc5fe40800000000000000
-      internalID: 5689681694144567719
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wisp-animation_6
-      rect:
-        serializedVersion: 2
-        x: 722
-        y: 175
-        width: 10
-        height: 11
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d5ce9d9faefb83670800000000000000
-      internalID: 8518769711106354269
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wisp-animation_7
-      rect:
-        serializedVersion: 2
-        x: 734
-        y: 53
-        width: 199
-        height: 167
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3f40a55c2c89589f0800000000000000
-      internalID: -466799024060889869
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wisp-animation_8
-      rect:
-        serializedVersion: 2
-        x: 250
-        y: 139
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: fbd7ab1543409eab0800000000000000
-      internalID: -4978443290325385793
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wisp-animation_9
-      rect:
-        serializedVersion: 2
-        x: 486
-        y: 139
-        width: 8
-        height: 8
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 5189a2cbfbdf51570800000000000000
-      internalID: 8436928476885981205
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wisp-animation_10
-      rect:
-        serializedVersion: 2
-        x: 726
-        y: 141
-        width: 6
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 617b1263556191c00800000000000000
-      internalID: 871752558109112086
+      spriteID: e8cc65979640a4705afc98217e5b8dc3
+      internalID: -544458599
       vertices: []
       indices: 
       edges: []
@@ -376,14 +229,18 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 9842e7c81f7cc4aa9ad8c564b04859ae
     internalID: 0
     vertices: []
     indices: 
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      wisp-animation_0: 1654749277
+      wisp-animation_1: 19021626
+      wisp-animation_2: 158405976
+      wisp-animation_3: -544458599
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

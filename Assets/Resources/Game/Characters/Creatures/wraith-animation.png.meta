@@ -173,19 +173,19 @@ TextureImporter:
       name: wraith-animation_0
       rect:
         serializedVersion: 2
-        x: 8
-        y: 379
-        width: 92
-        height: 119
+        x: 0
+        y: 375
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: b772e5c5d4a35d930800000000000000
-      internalID: 4167301134137829243
+      spriteID: c623251f0a0ff4f59802ca9ee2ff24b2
+      internalID: -752130353
       vertices: []
       indices: 
       edges: []
@@ -194,19 +194,19 @@ TextureImporter:
       name: wraith-animation_1
       rect:
         serializedVersion: 2
-        x: 142
-        y: 381
-        width: 83
-        height: 117
+        x: 125
+        y: 375
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: f28f6719df71f4810800000000000000
-      internalID: 1751645157905070127
+      spriteID: db2edaf9384e043159340a2d45d99216
+      internalID: 1740970319
       vertices: []
       indices: 
       edges: []
@@ -215,19 +215,19 @@ TextureImporter:
       name: wraith-animation_2
       rect:
         serializedVersion: 2
-        x: 261
-        y: 381
-        width: 89
-        height: 117
+        x: 250
+        y: 375
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 769fbbb656fbe64b0800000000000000
-      internalID: -5445204457124267673
+      spriteID: e98cc6cdde7e54d68af13759265c5641
+      internalID: 2128020729
       vertices: []
       indices: 
       edges: []
@@ -236,19 +236,19 @@ TextureImporter:
       name: wraith-animation_3
       rect:
         serializedVersion: 2
-        x: 349
-        y: 439
-        width: 8
-        height: 18
+        x: 375
+        y: 375
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 84ba8d422c728fc20800000000000000
-      internalID: 3240383646688389960
+      spriteID: 866cd7a105ad54b8a86f016519c46b36
+      internalID: -755910501
       vertices: []
       indices: 
       edges: []
@@ -257,19 +257,19 @@ TextureImporter:
       name: wraith-animation_4
       rect:
         serializedVersion: 2
-        x: 381
-        y: 378
-        width: 103
-        height: 120
+        x: 0
+        y: 250
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: bced748772a3f9790800000000000000
-      internalID: -7521228911489327413
+      spriteID: 3fd251077aa124f8ab72a5b1c9aaf806
+      internalID: 1856164894
       vertices: []
       indices: 
       edges: []
@@ -278,19 +278,19 @@ TextureImporter:
       name: wraith-animation_5
       rect:
         serializedVersion: 2
-        x: 267
-        y: 412
-        width: 8
-        height: 12
+        x: 125
+        y: 250
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 1089468d458208730800000000000000
-      internalID: 3999240813977835521
+      spriteID: 57865e8ba02c245cb85a5ce7f8f15581
+      internalID: 2140212011
       vertices: []
       indices: 
       edges: []
@@ -299,19 +299,19 @@ TextureImporter:
       name: wraith-animation_6
       rect:
         serializedVersion: 2
-        x: 131
-        y: 379
-        width: 12
-        height: 8
+        x: 250
+        y: 250
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 5a9e06a09cd259070800000000000000
-      internalID: 8112440645263616421
+      spriteID: 05e439a7731414582859dc80eb1cefb8
+      internalID: -1816178277
       vertices: []
       indices: 
       edges: []
@@ -320,19 +320,19 @@ TextureImporter:
       name: wraith-animation_7
       rect:
         serializedVersion: 2
-        x: 10
-        y: 255
-        width: 101
-        height: 118
+        x: 375
+        y: 250
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 53b8db096659c47d0800000000000000
-      internalID: -2932804989577491659
+      spriteID: 6c3a4b552192845559ab9e95abd35133
+      internalID: 1632913311
       vertices: []
       indices: 
       edges: []
@@ -341,19 +341,19 @@ TextureImporter:
       name: wraith-animation_8
       rect:
         serializedVersion: 2
-        x: 131
-        y: 254
-        width: 108
-        height: 119
+        x: 0
+        y: 125
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 8fbb97531f35733f0800000000000000
-      internalID: -921175303324582920
+      spriteID: 2e98657e0151b44c0a5cda6e63f1f953
+      internalID: 49850604
       vertices: []
       indices: 
       edges: []
@@ -362,19 +362,19 @@ TextureImporter:
       name: wraith-animation_9
       rect:
         serializedVersion: 2
-        x: 256
-        y: 253
-        width: 19
-        height: 10
+        x: 125
+        y: 125
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 3be3ebcdc7c3dc5b0800000000000000
-      internalID: -5346550675641844045
+      spriteID: 2490488433f4748a6a99913057e1e13a
+      internalID: 1108966178
       vertices: []
       indices: 
       edges: []
@@ -383,19 +383,19 @@ TextureImporter:
       name: wraith-animation_10
       rect:
         serializedVersion: 2
-        x: 266
-        y: 256
-        width: 95
-        height: 117
+        x: 250
+        y: 125
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: db6ade96236962ee0800000000000000
-      internalID: -1286175500297984323
+      spriteID: d1514e1a8c7d648d091f9649d85ae551
+      internalID: 196407428
       vertices: []
       indices: 
       edges: []
@@ -404,19 +404,19 @@ TextureImporter:
       name: wraith-animation_11
       rect:
         serializedVersion: 2
-        x: 385
-        y: 256
-        width: 99
-        height: 117
+        x: 375
+        y: 125
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 310c2f325f9d54110800000000000000
-      internalID: 1244640518931136531
+      spriteID: 6bb179c2e4d5e4843a8235f8917da448
+      internalID: -643668626
       vertices: []
       indices: 
       edges: []
@@ -425,166 +425,19 @@ TextureImporter:
       name: wraith-animation_12
       rect:
         serializedVersion: 2
-        x: 6
-        y: 129
-        width: 94
-        height: 119
+        x: 0
+        y: 0
+        width: 125
+        height: 125
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 8e432b5519f41dad0800000000000000
-      internalID: -2679272817682139928
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wraith-animation_13
-      rect:
-        serializedVersion: 2
-        x: 98
-        y: 189
-        width: 11
-        height: 19
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b07916af534877340800000000000000
-      internalID: 4861499690138572555
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wraith-animation_14
-      rect:
-        serializedVersion: 2
-        x: 130
-        y: 128
-        width: 95
-        height: 120
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 8c4995c350b8c19c0800000000000000
-      internalID: -3955133518134537016
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wraith-animation_15
-      rect:
-        serializedVersion: 2
-        x: 255
-        y: 128
-        width: 95
-        height: 120
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3709d8cbe511eeb10800000000000000
-      internalID: 2012565182069182579
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wraith-animation_16
-      rect:
-        serializedVersion: 2
-        x: 379
-        y: 129
-        width: 96
-        height: 119
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 569b1e2a98a31aaa0800000000000000
-      internalID: -6151571253193754267
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wraith-animation_17
-      rect:
-        serializedVersion: 2
-        x: 16
-        y: 162
-        width: 10
-        height: 22
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 52f7976bd63b5ae20800000000000000
-      internalID: 3361289980696166181
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wraith-animation_18
-      rect:
-        serializedVersion: 2
-        x: 17
-        y: 44
-        width: 7
-        height: 7
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ef1def15491130b60800000000000000
-      internalID: 7711026315716907518
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: wraith-animation_19
-      rect:
-        serializedVersion: 2
-        x: 18
-        y: 5
-        width: 83
-        height: 118
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 9d163993ff4e1bab0800000000000000
-      internalID: -4993958726943415847
+      spriteID: 1f01d9d35c1e24c5c8eb3cc5ee5d4128
+      internalID: 1307574378
       vertices: []
       indices: 
       edges: []
@@ -592,14 +445,27 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 73dce4adb43f54d468d01e82320576a2
     internalID: 0
     vertices: []
     indices: 
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      wraith-animation_0: -752130353
+      wraith-animation_1: 1740970319
+      wraith-animation_10: 196407428
+      wraith-animation_11: -643668626
+      wraith-animation_12: 1307574378
+      wraith-animation_2: 2128020729
+      wraith-animation_3: -755910501
+      wraith-animation_4: 1856164894
+      wraith-animation_5: 2140212011
+      wraith-animation_6: -1816178277
+      wraith-animation_7: 1632913311
+      wraith-animation_8: 49850604
+      wraith-animation_9: 1108966178
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
