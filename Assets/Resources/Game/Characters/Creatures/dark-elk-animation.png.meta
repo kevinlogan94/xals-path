@@ -151,7 +151,7 @@ TextureImporter:
         width: 130
         height: 123
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -169,10 +169,10 @@ TextureImporter:
         serializedVersion: 2
         x: 135
         y: 316
-        width: 129
+        width: 130
         height: 123
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -190,10 +190,10 @@ TextureImporter:
         serializedVersion: 2
         x: 270
         y: 316
-        width: 126
+        width: 130
         height: 123
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -209,12 +209,12 @@ TextureImporter:
       name: dark-elk-animation_3
       rect:
         serializedVersion: 2
-        x: 412
+        x: 407
         y: 316
-        width: 118
+        width: 129
         height: 123
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -230,12 +230,12 @@ TextureImporter:
       name: dark-elk-animation_4
       rect:
         serializedVersion: 2
-        x: 24
-        y: 160
-        width: 109
-        height: 125
+        x: 5
+        y: 159
+        width: 130
+        height: 123
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -251,12 +251,12 @@ TextureImporter:
       name: dark-elk-animation_5
       rect:
         serializedVersion: 2
-        x: 157
-        y: 169
-        width: 109
-        height: 116
+        x: 135
+        y: 163
+        width: 130
+        height: 123
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -272,12 +272,12 @@ TextureImporter:
       name: dark-elk-animation_6
       rect:
         serializedVersion: 2
-        x: 290
-        y: 166
-        width: 109
-        height: 119
+        x: 271
+        y: 164
+        width: 130
+        height: 123
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -293,12 +293,12 @@ TextureImporter:
       name: dark-elk-animation_7
       rect:
         serializedVersion: 2
-        x: 401
-        y: 154
-        width: 135
-        height: 131
+        x: 405
+        y: 164
+        width: 130
+        height: 123
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -314,12 +314,12 @@ TextureImporter:
       name: dark-elk-animation_8
       rect:
         serializedVersion: 2
-        x: 24
+        x: 5
         y: 7
-        width: 109
-        height: 120
+        width: 130
+        height: 123
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -335,12 +335,12 @@ TextureImporter:
       name: dark-elk-animation_9
       rect:
         serializedVersion: 2
-        x: 146
+        x: 137
         y: 7
-        width: 120
+        width: 130
         height: 120
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -358,10 +358,10 @@ TextureImporter:
         serializedVersion: 2
         x: 271
         y: 7
-        width: 132
-        height: 120
+        width: 130
+        height: 123
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -376,14 +376,25 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 627dd5fdaf38446899b4efe384b7d0ca
     internalID: 0
     vertices: []
     indices: 
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      dark-elk-animation_0: -8467587004635056236
+      dark-elk-animation_1: -3094314416273735165
+      dark-elk-animation_10: -2105408862007168886
+      dark-elk-animation_2: 7774620542796802055
+      dark-elk-animation_3: 1433259203079380861
+      dark-elk-animation_4: 4619081346592914242
+      dark-elk-animation_5: -8306108780686046552
+      dark-elk-animation_6: -1945207636910504956
+      dark-elk-animation_7: 5274532673375350753
+      dark-elk-animation_8: 805825481133124957
+      dark-elk-animation_9: -1616129348236827320
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

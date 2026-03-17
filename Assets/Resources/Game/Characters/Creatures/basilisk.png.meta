@@ -140,9 +140,9 @@ TextureImporter:
         x: 0
         y: 197
         width: 284
-        height: 77
+        height: 94
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -159,11 +159,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 291
-        y: 202
-        width: 281
-        height: 60
+        y: 197
+        width: 284
+        height: 94
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -179,12 +179,12 @@ TextureImporter:
       name: basilisk_2
       rect:
         serializedVersion: 2
-        x: 586
-        y: 201
-        width: 271
-        height: 68
+        x: 572
+        y: 198
+        width: 285
+        height: 93
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -202,10 +202,10 @@ TextureImporter:
         serializedVersion: 2
         x: 15
         y: 98
-        width: 270
-        height: 85
+        width: 284
+        height: 94
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -221,12 +221,12 @@ TextureImporter:
       name: basilisk_4
       rect:
         serializedVersion: 2
-        x: 325
-        y: 98
-        width: 247
+        x: 300
+        y: 95
+        width: 284
         height: 94
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -242,12 +242,12 @@ TextureImporter:
       name: basilisk_5
       rect:
         serializedVersion: 2
-        x: 586
+        x: 575
         y: 98
-        width: 270
-        height: 85
+        width: 282
+        height: 94
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -265,10 +265,10 @@ TextureImporter:
         serializedVersion: 2
         x: 14
         y: 7
-        width: 273
-        height: 68
+        width: 284
+        height: 94
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -286,10 +286,10 @@ TextureImporter:
         serializedVersion: 2
         x: 291
         y: 8
-        width: 281
-        height: 60
+        width: 284
+        height: 94
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -304,14 +304,22 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: a8b8af7dd08d447119bfb8350c0ff146
     internalID: 0
     vertices: []
     indices: 
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      basilisk_0: -7573000497792475764
+      basilisk_1: -7761350331594866386
+      basilisk_2: 4623966430424154174
+      basilisk_3: -2444262780321095712
+      basilisk_4: -1233871636529153807
+      basilisk_5: -5654862344082838644
+      basilisk_6: -4611084681386284556
+      basilisk_7: -8202950310085503025
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
