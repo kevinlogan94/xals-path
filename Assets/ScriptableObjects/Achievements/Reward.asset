@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: Reward
   RewardDescription: 1 hour worth of influence
-  Artwork: {fileID: 21300000, guid: 2d15aea729ea0fe4faeb6c892fc0aaf4, type: 3}
+  Artwork: {fileID: 21300000, guid: c70009c43fb78497c8aad65710837087, type: 3}

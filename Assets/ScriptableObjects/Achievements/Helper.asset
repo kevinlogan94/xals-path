@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: Helper
   RewardDescription: 3x influence from tomes
-  Artwork: {fileID: 21300000, guid: 799dc42efa800da478d57b9b266e954f, type: 3}
+  Artwork: {fileID: 21300000, guid: f416a83892bf54c85908c578c1ca4058, type: 3}

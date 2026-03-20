@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: Video
   RewardDescription: 10 hours worth of influence
-  Artwork: {fileID: 21300000, guid: 01900b6dc01ae894f8854dde88e3a54e, type: 3}
+  Artwork: {fileID: 21300000, guid: 40d7d2b5a09834539a70c7b9261559be, type: 3}
