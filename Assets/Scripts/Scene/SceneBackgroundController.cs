@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class SceneBackgroundController : MonoBehaviour
@@ -21,15 +21,15 @@ public class SceneBackgroundController : MonoBehaviour
     {
         Instance = this;
         
-        _genericImage = Resources.Load<Sprite>("Pixel/Scenes/Generic");
-        _genericDownImage = Resources.Load<Sprite>("Pixel/Scenes/GenericDown");
-        _happyImage = Resources.Load<Sprite>("Pixel/Scenes/Happy");
-        _originalImage = Resources.Load<Sprite>("Pixel/Scenes/Original");
-        _sadImage = Resources.Load<Sprite>("Pixel/Scenes/Sad");
-        _sadSideImage = Resources.Load<Sprite>("Pixel/Scenes/SadSide");
-        _shockedImage = Resources.Load<Sprite>("Pixel/Scenes/Shocked");
-        _shockedDownImage = Resources.Load<Sprite>("Pixel/Scenes/ShockedDown");
-        _angryImage = Resources.Load<Sprite>("Pixel/Scenes/Angry");
+        _genericImage = Resources.Load<Sprite>("Game/Characters/Xal/xal_generic");
+        _genericDownImage = Resources.Load<Sprite>("Game/Characters/Xal/xal_generic_down");
+        _happyImage = Resources.Load<Sprite>("Game/Characters/Xal/xal_happy");
+        _originalImage = Resources.Load<Sprite>("Game/Characters/Xal/xal_generic");
+        _sadImage = Resources.Load<Sprite>("Game/Characters/Xal/xal_sad");
+        _sadSideImage = Resources.Load<Sprite>("Game/Characters/Xal/xal_sad_side");
+        _shockedImage = Resources.Load<Sprite>("Game/Characters/Xal/xal_shocked");
+        _shockedDownImage = Resources.Load<Sprite>("Game/Characters/Xal/xal_shocked_side");
+        _angryImage = Resources.Load<Sprite>("Game/Characters/Xal/xal_mad");
     }
 
     public void UpdateSceneBackground(Expression expression)
