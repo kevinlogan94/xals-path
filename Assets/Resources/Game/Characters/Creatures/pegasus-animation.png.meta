@@ -149,19 +149,19 @@ TextureImporter:
       name: pegasus-animation_0
       rect:
         serializedVersion: 2
-        x: 19
-        y: 302
-        width: 113
-        height: 66
+        x: 0
+        y: 258
+        width: 161
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 3393c2b6b86f2cd60800000000000000
-      internalID: 7909154974274959667
+      spriteID: f5b7a36a930914f5aa1cf8e964dc8b2b
+      internalID: -563370898
       vertices: []
       indices: 
       edges: []
@@ -170,19 +170,19 @@ TextureImporter:
       name: pegasus-animation_1
       rect:
         serializedVersion: 2
-        x: 180
-        y: 302
-        width: 113
-        height: 66
+        x: 161
+        y: 258
+        width: 161
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 1276518845aaa0f40800000000000000
-      internalID: 5695551958800492321
+      spriteID: 0242bfe7986304c1b87c44c4547cb3ae
+      internalID: 2132593859
       vertices: []
       indices: 
       edges: []
@@ -191,19 +191,19 @@ TextureImporter:
       name: pegasus-animation_2
       rect:
         serializedVersion: 2
-        x: 342
-        y: 302
-        width: 112
-        height: 66
+        x: 322
+        y: 258
+        width: 161
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 01b1f2e5254b042c0800000000000000
-      internalID: -4449358165981586672
+      spriteID: 4d660e01cb7a349a492dbcfd88a1ce8d
+      internalID: 1309376660
       vertices: []
       indices: 
       edges: []
@@ -212,19 +212,19 @@ TextureImporter:
       name: pegasus-animation_3
       rect:
         serializedVersion: 2
-        x: 502
-        y: 302
-        width: 113
-        height: 66
+        x: 483
+        y: 258
+        width: 161
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: ddbfb7a049043f6b0800000000000000
-      internalID: -5263792534890742819
+      spriteID: bad305ab79718419c9e996279e9a739e
+      internalID: 199333405
       vertices: []
       indices: 
       edges: []
@@ -233,19 +233,19 @@ TextureImporter:
       name: pegasus-animation_4
       rect:
         serializedVersion: 2
-        x: 19
-        y: 170
-        width: 113
-        height: 65
+        x: 0
+        y: 129
+        width: 161
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: a8fe20f6ea1422b30800000000000000
-      internalID: 4261040414888488842
+      spriteID: 511a2fb8fa3f549d09e365fedab96706
+      internalID: -1044321901
       vertices: []
       indices: 
       edges: []
@@ -254,19 +254,19 @@ TextureImporter:
       name: pegasus-animation_5
       rect:
         serializedVersion: 2
-        x: 180
-        y: 167
-        width: 113
-        height: 66
+        x: 161
+        y: 129
+        width: 161
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d43fb3cc2b9758520800000000000000
-      internalID: 2703700960143471437
+      spriteID: e5cc90dd78cd24fd3a8bd98a08d7850c
+      internalID: -1842392554
       vertices: []
       indices: 
       edges: []
@@ -275,19 +275,19 @@ TextureImporter:
       name: pegasus-animation_6
       rect:
         serializedVersion: 2
-        x: 342
-        y: 163
-        width: 112
-        height: 66
+        x: 322
+        y: 129
+        width: 161
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: a3a63619c6e87b070800000000000000
-      internalID: 8122117049932802618
+      spriteID: 8e59c81e4ac2c48b1874651fa42a787a
+      internalID: -1931483629
       vertices: []
       indices: 
       edges: []
@@ -296,19 +296,19 @@ TextureImporter:
       name: pegasus-animation_7
       rect:
         serializedVersion: 2
-        x: 502
-        y: 159
-        width: 113
-        height: 66
+        x: 483
+        y: 129
+        width: 161
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: fec612a3207d5a6e0800000000000000
-      internalID: -1826817669263692561
+      spriteID: cff4ede69a42a43f4b58e6f91d3efd61
+      internalID: 222585664
       vertices: []
       indices: 
       edges: []
@@ -317,19 +317,19 @@ TextureImporter:
       name: pegasus-animation_8
       rect:
         serializedVersion: 2
-        x: 20
+        x: 0
         y: 0
-        width: 112
-        height: 106
+        width: 161
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 4d59135d85c9175c0800000000000000
-      internalID: -4219419470521592364
+      spriteID: 4486a3d93540f4049acbdd28bc8736ca
+      internalID: 1554029153
       vertices: []
       indices: 
       edges: []
@@ -338,19 +338,19 @@ TextureImporter:
       name: pegasus-animation_9
       rect:
         serializedVersion: 2
-        x: 181
-        y: 4
-        width: 112
-        height: 102
+        x: 161
+        y: 0
+        width: 161
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2ec2b5efe31d02550800000000000000
-      internalID: 6134132760964181218
+      spriteID: a482495091d3e47409cefbda071828ff
+      internalID: -1074843597
       vertices: []
       indices: 
       edges: []
@@ -359,19 +359,19 @@ TextureImporter:
       name: pegasus-animation_10
       rect:
         serializedVersion: 2
-        x: 342
-        y: 19
-        width: 106
-        height: 107
+        x: 322
+        y: 0
+        width: 161
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: e9f7595dc0e5d7060800000000000000
-      internalID: 6952816808945876894
+      spriteID: 68102a7b3f5e14be5a11da92af71f236
+      internalID: -578842378
       vertices: []
       indices: 
       edges: []
@@ -380,19 +380,19 @@ TextureImporter:
       name: pegasus-animation_11
       rect:
         serializedVersion: 2
-        x: 508
-        y: 20
-        width: 101
-        height: 78
+        x: 483
+        y: 0
+        width: 161
+        height: 129
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: df1a3723ae9f99090800000000000000
-      internalID: -8027110076547096067
+      spriteID: 4ddcaf0e9218e4eb4b185fc1ce739ef4
+      internalID: 1117885301
       vertices: []
       indices: 
       edges: []
@@ -400,14 +400,26 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 67f1f748b06f44987b98faf73f7383a1
     internalID: 0
     vertices: []
     indices: 
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      pegasus-animation_0: -563370898
+      pegasus-animation_1: 2132593859
+      pegasus-animation_10: -578842378
+      pegasus-animation_11: 1117885301
+      pegasus-animation_2: 1309376660
+      pegasus-animation_3: 199333405
+      pegasus-animation_4: -1044321901
+      pegasus-animation_5: -1842392554
+      pegasus-animation_6: -1931483629
+      pegasus-animation_7: 222585664
+      pegasus-animation_8: 1554029153
+      pegasus-animation_9: -1074843597
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
