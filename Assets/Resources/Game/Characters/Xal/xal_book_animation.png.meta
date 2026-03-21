@@ -134,19 +134,19 @@ TextureImporter:
       name: xal_book_animation_0
       rect:
         serializedVersion: 2
-        x: 114
-        y: 164
-        width: 521
-        height: 97
+        x: 0
+        y: 0
+        width: 750
+        height: 500
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: f39c757c87ffe4050800000000000000
-      internalID: 5786843465423243583
+      spriteID: fbc721f7d504f4ab9b10b461d5061582
+      internalID: 1778494398
       vertices: []
       indices: 
       edges: []
@@ -155,19 +155,19 @@ TextureImporter:
       name: xal_book_animation_1
       rect:
         serializedVersion: 2
-        x: 863
-        y: 164
-        width: 534
-        height: 115
+        x: 750
+        y: 0
+        width: 750
+        height: 500
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d46d791ffa380c230800000000000000
-      internalID: 3657067689120618061
+      spriteID: f803a4826d9554a58bdd14074b68af86
+      internalID: -1515527647
       vertices: []
       indices: 
       edges: []
@@ -176,19 +176,19 @@ TextureImporter:
       name: xal_book_animation_2
       rect:
         serializedVersion: 2
-        x: 1617
-        y: 165
-        width: 528
-        height: 167
+        x: 1500
+        y: 0
+        width: 750
+        height: 500
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 1991180c51cbea330800000000000000
-      internalID: 3724120743492000145
+      spriteID: f1e09d58dd68b424a8f1553d3734123f
+      internalID: 529450431
       vertices: []
       indices: 
       edges: []
@@ -197,19 +197,19 @@ TextureImporter:
       name: xal_book_animation_3
       rect:
         serializedVersion: 2
-        x: 2354
-        y: 165
-        width: 539
-        height: 156
+        x: 2250
+        y: 0
+        width: 750
+        height: 500
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 4dc2d1b17cb404b50800000000000000
-      internalID: 6575338774486396116
+      spriteID: 24fe6fd13912a489ab790daf8e52cadd
+      internalID: -122242389
       vertices: []
       indices: 
       edges: []
@@ -218,19 +218,19 @@ TextureImporter:
       name: xal_book_animation_4
       rect:
         serializedVersion: 2
-        x: 3099
-        y: 165
-        width: 539
-        height: 156
+        x: 3000
+        y: 0
+        width: 750
+        height: 500
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 26f6f2166724f7e30800000000000000
-      internalID: 4503391228597858146
+      spriteID: c890c8171ea1445bba669c8b39a4014e
+      internalID: 1707594713
       vertices: []
       indices: 
       edges: []
@@ -239,19 +239,19 @@ TextureImporter:
       name: xal_book_animation_5
       rect:
         serializedVersion: 2
-        x: 3862
-        y: 165
-        width: 528
-        height: 167
+        x: 3750
+        y: 0
+        width: 750
+        height: 500
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d5aa86415e0891240800000000000000
-      internalID: 4762979802299279965
+      spriteID: aff4f49f9dba940569ff219d7adaabd0
+      internalID: 774485250
       vertices: []
       indices: 
       edges: []
@@ -260,19 +260,19 @@ TextureImporter:
       name: xal_book_animation_6
       rect:
         serializedVersion: 2
-        x: 4615
-        y: 164
-        width: 534
-        height: 115
+        x: 4500
+        y: 0
+        width: 750
+        height: 500
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: bcd4b1ec922defc80800000000000000
-      internalID: -8286955187321745973
+      spriteID: 83fae27f2273942448e7dce501b4b460
+      internalID: 330540462
       vertices: []
       indices: 
       edges: []
@@ -280,14 +280,21 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 9e38476cf460849f1b913a1f1d1ac9df
     internalID: 0
     vertices: []
     indices: 
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      xal_book_animation_0: 1778494398
+      xal_book_animation_1: -1515527647
+      xal_book_animation_2: 529450431
+      xal_book_animation_3: -122242389
+      xal_book_animation_4: 1707594713
+      xal_book_animation_5: 774485250
+      xal_book_animation_6: 330540462
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
