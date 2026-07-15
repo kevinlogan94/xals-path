@@ -57,9 +57,15 @@ The world is inhabited by a variety of mystical creatures, each affected by the 
 
 This project was a solo endeavor, built from the ground up using the Unity Engine. It represents a significant personal milestone and a journey of passion and dedication to game development.
 
+## Repository status
+
+*   **`master` / tag `v1.1.1`:** Closest match to the last production (Unity 2020) build.
+*   **`v1.0.0`:** Earlier `master` snapshot before portal / Chapter 7 content.
+*   **`develop` / `unity-upgrade-2023`:** Incomplete Unity 2023 migration and later WIP — preserved for reference, not production.
+
 ## Technical Snapshot
 
-*   **Engine:** Unity
+*   **Engine:** Unity 2020.3 LTS (production line)
 *   **Platform:** iOS & Android
 *   **Language:** C#
 
