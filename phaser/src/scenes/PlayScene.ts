@@ -19,7 +19,6 @@ export class PlayScene extends Phaser.Scene {
   private ctx = getContext();
   private tab: TabId = 'outlook';
   private bg!: Phaser.GameObjects.Image;
-  private sceneBg!: Phaser.GameObjects.Image;
   private portrait!: Phaser.GameObjects.Image;
   private influenceAmt!: Phaser.GameObjects.Text;
   private influenceRate!: Phaser.GameObjects.Text;
@@ -69,14 +68,9 @@ export class PlayScene extends Phaser.Scene {
       .setDepth(0);
     this.fitBackground();
 
-    this.sceneBg = this.add
-      .image(width / 2, (height - NAV_H) / 2, 'ui-scene-bg')
-      .setDepth(1)
-      .setVisible(false);
-    this.fitSceneBg();
-
+    // Xal expression sprites ARE the full Map/tower scene (Unity SceneBackgroundController)
     this.portrait = this.add
-      .image(width * 0.5, height * 0.4, 'xal-generic')
+      .image(width / 2, (height - NAV_H) / 2, 'xal-generic')
       .setDepth(2)
       .setInteractive({ useHandCursor: true })
       .setVisible(false);
@@ -500,8 +494,7 @@ export class PlayScene extends Phaser.Scene {
     this.quoteText.setText(line.text);
     this.chapterCard.setVisible(false);
     if (line.speaker === 'barlog') {
-      this.portrait.setTexture('barlog');
-      this.fitPortrait();
+      // Barlog uses a separate overlay in Unity; keep Xal tower scene underneath for now
       this.ctx.audio.playBgm('barlogs-theme');
     } else {
       this.setPortraitExpression(line.expression);
@@ -591,18 +584,17 @@ export class PlayScene extends Phaser.Scene {
     this.panel.setVisible(tab === 'shop' || tab === 'achievements' || tab === 'settings');
     this.ctx.audio.playSfx('pop', 0.35);
 
-    this.sceneBg.setVisible(tab === 'scene');
     this.bg.setVisible(tab !== 'scene');
+    this.portrait.setVisible(tab === 'scene');
 
     if (tab === 'outlook') {
-      this.portrait.setVisible(false);
       this.chapterCard.setVisible(false);
       this.ctx.audio.playRegion(this.ctx.state.region);
       return;
     }
 
     if (tab === 'scene') {
-      this.portrait.setVisible(true);
+      this.fitPortrait();
       this.ctx.spawn.clear();
       this.ctx.audio.playBgm('xals-theme');
       if (this.ctx.story.reading) this.renderQuote();
@@ -610,7 +602,6 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
 
-    this.portrait.setVisible(false);
     this.chapterCard.setVisible(false);
     this.ctx.spawn.clear();
     if (tab === 'shop') this.renderShop();
@@ -1124,18 +1115,6 @@ export class PlayScene extends Phaser.Scene {
     this.bg.setScale(scale);
   }
 
-  private fitSceneBg(): void {
-    const { width, height } = this.scale;
-    const tex = this.textures.get('ui-scene-bg').getSourceImage() as {
-      width: number;
-      height: number;
-    };
-    if (!tex.width || !tex.height) return;
-    const scale = Math.max(width / tex.width, (height - NAV_H) / tex.height);
-    this.sceneBg.setPosition(width / 2, (height - NAV_H) / 2);
-    this.sceneBg.setScale(scale);
-  }
-
   private fitPortrait(): void {
     const { width, height } = this.scale;
     const src = this.portrait.texture.getSourceImage() as {
@@ -1143,9 +1122,20 @@ export class PlayScene extends Phaser.Scene {
       height: number;
     };
     if (!src.width || !src.height) return;
-    const scale = Math.min((width * 0.7) / src.width, (height * 0.5) / src.height);
+    // Cover the playfield above the nav — Xal PNGs are full tower scenes
+    const playH = height - NAV_H;
+    const scale = Math.max(width / src.width, playH / src.height);
     this.portrait.setScale(scale);
-    this.portrait.setPosition(width * 0.5, height * 0.38);
+    this.portrait.setPosition(width / 2, playH / 2);
+    this.portrait.setInteractive(
+      new Phaser.Geom.Rectangle(
+        -width / (2 * scale),
+        -playH / (2 * scale),
+        width / scale,
+        playH / scale,
+      ),
+      Phaser.Geom.Rectangle.Contains,
+    );
   }
 
   private onResize(): void {

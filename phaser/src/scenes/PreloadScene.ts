@@ -40,6 +40,8 @@ export class PreloadScene extends Phaser.Scene {
       sad: 'xal_sad.png',
       sadSide: 'xal_sad_side.png',
       shocked: 'xal_shocked.png',
+      shockedSide: 'xal_shocked_side.png',
+      shockedDown: 'xal_shocked_side.png',
     };
     for (const [key, file] of Object.entries(exprs)) {
       this.load.image(`xal-${key}`, `assets/xal/${file}`);
