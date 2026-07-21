@@ -6,6 +6,7 @@ status: 'done'
 review_loop_iteration: 0
 followup_review_recommended: false
 baseline_revision: 'c5572ec8362858c15437383b0c10ea25ae2284c3'
+final_revision: '2ca52889f456d3781032a237ec285a95ab6eb9a5'
 context:
   - '{project-root}/phaser/docs/seed.md'
   - '{project-root}/AGENTS.md'
