@@ -1,0 +1,170 @@
+import type { GameSave, HelperDef, RegionId } from '../types';
+import helpersData from '../data/helpers.json';
+import economy from '../data/economy.json';
+
+const SAVE_KEY = 'xals-path-web-save-v1';
+
+function defaultHelpers(): GameSave['helpers'] {
+  return (helpersData.helpers as HelperDef[]).map((h) => ({
+    id: h.id,
+    amountOwned: 0,
+    dynamicCost: h.cost,
+    dynamicIncrement: h.increment,
+  }));
+}
+
+function createDefaultSave(): GameSave {
+  return {
+    version: 1,
+    influence: 0,
+    totalInfluenceEarned: 0,
+    playerLevel: 1,
+    experienceRequired: economy.levelXpStart,
+    clickerIncrement: economy.clickerIncrementStart,
+    mana: 100,
+    manaMax: 100,
+    manaLevel: 1,
+    region: 'meadow',
+    helpers: defaultHelpers(),
+    chapters: [1, 2, 3, 4, 5, 6, 7].map((id) => ({ id, sceneViewed: false })),
+    achievements: {
+      clickerGoal: economy.clickerAchievementGoalStart,
+      clickerCount: 0,
+      helperGoal: economy.helperAchievementGoalStart,
+      helperCount: 0,
+      loginGoal: 2,
+      loginCount: 0,
+      lastLoginDay: '',
+      storyGoal: 2,
+      storyCount: 0,
+    },
+    buffedThisLevel: false,
+    buffClickProgress: 0,
+    buffRemaining: 0,
+    portalUnlocked: false,
+    unlockedRegions: ['meadow'],
+    savedAt: new Date().toISOString(),
+  };
+}
+
+function finite(value: unknown, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+export class SaveSystem {
+  load(): GameSave {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return createDefaultSave();
+      const parsed = JSON.parse(raw) as Partial<GameSave>;
+      if (parsed.version !== 1) return createDefaultSave();
+      return this.mergeDefaults(parsed);
+    } catch {
+      return createDefaultSave();
+    }
+  }
+
+  save(state: GameSave): void {
+    state.savedAt = new Date().toISOString();
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    } catch (err) {
+      console.warn('Save failed', err);
+    }
+  }
+
+  clear(): void {
+    localStorage.removeItem(SAVE_KEY);
+  }
+
+  private mergeDefaults(save: Partial<GameSave>): GameSave {
+    const fresh = createDefaultSave();
+    return {
+      ...fresh,
+      version: 1,
+      influence: finite(save.influence, fresh.influence),
+      totalInfluenceEarned: finite(
+        save.totalInfluenceEarned,
+        fresh.totalInfluenceEarned,
+      ),
+      playerLevel: finite(save.playerLevel, fresh.playerLevel),
+      experienceRequired: finite(
+        save.experienceRequired,
+        fresh.experienceRequired,
+      ),
+      clickerIncrement: finite(save.clickerIncrement, fresh.clickerIncrement),
+      mana: finite(save.mana, fresh.mana),
+      manaMax: finite(save.manaMax, fresh.manaMax),
+      manaLevel: finite(save.manaLevel, fresh.manaLevel),
+      region: save.region ?? fresh.region,
+      buffedThisLevel: save.buffedThisLevel ?? fresh.buffedThisLevel,
+      buffClickProgress: finite(
+        save.buffClickProgress,
+        fresh.buffClickProgress,
+      ),
+      buffRemaining: finite(save.buffRemaining, fresh.buffRemaining),
+      portalUnlocked: save.portalUnlocked ?? fresh.portalUnlocked,
+      helpers: fresh.helpers.map((h) => {
+        const existing = save.helpers?.find((x) => x.id === h.id);
+        if (!existing) return h;
+        return {
+          ...h,
+          amountOwned: finite(existing.amountOwned, h.amountOwned),
+          dynamicCost: finite(existing.dynamicCost, h.dynamicCost),
+          dynamicIncrement: finite(
+            existing.dynamicIncrement,
+            h.dynamicIncrement,
+          ),
+        };
+      }),
+      chapters: fresh.chapters.map((c) => {
+        const existing = save.chapters?.find((x) => x.id === c.id);
+        return existing ?? c;
+      }),
+      achievements: {
+        ...fresh.achievements,
+        ...save.achievements,
+        clickerGoal: finite(
+          save.achievements?.clickerGoal,
+          fresh.achievements.clickerGoal,
+        ),
+        clickerCount: finite(
+          save.achievements?.clickerCount,
+          fresh.achievements.clickerCount,
+        ),
+        helperGoal: finite(
+          save.achievements?.helperGoal,
+          fresh.achievements.helperGoal,
+        ),
+        helperCount: finite(
+          save.achievements?.helperCount,
+          fresh.achievements.helperCount,
+        ),
+        loginGoal: finite(
+          save.achievements?.loginGoal,
+          fresh.achievements.loginGoal,
+        ),
+        loginCount: finite(
+          save.achievements?.loginCount,
+          fresh.achievements.loginCount,
+        ),
+        storyGoal: finite(
+          save.achievements?.storyGoal,
+          fresh.achievements.storyGoal,
+        ),
+        storyCount: finite(
+          save.achievements?.storyCount,
+          fresh.achievements.storyCount,
+        ),
+        lastLoginDay:
+          typeof save.achievements?.lastLoginDay === 'string'
+            ? save.achievements.lastLoginDay
+            : fresh.achievements.lastLoginDay,
+      },
+      unlockedRegions: (save.unlockedRegions?.length
+        ? save.unlockedRegions
+        : ['meadow']) as RegionId[],
+      savedAt: typeof save.savedAt === 'string' ? save.savedAt : fresh.savedAt,
+    };
+  }
+}

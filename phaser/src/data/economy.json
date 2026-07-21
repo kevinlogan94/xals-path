@@ -1,0 +1,50 @@
+{
+  "clickerIncrementStart": 1,
+  "clickerAchievementGoalStart": 150,
+  "clickerIncrementMultiplier": 15,
+  "helperAchievementGoalStart": 30,
+  "helperIncrementMultiplier": 3,
+  "levelXpStart": 75,
+  "levelXpMultiplier": 3.25,
+  "maxLevel": 50,
+  "levelRewardSeconds": 300,
+  "offlineCapSeconds": 36000,
+  "manaCastDivisor": 3,
+  "manaRegenInterval": 0.013333333333333334,
+  "manaRegenBase": 2.25,
+  "buffClickThreshold": 200,
+  "buffDurationSeconds": 15,
+  "creatureTapBonusChance": 0.15,
+  "creatureTapBonusHigh": 10,
+  "creatureTapBonusNormal": 5,
+  "chapterGates": [
+    1,
+    5,
+    10,
+    20,
+    30,
+    30,
+    30
+  ],
+  "regions": [
+    "meadow",
+    "river",
+    "altar"
+  ],
+  "banter": [
+    "Yes?",
+    "Don't you have better things to do?",
+    "I'm listening.",
+    "Hmm?",
+    "Go on.",
+    "Is something wrong?",
+    "Focus on the creatures.",
+    "The work continues.",
+    "Don't waste time.",
+    "I'm still here.",
+    "Need something?",
+    "The corruption spreads while we talk.",
+    "Keep going.",
+    "Stop."
+  ]
+}

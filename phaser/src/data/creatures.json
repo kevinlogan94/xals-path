@@ -1,0 +1,64 @@
+{
+  "creatures": [
+    {
+      "id": "elk",
+      "name": "Elk",
+      "helperId": "nature",
+      "region": "meadow"
+    },
+    {
+      "id": "raiju",
+      "name": "Raiju",
+      "helperId": "lightning",
+      "region": "meadow"
+    },
+    {
+      "id": "basilisk",
+      "name": "Basilisk",
+      "helperId": "earth",
+      "region": "meadow"
+    },
+    {
+      "id": "hippocampus",
+      "name": "Hippocampus",
+      "helperId": "water",
+      "region": "river"
+    },
+    {
+      "id": "bluecap",
+      "name": "Bluecap",
+      "helperId": "mystic",
+      "region": "river"
+    },
+    {
+      "id": "griffin",
+      "name": "Griffin",
+      "helperId": "air",
+      "region": "river"
+    },
+    {
+      "id": "abraxas",
+      "name": "Abraxas",
+      "helperId": "fire",
+      "region": "altar"
+    },
+    {
+      "id": "wraith",
+      "name": "Wraith",
+      "helperId": "death",
+      "region": "altar"
+    },
+    {
+      "id": "phoenix",
+      "name": "Phoenix",
+      "helperId": "rebirth",
+      "region": "altar"
+    },
+    {
+      "id": "voidSpawn",
+      "name": "Void Spawn",
+      "helperId": "void",
+      "region": "altar"
+    }
+  ]
+}
