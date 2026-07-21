@@ -17,14 +17,15 @@ type Track =
 export class AudioSystem {
   private scene: Phaser.Scene | null = null;
   private currentBgm: Phaser.Sound.BaseSound | null = null;
-  muted = false;
+  muteBgm = false;
+  muteSfx = false;
 
   attach(scene: Phaser.Scene): void {
     this.scene = scene;
   }
 
   playBgm(key: Track, loop = true): void {
-    if (!this.scene || this.muted) return;
+    if (!this.scene || this.muteBgm) return;
     if (this.currentBgm) {
       this.currentBgm.stop();
       this.currentBgm.destroy();
@@ -40,19 +41,20 @@ export class AudioSystem {
   }
 
   playSfx(key: Track, volume = 0.55): void {
-    if (!this.scene || this.muted) return;
+    if (!this.scene || this.muteSfx) return;
     if (!this.scene.cache.audio.exists(key)) return;
     this.scene.sound.play(key, { volume });
   }
 
-  toggleMute(): boolean {
-    this.muted = !this.muted;
-    if (this.muted) {
-      this.currentBgm?.pause();
-      this.scene?.sound.stopAll();
-    } else {
-      this.currentBgm?.resume();
-    }
-    return this.muted;
+  toggleMuteBgm(): boolean {
+    this.muteBgm = !this.muteBgm;
+    if (this.muteBgm) this.currentBgm?.pause();
+    else this.currentBgm?.resume();
+    return this.muteBgm;
+  }
+
+  toggleMuteSfx(): boolean {
+    this.muteSfx = !this.muteSfx;
+    return this.muteSfx;
   }
 }

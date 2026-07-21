@@ -57,6 +57,27 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-tome-locked', 'assets/ui/tome-box-locked.png');
     this.load.image('ui-lock', 'assets/ui/lock.png');
     this.load.image('ui-panel', 'assets/ui/panel.png');
+    this.load.image('ui-cloud', 'assets/ui/clouds/cloud.png');
+    this.load.image('ui-level-cloud', 'assets/ui/clouds/LevelCloud.png');
+    this.load.image('ui-square-cloud', 'assets/ui/clouds/squareCloud.png');
+    this.load.image('ui-gear', 'assets/ui/Gear.png');
+    this.load.image('ui-trophy', 'assets/ui/trophy.png');
+    this.load.image('ui-flower', 'assets/ui/OutlookFlower.png');
+    this.load.image('ui-portal', 'assets/ui/Portal2.png');
+    this.load.image('ui-tomes-icon', 'assets/ui/Tomes.png');
+    this.load.image('ui-banner', 'assets/ui/PanelBanner.png');
+    this.load.image('ui-quote-box', 'assets/ui/QuoteBox.png');
+    this.load.image('ui-mana-icon', 'assets/ui/manaIcon.png');
+    this.load.image('ui-star', 'assets/ui/star.png');
+    this.load.image('ui-speaker-on', 'assets/ui/SpeakerOn.png');
+    this.load.image('ui-speaker-off', 'assets/ui/SpeakerOff.png');
+    this.load.image('ui-btn-green', 'assets/ui/buttons/greenButton.png');
+    this.load.image('ui-btn-blue', 'assets/ui/buttons/blueButton.png');
+    this.load.image('ui-btn-orange', 'assets/ui/buttons/OrangeButton.png');
+    this.load.image('ui-scene-bg', 'assets/ui/Scene.png');
+    this.load.image('ui-influence', 'assets/ui/influence.png');
+    this.load.image('ui-mana-bar', 'assets/ui/mana-bar.png');
+    this.load.image('ui-exclaim', 'assets/ui/exclaim.png');
 
     for (const h of helpersData.helpers as HelperDef[]) {
       this.load.image(`tome-${h.id}`, `assets/ui/tomes/${h.id}.png`);
