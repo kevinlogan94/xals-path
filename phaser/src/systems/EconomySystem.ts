@@ -29,7 +29,6 @@ export class EconomySystem {
     state.achievements.clickerCount += 1;
     state.buffClickProgress += 1;
     this.afterClick(state);
-    this.checkClickerAchievement(state);
     return gained;
   }
 
@@ -54,7 +53,6 @@ export class EconomySystem {
     state.achievements.clickerCount += 1;
     state.buffClickProgress += 1;
     this.afterClick(state);
-    this.checkClickerAchievement(state);
     return gained;
   }
 
@@ -97,7 +95,6 @@ export class EconomySystem {
     h.amountOwned += 1;
     h.dynamicCost = Math.round(h.dynamicCost * this.costMultiplier);
     state.achievements.helperCount += 1;
-    this.checkHelperAchievement(state);
     return true;
   }
 
@@ -141,24 +138,57 @@ export class EconomySystem {
     if (pendingReward > 0) this.addWallet(state, pendingReward);
   }
 
-  private checkClickerAchievement(state: GameSave): void {
-    state.achievements.clickerGoal = Math.max(1, state.achievements.clickerGoal);
-    while (state.achievements.clickerCount >= state.achievements.clickerGoal) {
-      state.achievements.clickerCount -= state.achievements.clickerGoal;
-      state.achievements.clickerGoal *= 2;
-      state.clickerIncrement *= economy.clickerIncrementMultiplier;
-    }
+  /** Unity Receive — claim when progress meets goal. */
+  claimClicker(state: GameSave): boolean {
+    const a = state.achievements;
+    a.clickerGoal = Math.max(1, a.clickerGoal);
+    if (a.clickerCount < a.clickerGoal) return false;
+    a.clickerCount -= a.clickerGoal;
+    a.clickerGoal *= 2;
+    state.clickerIncrement *= economy.clickerIncrementMultiplier;
+    return true;
   }
 
-  private checkHelperAchievement(state: GameSave): void {
-    state.achievements.helperGoal = Math.max(1, state.achievements.helperGoal);
-    while (state.achievements.helperCount >= state.achievements.helperGoal) {
-      state.achievements.helperCount -= state.achievements.helperGoal;
-      state.achievements.helperGoal *= 2;
-      for (const h of state.helpers) {
-        h.dynamicIncrement *= economy.helperIncrementMultiplier;
-      }
+  claimHelper(state: GameSave): boolean {
+    const a = state.achievements;
+    a.helperGoal = Math.max(1, a.helperGoal);
+    if (a.helperCount < a.helperGoal) return false;
+    a.helperCount -= a.helperGoal;
+    a.helperGoal *= 2;
+    for (const h of state.helpers) {
+      h.dynamicIncrement *= economy.helperIncrementMultiplier;
     }
+    return true;
+  }
+
+  claimLogin(state: GameSave): boolean {
+    const a = state.achievements;
+    a.loginGoal = Math.max(1, a.loginGoal);
+    if (a.loginCount < a.loginGoal) return false;
+    a.loginCount = 0;
+    a.loginGoal += 1;
+    this.addInfluence(state, this.passivePerSecond(state) * 3600);
+    return true;
+  }
+
+  claimStory(state: GameSave): boolean {
+    const a = state.achievements;
+    a.storyGoal = Math.max(1, a.storyGoal);
+    if (a.storyCount < a.storyGoal) return false;
+    a.storyCount -= a.storyGoal;
+    a.storyGoal *= 2;
+    this.addInfluence(state, this.passivePerSecond(state) * 36000);
+    return true;
+  }
+
+  anyClaimable(state: GameSave): boolean {
+    const a = state.achievements;
+    return (
+      a.clickerCount >= a.clickerGoal ||
+      a.helperCount >= a.helperGoal ||
+      a.loginCount >= a.loginGoal ||
+      a.storyCount >= a.storyGoal
+    );
   }
 
   def(id: string): HelperDef | undefined {

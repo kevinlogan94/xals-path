@@ -8,15 +8,13 @@
 - Phaser remake with Unity-shaped UX:
   - **Outlook** = BAM world (cast + creatures + region music)
   - **Map (Scene)** = tower (portrait, chapter cards, banter) over `Scene.png`
-  - **Tomes** = shop cards with emblems / cost / owned /sec in framed panel
-  - Bottom nav Unity order: Settings → Rewards → Outlook → Map → Tomes (icon + label)
+  - **Tomes** = shop cards with emblems / cost / owned /sec in framed panel + scrollbar
+  - Bottom nav Unity order: Settings → Rewards → Outlook → Map · Tomes (icon + label)
 - Portrait FIT frame **390×844** + pixelArt; dark letterbox on desktop
-- Cloud HUD (influence + level/XP/mana bars); framed Settings / Rewards / Tomes chrome
-- Separate BGM / SFX mute toggles
-- Creatures cross left→right (~2.5s); tap spends mana for ×5/×10; magic re-tap ×1
-- Empty-ground cast summons a creature; passive tomes schedule region-gated spawns
-- Portal travel (post-story) drains mana and clears creatures
-- BMAD planning + review cycle; localStorage saves; PWA manifest
+- Cloud HUD; rocky nav bar; Press Start 2P; framed Settings / Rewards / Tomes
+- Rewards: achiev_box cards, progress bars, **Receive** claim flow
+- Separate BGM / SFX mute; chapter cards use achiev_box art
+- Creatures, portal travel, localStorage saves, PWA manifest
 
 ## Remaining vs Unity polish
 
@@ -26,8 +24,7 @@
 - News prompts, influence crystal
 - Barlog full overlay presentation
 - Achievement jingle
-- Pixel-perfect cloud/bar layout vs Unity screenshots
-- Scrollbar chrome on Tomes list
+- Finer cloud/bar nine-slice fidelity
 
 ## Run
 

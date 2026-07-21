@@ -78,6 +78,18 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-influence', 'assets/ui/influence.png');
     this.load.image('ui-mana-bar', 'assets/ui/mana-bar.png');
     this.load.image('ui-exclaim', 'assets/ui/exclaim.png');
+    this.load.image('ui-achiev-box', 'assets/ui/achiev-box.png');
+    this.load.image('ui-achiev-box-pressed', 'assets/ui/achiev-box-pressed.png');
+    this.load.image('ui-stone', 'assets/ui/stone.png');
+    this.load.image('ui-scroll', 'assets/ui/scrollBar.png');
+    this.load.image('ui-reward-star', 'assets/ui/reward-star.png');
+    this.load.image('ui-reward-shop', 'assets/ui/reward-shop.png');
+    this.load.image('ui-reward-notepad', 'assets/ui/reward-notepad.png');
+    this.load.image('ui-reward-portal', 'assets/ui/reward-portal.png');
+    // Prefer cropped nav icons when present
+    this.load.image('ui-trophy-nav', 'assets/ui/trophy-nav.png');
+    this.load.image('ui-portal-nav', 'assets/ui/portal-nav.png');
+    this.load.image('ui-tomes-nav', 'assets/ui/tomes-nav.png');
 
     for (const h of helpersData.helpers as HelperDef[]) {
       this.load.image(`tome-${h.id}`, `assets/ui/tomes/${h.id}.png`);

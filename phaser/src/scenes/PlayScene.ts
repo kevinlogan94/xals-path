@@ -3,16 +3,16 @@ import { getContext } from '../game/GameContext';
 import { formatNumber } from '../utils/format';
 import type { RegionId, TabId } from '../types';
 
-const FONT = "'Courier New', monospace";
+const FONT = "'Press Start 2P', 'Courier New', monospace";
 const NAV_H = 76;
 
 /** Unity BottomNav: Settings · Rewards · Outlook · Map · Tomes */
 const NAV: { id: TabId; label: string; icon: string }[] = [
   { id: 'settings', label: 'Settings', icon: 'ui-gear' },
-  { id: 'achievements', label: 'Rewards', icon: 'ui-trophy' },
+  { id: 'achievements', label: 'Rewards', icon: 'ui-trophy-nav' },
   { id: 'outlook', label: 'Outlook', icon: 'ui-flower' },
-  { id: 'scene', label: 'Map', icon: 'ui-portal' },
-  { id: 'shop', label: 'Tomes', icon: 'ui-tomes-icon' },
+  { id: 'scene', label: 'Map', icon: 'ui-portal-nav' },
+  { id: 'shop', label: 'Tomes', icon: 'ui-tomes-nav' },
 ];
 
 export class PlayScene extends Phaser.Scene {
@@ -39,6 +39,7 @@ export class PlayScene extends Phaser.Scene {
   private saveTimer = 0;
   private passiveSpawnTimer = 0;
   private navButtons: Phaser.GameObjects.Container[] = [];
+  private rewardsBadge!: Phaser.GameObjects.Image;
   private ignoreCastUntil = 0;
   private shopScroll = 0;
   private banterTimer?: Phaser.Time.TimerEvent;
@@ -110,7 +111,7 @@ export class PlayScene extends Phaser.Scene {
       .setDepth(30)
       .setAlpha(0);
 
-    this.chapterCard = this.add.container(width / 2, height - NAV_H - 70).setDepth(22).setVisible(false);
+    this.chapterCard = this.add.container(width / 2, height - NAV_H - 110).setDepth(22).setVisible(false);
 
     this.buildQuoteBox();
     this.panel = this.add.container(0, 0).setDepth(25).setVisible(false);
@@ -207,19 +208,19 @@ export class PlayScene extends Phaser.Scene {
     this.influenceAmt = this.add
       .text(-30, -14, '', {
         fontFamily: FONT,
-        fontSize: '11px',
-        color: '#f3ead7',
+        fontSize: '9px',
+        color: '#ffffff',
         stroke: '#1a1208',
-        strokeThickness: 3,
+        strokeThickness: 4,
       })
       .setOrigin(0, 0.5);
     this.influenceRate = this.add
       .text(-30, 16, '', {
         fontFamily: FONT,
-        fontSize: '9px',
+        fontSize: '7px',
         color: '#b8e0a8',
         stroke: '#1a1208',
-        strokeThickness: 2,
+        strokeThickness: 3,
       })
       .setOrigin(0, 0.5);
     this.add
@@ -233,10 +234,10 @@ export class PlayScene extends Phaser.Scene {
     this.levelLabel = this.add
       .text(0, -28, '', {
         fontFamily: FONT,
-        fontSize: '10px',
-        color: '#f3ead7',
+        fontSize: '8px',
+        color: '#ffffff',
         stroke: '#1a1208',
-        strokeThickness: 3,
+        strokeThickness: 4,
       })
       .setOrigin(0.5);
     const star = this.add.image(-62, -6, 'ui-star').setDisplaySize(14, 14);
@@ -393,57 +394,59 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
     const locked = !this.ctx.story.canStart(this.ctx.state, next.id);
-    const cardW = 220;
-    const cardH = 88;
+    const cardW = 260;
+    const cardH = 92;
     const bg = this.add
-      .rectangle(0, 0, cardW, cardH, 0x1a140c, 0.92)
-      .setStrokeStyle(2, 0xc4a35a);
+      .image(0, 0, locked ? 'ui-achiev-box-pressed' : 'ui-achiev-box')
+      .setDisplaySize(cardW, cardH);
     const parts: Phaser.GameObjects.GameObject[] = [bg];
-    if (locked) {
-      parts.push(this.add.image(-78, 0, 'ui-lock').setDisplaySize(28, 28));
-    }
     parts.push(
       this.add
-        .text(locked ? -50 : -90, -26, `Chapter ${next.id}`, {
+        .image(-92, 0, locked ? 'ui-lock' : 'ui-portal-nav')
+        .setDisplaySize(36, 36),
+    );
+    parts.push(
+      this.add
+        .text(-64, -22, `Chapter ${next.id}`, {
           fontFamily: FONT,
-          fontSize: '11px',
+          fontSize: '8px',
           color: '#c8b89a',
           stroke: '#1a1208',
-          strokeThickness: 2,
+          strokeThickness: 3,
         })
         .setOrigin(0, 0.5),
       this.add
-        .text(locked ? -50 : -90, -4, next.name, {
+        .text(-64, 0, next.name, {
           fontFamily: FONT,
-          fontSize: '12px',
-          color: locked ? '#888' : '#ffe6a8',
+          fontSize: '9px',
+          color: locked ? '#888' : '#ffffff',
           stroke: '#1a1208',
-          strokeThickness: 2,
-          wordWrap: { width: 160 },
+          strokeThickness: 3,
+          wordWrap: { width: 150 },
         })
         .setOrigin(0, 0.5),
     );
     if (locked) {
       parts.push(
         this.add
-          .text(locked ? -50 : -90, 22, `Lvl ${next.levelRequirement}`, {
+          .text(-64, 24, `Lvl ${next.levelRequirement}`, {
             fontFamily: FONT,
-            fontSize: '10px',
+            fontSize: '8px',
             color: '#e08080',
             stroke: '#1a1208',
-            strokeThickness: 2,
+            strokeThickness: 3,
           })
           .setOrigin(0, 0.5),
       );
     } else if (next.id >= 2 && next.id <= 4) {
       parts.push(
         this.add
-          .text(-90, 22, '2x Mana Increase', {
+          .text(-64, 24, '2x Mana Increase', {
             fontFamily: FONT,
-            fontSize: '9px',
+            fontSize: '7px',
             color: '#9ec9ff',
             stroke: '#1a1208',
-            strokeThickness: 2,
+            strokeThickness: 3,
           })
           .setOrigin(0, 0.5),
       );
@@ -458,7 +461,7 @@ export class PlayScene extends Phaser.Scene {
       );
       this.chapterCard.on('pointerdown', () => this.onChapterButton());
     }
-    this.chapterCard.setAlpha(locked ? 0.75 : 1);
+    this.chapterCard.setAlpha(locked ? 0.85 : 1);
     this.chapterCard.setVisible(true);
   }
 
@@ -521,9 +524,9 @@ export class PlayScene extends Phaser.Scene {
     const h = this.scale.height;
     const w = this.scale.width;
     this.add
-      .rectangle(w / 2, h - NAV_H / 2, w, NAV_H, 0x2a1810, 0.96)
-      .setDepth(40)
-      .setStrokeStyle(1, 0x4a3020);
+      .image(w / 2, h - NAV_H / 2, 'ui-stone')
+      .setDisplaySize(w, NAV_H)
+      .setDepth(40);
 
     this.navButtons = NAV.map((item, i) => {
       const x = (w / NAV.length) * (i + 0.5);
@@ -531,7 +534,8 @@ export class PlayScene extends Phaser.Scene {
       const bg = this.add
         .image(0, -6, 'ui-nav-default')
         .setDisplaySize(slotW, 44);
-      const icon = this.add.image(0, -10, item.icon);
+      const iconKey = this.textures.exists(item.icon) ? item.icon : 'ui-gear';
+      const icon = this.add.image(0, -10, iconKey);
       const src = icon.texture.getSourceImage() as { width: number; height: number };
       const max = 26;
       const s = Math.min(max / Math.max(1, src.width), max / Math.max(1, src.height));
@@ -539,10 +543,10 @@ export class PlayScene extends Phaser.Scene {
       const label = this.add
         .text(0, 22, item.label, {
           fontFamily: FONT,
-          fontSize: '8px',
-          color: '#c8b89a',
+          fontSize: '6px',
+          color: '#ffffff',
           stroke: '#1a1208',
-          strokeThickness: 2,
+          strokeThickness: 3,
         })
         .setOrigin(0.5);
       const c = this.add
@@ -556,6 +560,13 @@ export class PlayScene extends Phaser.Scene {
       c.on('pointerdown', () => this.setTab(item.id));
       return c;
     });
+
+    const rewardsX = (w / NAV.length) * 1.5;
+    this.rewardsBadge = this.add
+      .image(rewardsX + 22, h - NAV_H / 2 - 28, 'ui-exclaim')
+      .setDisplaySize(16, 16)
+      .setDepth(42)
+      .setVisible(false);
   }
 
   /** Unity SelectView: re-tapping active tab returns to Outlook. */
@@ -573,7 +584,7 @@ export class PlayScene extends Phaser.Scene {
       const img = btn.list[0] as Phaser.GameObjects.Image;
       const label = btn.list[2] as Phaser.GameObjects.Text;
       img.setTexture(active ? 'ui-nav-active' : 'ui-nav-default');
-      label.setColor(active ? '#ffe6a8' : '#c8b89a');
+      label.setColor(active ? '#ffe6a8' : '#ffffff');
     });
 
     this.panel.removeAll(true);
@@ -630,10 +641,10 @@ export class PlayScene extends Phaser.Scene {
       this.add
         .text(w / 2, top + 18, title, {
           fontFamily: FONT,
-          fontSize: '14px',
-          color: '#f3ead7',
+          fontSize: '11px',
+          color: '#ffffff',
           stroke: '#1a1208',
-          strokeThickness: 3,
+          strokeThickness: 4,
         })
         .setOrigin(0.5),
     );
@@ -653,12 +664,31 @@ export class PlayScene extends Phaser.Scene {
     this.shopScroll = Phaser.Math.Clamp(this.shopScroll, 0, maxScroll);
 
     const cards: Phaser.GameObjects.Container[] = [];
+    const scrollTrack = this.add
+      .rectangle(w - 14, listTop + visibleH / 2, 6, visibleH, 0x1a140c, 0.8)
+      .setStrokeStyle(1, 0x5a4030);
+    const scrollThumb = this.add
+      .image(w - 14, listTop + 20, 'ui-scroll')
+      .setDisplaySize(8, 28);
+    this.panel.add(scrollTrack);
+    this.panel.add(scrollThumb);
+
     const applyScroll = () => {
       cards.forEach((card, i) => {
         const y = listTop + i * rowH - this.shopScroll + rowH / 2;
         card.setY(y);
         card.setVisible(y > listTop - 10 && y < h - NAV_H - 4);
       });
+      if (maxScroll > 0) {
+        const t = this.shopScroll / maxScroll;
+        const thumbTravel = visibleH - 32;
+        scrollThumb.setY(listTop + 16 + t * thumbTravel);
+        scrollThumb.setVisible(true);
+        scrollTrack.setVisible(true);
+      } else {
+        scrollThumb.setVisible(false);
+        scrollTrack.setVisible(false);
+      }
     };
 
     let dragY = 0;
@@ -748,6 +778,7 @@ export class PlayScene extends Phaser.Scene {
       cards.push(card);
       this.panel.add(card);
     });
+    applyScroll();
 
     const dim = this.panel.list[0] as Phaser.GameObjects.Rectangle;
     dim.on('wheel', (_p: Phaser.Input.Pointer, _dx: number, dy: number) => {
@@ -766,62 +797,179 @@ export class PlayScene extends Phaser.Scene {
     const w = this.scale.width;
     const contentTop = this.addFramedPanel('Rewards');
     const a = this.ctx.state.achievements;
-    const rows: { title: string; n: number; goal: number; hint: string }[] = [
-      { title: 'Clicker', n: a.clickerCount, goal: a.clickerGoal, hint: '×15 click' },
-      { title: 'Helper', n: a.helperCount, goal: a.helperGoal, hint: '×3 tome income' },
-      { title: 'Login', n: a.loginCount, goal: a.loginGoal, hint: 'daily streak' },
-      { title: 'Story', n: a.storyCount, goal: a.storyGoal, hint: 'playthroughs' },
+    const rows: {
+      id: 'clicker' | 'helper' | 'login' | 'story';
+      title: string;
+      n: number;
+      goal: number;
+      hint: string;
+      icon: string;
+    }[] = [
+      {
+        id: 'clicker',
+        title: `Cast ${a.clickerGoal} spells`,
+        n: a.clickerCount,
+        goal: a.clickerGoal,
+        hint: '×15 influence per click',
+        icon: 'ui-reward-star',
+      },
+      {
+        id: 'helper',
+        title: `Buy ${a.helperGoal} Tomes`,
+        n: a.helperCount,
+        goal: a.helperGoal,
+        hint: '×3 influence from tomes',
+        icon: 'ui-reward-shop',
+      },
+      {
+        id: 'login',
+        title: `Log in for ${a.loginGoal} days`,
+        n: a.loginCount,
+        goal: a.loginGoal,
+        hint: '1 hour of influence',
+        icon: 'ui-reward-notepad',
+      },
+      {
+        id: 'story',
+        title: 'Finish the Story',
+        n: a.storyCount,
+        goal: a.storyGoal,
+        hint: '10 hours of influence',
+        icon: 'ui-reward-portal',
+      },
     ];
-    const colW = (w - 48) / 2;
+
+    const colW = (w - 40) / 2;
+    const cardH = 148;
     rows.forEach((r, i) => {
       const col = i % 2;
       const row = Math.floor(i / 2);
-      const x = 24 + col * (colW + 8) + colW / 2;
-      const y = contentTop + 28 + row * 100;
-      const card = this.add
-        .rectangle(x, y, colW, 84, 0x1a140c, 0.85)
-        .setStrokeStyle(1, 0xc4a35a);
-      this.panel.add(card);
+      const x = 20 + col * (colW + 4) + colW / 2;
+      const y = contentTop + 16 + row * (cardH + 10) + cardH / 2;
+      const ready = r.n >= r.goal;
+
+      const box = this.add
+        .image(x, y, 'ui-achiev-box')
+        .setDisplaySize(colW - 4, cardH);
+      this.panel.add(box);
+
+      const icon = this.add
+        .image(x - colW / 2 + 28, y - 40, r.icon)
+        .setDisplaySize(28, 28);
+      this.panel.add(icon);
+
       this.panel.add(
         this.add
-          .text(x, y - 24, r.title, {
+          .text(x, y - 48, r.title, {
             fontFamily: FONT,
-            fontSize: '12px',
+            fontSize: '7px',
+            color: '#ffffff',
+            stroke: '#1a1208',
+            strokeThickness: 3,
+            align: 'center',
+            wordWrap: { width: colW - 20 },
+          })
+          .setOrigin(0.5),
+      );
+
+      const barW = colW - 28;
+      const track = this.add
+        .rectangle(x, y - 8, barW, 10, 0x1a140c)
+        .setStrokeStyle(1, 0x5a4030);
+      const fill = this.add
+        .rectangle(
+          x - barW / 2,
+          y - 8,
+          Math.max(2, barW * Math.min(1, r.n / Math.max(1, r.goal))),
+          10,
+          0x5ecf5a,
+        )
+        .setOrigin(0, 0.5);
+      this.panel.add(track);
+      this.panel.add(fill);
+
+      this.panel.add(
+        this.add
+          .text(x, y - 8, `${r.n}/${r.goal}`, {
+            fontFamily: FONT,
+            fontSize: '7px',
+            color: '#ffffff',
+            stroke: '#1a1208',
+            strokeThickness: 3,
+          })
+          .setOrigin(0.5),
+      );
+
+      this.panel.add(
+        this.add
+          .text(x, y + 18, r.hint, {
+            fontFamily: FONT,
+            fontSize: '6px',
             color: '#ffe6a8',
             stroke: '#1a1208',
-            strokeThickness: 2,
+            strokeThickness: 3,
+            align: 'center',
+            wordWrap: { width: colW - 16 },
           })
           .setOrigin(0.5),
       );
-      this.panel.add(
-        this.add
-          .text(x, y, `${r.n}/${r.goal}`, {
-            fontFamily: FONT,
-            fontSize: '14px',
-            color: '#f3ead7',
-            stroke: '#1a1208',
-            strokeThickness: 2,
-          })
-          .setOrigin(0.5),
-      );
-      this.panel.add(
-        this.add
-          .text(x, y + 22, r.hint, {
-            fontFamily: FONT,
-            fontSize: '9px',
-            color: '#c8b89a',
-            stroke: '#1a1208',
-            strokeThickness: 2,
-          })
-          .setOrigin(0.5),
-      );
+
+      const btn = this.add
+        .image(x, y + 48, 'ui-btn-green')
+        .setDisplaySize(colW - 36, 28)
+        .setAlpha(ready ? 1 : 0.45);
+      const btnLabel = this.add
+        .text(x, y + 48, 'Receive', {
+          fontFamily: FONT,
+          fontSize: '8px',
+          color: '#ffffff',
+          stroke: '#1a1208',
+          strokeThickness: 3,
+        })
+        .setOrigin(0.5);
+      this.panel.add(btn);
+      this.panel.add(btnLabel);
+
+      if (ready) {
+        btn.setInteractive({ useHandCursor: true });
+        btn.on('pointerdown', () => {
+          const ok =
+            r.id === 'clicker'
+              ? this.ctx.economy.claimClicker(this.ctx.state)
+              : r.id === 'helper'
+                ? this.ctx.economy.claimHelper(this.ctx.state)
+                : r.id === 'login'
+                  ? this.ctx.economy.claimLogin(this.ctx.state)
+                  : this.ctx.economy.claimStory(this.ctx.state);
+          if (ok) {
+            this.ctx.audio.playSfx('coin');
+            this.showToast('Reward received');
+            this.setTab('achievements', true);
+          }
+        });
+      }
     });
   }
 
   private renderSettings(): void {
     const w = this.scale.width;
     const contentTop = this.addFramedPanel('Settings');
-    let y = contentTop + 36;
+    let y = contentTop + 28;
+
+    const section = (label: string) => {
+      this.panel.add(
+        this.add
+          .text(w / 2, y, label, {
+            fontFamily: FONT,
+            fontSize: '7px',
+            color: '#ffffff',
+            stroke: '#1a1208',
+            strokeThickness: 3,
+          })
+          .setOrigin(0.5),
+      );
+      y += 22;
+    };
 
     const mkToggle = (initial: string, muted: boolean, onToggle: () => string) => {
       const speaker = this.add
@@ -835,10 +983,10 @@ export class PlayScene extends Phaser.Scene {
       const label = this.add
         .text(w / 2 + 24, y, initial, {
           fontFamily: FONT,
-          fontSize: '10px',
-          color: '#f3ead7',
+          fontSize: '8px',
+          color: '#ffffff',
           stroke: '#1a1208',
-          strokeThickness: 2,
+          strokeThickness: 3,
         })
         .setOrigin(0.5);
       const apply = () => {
@@ -850,18 +998,22 @@ export class PlayScene extends Phaser.Scene {
       speaker.on('pointerdown', apply);
       btn.on('pointerdown', apply);
       this.panel.add([speaker, btn, label]);
-      y += 52;
+      y += 48;
     };
 
-    mkToggle(this.ctx.audio.muteBgm ? 'BGM Off' : 'BGM On', this.ctx.audio.muteBgm, () => {
-      const muted = this.ctx.audio.toggleMuteBgm();
-      return muted ? 'BGM Off' : 'BGM On';
-    });
+    section('Background Music');
+    mkToggle(
+      this.ctx.audio.muteBgm ? 'Music Off' : 'Music On',
+      this.ctx.audio.muteBgm,
+      () => (this.ctx.audio.toggleMuteBgm() ? 'Music Off' : 'Music On'),
+    );
 
-    mkToggle(this.ctx.audio.muteSfx ? 'SFX Off' : 'SFX On', this.ctx.audio.muteSfx, () => {
-      const muted = this.ctx.audio.toggleMuteSfx();
-      return muted ? 'SFX Off' : 'SFX On';
-    });
+    section('Sound Effects');
+    mkToggle(
+      this.ctx.audio.muteSfx ? 'SFX Off' : 'SFX On',
+      this.ctx.audio.muteSfx,
+      () => (this.ctx.audio.toggleMuteSfx() ? 'SFX Off' : 'SFX On'),
+    );
 
     const mkImgBtn = (key: string, label: string, fn: () => void) => {
       const btn = this.add
@@ -874,10 +1026,10 @@ export class PlayScene extends Phaser.Scene {
         this.add
           .text(w / 2, y, label, {
             fontFamily: FONT,
-            fontSize: '11px',
-            color: '#f3ead7',
+            fontSize: '9px',
+            color: '#ffffff',
             stroke: '#1a1208',
-            strokeThickness: 2,
+            strokeThickness: 3,
           })
           .setOrigin(0.5),
       );
@@ -905,10 +1057,10 @@ export class PlayScene extends Phaser.Scene {
         this.add
           .text(w / 2, y, 'Portal sealed', {
             fontFamily: FONT,
-            fontSize: '10px',
+            fontSize: '8px',
             color: '#888',
             stroke: '#1a1208',
-            strokeThickness: 2,
+            strokeThickness: 3,
           })
           .setOrigin(0.5),
       );
@@ -943,6 +1095,9 @@ export class PlayScene extends Phaser.Scene {
       s.buffRemaining > 0 ? 1 : Math.min(1, s.mana / Math.max(1, s.manaMax));
     this.manaFill.width = Math.max(2, this.manaBarMax * manaPct);
     this.exclaim.setVisible(s.buffRemaining > 0 || s.mana >= s.manaMax);
+    if (this.rewardsBadge) {
+      this.rewardsBadge.setVisible(this.ctx.economy.anyClaimable(s));
+    }
   }
 
   private showToast(msg: string): void {
