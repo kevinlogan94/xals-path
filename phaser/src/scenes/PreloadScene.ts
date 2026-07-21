@@ -57,6 +57,39 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-tome-locked', 'assets/ui/tome-box-locked.png');
     this.load.image('ui-lock', 'assets/ui/lock.png');
     this.load.image('ui-panel', 'assets/ui/panel.png');
+    this.load.image('ui-cloud', 'assets/ui/clouds/cloud.png');
+    this.load.image('ui-level-cloud', 'assets/ui/clouds/LevelCloud.png');
+    this.load.image('ui-square-cloud', 'assets/ui/clouds/squareCloud.png');
+    this.load.image('ui-gear', 'assets/ui/Gear.png');
+    this.load.image('ui-trophy', 'assets/ui/trophy.png');
+    this.load.image('ui-flower', 'assets/ui/OutlookFlower.png');
+    this.load.image('ui-portal', 'assets/ui/Portal2.png');
+    this.load.image('ui-tomes-icon', 'assets/ui/Tomes.png');
+    this.load.image('ui-banner', 'assets/ui/PanelBanner.png');
+    this.load.image('ui-quote-box', 'assets/ui/QuoteBox.png');
+    this.load.image('ui-mana-icon', 'assets/ui/manaIcon.png');
+    this.load.image('ui-star', 'assets/ui/star.png');
+    this.load.image('ui-speaker-on', 'assets/ui/SpeakerOn.png');
+    this.load.image('ui-speaker-off', 'assets/ui/SpeakerOff.png');
+    this.load.image('ui-btn-green', 'assets/ui/buttons/greenButton.png');
+    this.load.image('ui-btn-blue', 'assets/ui/buttons/blueButton.png');
+    this.load.image('ui-btn-orange', 'assets/ui/buttons/OrangeButton.png');
+    this.load.image('ui-scene-bg', 'assets/ui/Scene.png');
+    this.load.image('ui-influence', 'assets/ui/influence.png');
+    this.load.image('ui-mana-bar', 'assets/ui/mana-bar.png');
+    this.load.image('ui-exclaim', 'assets/ui/exclaim.png');
+    this.load.image('ui-achiev-box', 'assets/ui/achiev-box.png');
+    this.load.image('ui-achiev-box-pressed', 'assets/ui/achiev-box-pressed.png');
+    this.load.image('ui-stone', 'assets/ui/stone.png');
+    this.load.image('ui-scroll', 'assets/ui/scrollBar.png');
+    this.load.image('ui-reward-star', 'assets/ui/reward-star.png');
+    this.load.image('ui-reward-shop', 'assets/ui/reward-shop.png');
+    this.load.image('ui-reward-notepad', 'assets/ui/reward-notepad.png');
+    this.load.image('ui-reward-portal', 'assets/ui/reward-portal.png');
+    // Prefer cropped nav icons when present
+    this.load.image('ui-trophy-nav', 'assets/ui/trophy-nav.png');
+    this.load.image('ui-portal-nav', 'assets/ui/portal-nav.png');
+    this.load.image('ui-tomes-nav', 'assets/ui/tomes-nav.png');
 
     for (const h of helpersData.helpers as HelperDef[]) {
       this.load.image(`tome-${h.id}`, `assets/ui/tomes/${h.id}.png`);

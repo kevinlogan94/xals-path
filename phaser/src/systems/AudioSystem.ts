@@ -17,19 +17,28 @@ type Track =
 export class AudioSystem {
   private scene: Phaser.Scene | null = null;
   private currentBgm: Phaser.Sound.BaseSound | null = null;
-  muted = false;
+  private desiredBgm: Track | null = null;
+  muteBgm = false;
+  muteSfx = false;
 
-  attach(scene: Phaser.Scene): void {
-    this.scene = scene;
-  }
-
-  playBgm(key: Track, loop = true): void {
-    if (!this.scene || this.muted) return;
+  attach(scene: Phaser.Scene | null): void {
     if (this.currentBgm) {
       this.currentBgm.stop();
       this.currentBgm.destroy();
       this.currentBgm = null;
     }
+    this.scene = scene;
+  }
+
+  playBgm(key: Track, loop = true): void {
+    this.desiredBgm = key;
+    if (!this.scene) return;
+    if (this.currentBgm) {
+      this.currentBgm.stop();
+      this.currentBgm.destroy();
+      this.currentBgm = null;
+    }
+    if (this.muteBgm) return;
     if (!this.scene.cache.audio.exists(key)) return;
     this.currentBgm = this.scene.sound.add(key, { loop, volume: 0.45 });
     this.currentBgm.play();
@@ -40,19 +49,28 @@ export class AudioSystem {
   }
 
   playSfx(key: Track, volume = 0.55): void {
-    if (!this.scene || this.muted) return;
+    if (!this.scene || this.muteSfx) return;
     if (!this.scene.cache.audio.exists(key)) return;
     this.scene.sound.play(key, { volume });
   }
 
-  toggleMute(): boolean {
-    this.muted = !this.muted;
-    if (this.muted) {
+  toggleMuteBgm(): boolean {
+    this.muteBgm = !this.muteBgm;
+    if (this.muteBgm) {
       this.currentBgm?.pause();
-      this.scene?.sound.stopAll();
-    } else {
-      this.currentBgm?.resume();
+    } else if (this.desiredBgm) {
+      this.playBgm(this.desiredBgm);
     }
-    return this.muted;
+    return this.muteBgm;
+  }
+
+  toggleMuteSfx(): boolean {
+    this.muteSfx = !this.muteSfx;
+    if (this.muteSfx) {
+      this.scene?.sound.stopAll();
+      this.currentBgm = null;
+      if (!this.muteBgm && this.desiredBgm) this.playBgm(this.desiredBgm);
+    }
+    return this.muteSfx;
   }
 }

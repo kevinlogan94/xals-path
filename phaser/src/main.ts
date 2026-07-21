@@ -10,9 +10,9 @@ new Phaser.Game({
   parent: parent ?? undefined,
   backgroundColor: '#0d1a0d',
   scale: {
-    mode: Phaser.Scale.RESIZE,
-    width: window.innerWidth,
-    height: window.innerHeight,
+    mode: Phaser.Scale.FIT,
+    width: 390,
+    height: 844,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   scene: [BootScene, PreloadScene, PlayScene],
@@ -20,7 +20,7 @@ new Phaser.Game({
     disableWebAudio: false,
   },
   render: {
-    antialias: true,
-    pixelArt: false,
+    pixelArt: true,
+    antialias: false,
   },
 });
