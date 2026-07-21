@@ -1,14 +1,14 @@
 # Status — Xal's Path Web
 
 **Updated:** 2026-07-21  
-**Branch:** `cursor/unity-ui-parity-22ce`
+**Branch:** `cursor/tomes-layout-parity-33cf`
 
 ## Done
 
 - Phaser remake with Unity-shaped UX:
   - **Outlook** = BAM world (cast + creatures + region music)
   - **Map (Scene)** = tower (portrait, chapter cards, banter) over `Scene.png`
-  - **Tomes** = shop cards with emblems / cost / owned /sec in framed panel + scrollbar
+  - **Tomes** = Unity row geometry (aspect-true boxes; name/cost left; owned/`Lvl`+/sec right; square lock avatar)
   - Bottom nav Unity order: Settings → Rewards → Outlook → Map · Tomes (icon + label)
 - Portrait FIT frame **390×844** + pixelArt; dark letterbox on desktop
 - Cloud HUD; rocky nav bar; Press Start 2P; framed Settings / Rewards / Tomes
