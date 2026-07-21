@@ -461,23 +461,23 @@ export class PlayScene extends Phaser.Scene {
 
   private buildQuoteBox(): void {
     const w = this.scale.width;
-    const h = this.scale.height;
-    const boxH = 120;
-    const y = h - NAV_H - boxH / 2 - 8;
+    // Speech bubble sits above Xal's head; keep near-native aspect so the tail isn't skewed
+    const boxW = Math.min(300, w - 40);
+    const boxH = Math.round(boxW * (300 / 460));
+    const x = w / 2;
+    const y = 230;
     const bg = this.textures.exists('ui-quote-box')
-      ? this.add.image(w / 2, y, 'ui-quote-box').setDisplaySize(w - 24, boxH)
+      ? this.add.image(x, y, 'ui-quote-box').setDisplaySize(boxW, boxH)
       : this.add
-          .rectangle(w / 2, y, w - 24, boxH, 0x1a140c, 0.92)
-          .setStrokeStyle(2, 0xc4a35a);
+          .rectangle(x, y, boxW, boxH, 0xffffff, 0.95)
+          .setStrokeStyle(2, 0x3a2a20);
     this.quoteText = this.add
-      .text(w / 2, y, '', {
+      .text(x, y - boxH * 0.08, '', {
         fontFamily: FONT,
-        fontSize: '12px',
-        color: '#f3ead7',
+        fontSize: '10px',
+        color: '#1a1208',
         align: 'center',
-        wordWrap: { width: w - 56 },
-        stroke: '#1a1208',
-        strokeThickness: 2,
+        wordWrap: { width: boxW - 36 },
       })
       .setOrigin(0.5);
     this.quoteBox = this.add
