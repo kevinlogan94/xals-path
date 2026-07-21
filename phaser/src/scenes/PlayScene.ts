@@ -464,8 +464,9 @@ export class PlayScene extends Phaser.Scene {
     // Speech bubble sits above Xal's head; keep near-native aspect so the tail isn't skewed
     const boxW = Math.min(300, w - 40);
     const boxH = Math.round(boxW * (300 / 460));
-    const x = w / 2;
-    const y = 230;
+    // Nudge right so the bubble's bottom-left tail aims at Xal's head
+    const x = w / 2 + 28;
+    const y = 205;
     const bg = this.textures.exists('ui-quote-box')
       ? this.add.image(x, y, 'ui-quote-box').setDisplaySize(boxW, boxH)
       : this.add
