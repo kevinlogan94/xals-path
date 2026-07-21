@@ -613,10 +613,12 @@ export class PlayScene extends Phaser.Scene {
   private addFramedPanel(title: string): number {
     const w = this.scale.width;
     const h = this.scale.height;
-    const top = 100;
-    const panelH = h - NAV_H - top - 8;
-    const panelW = w - 16;
+    const top = 96;
+    const panelH = h - NAV_H - top - 6;
+    const panelW = w - 20;
     const cy = top + panelH / 2;
+    const bannerH = 48;
+    const bannerY = top + 28;
     this.panel.add(
       this.add
         .rectangle(w / 2, (h - NAV_H) / 2, w, h - NAV_H, 0x0d140d, 0.55)
@@ -626,28 +628,53 @@ export class PlayScene extends Phaser.Scene {
       this.add.image(w / 2, cy, 'ui-panel').setDisplaySize(panelW, panelH),
     );
     this.panel.add(
-      this.add.image(w / 2, top + 18, 'ui-banner').setDisplaySize(panelW * 0.72, 34),
+      this.add
+        .image(w / 2, bannerY, 'ui-banner')
+        .setDisplaySize(panelW * 0.78, bannerH),
     );
     this.panel.add(
       this.add
-        .text(w / 2, top + 18, title, {
+        .text(w / 2, bannerY, title, {
           fontFamily: FONT,
-          fontSize: '11px',
+          fontSize: '13px',
           color: '#ffffff',
           stroke: '#1a1208',
           strokeThickness: 4,
         })
         .setOrigin(0.5),
     );
-    return top + 44;
+    // Leave clear margin under the banner before the first row (Unity).
+    return bannerY + bannerH / 2 + 14;
+  }
+
+  /** Fit a texture into a box without distorting aspect ratio. */
+  private fitInBox(
+    key: string,
+    maxW: number,
+    maxH: number,
+  ): Phaser.GameObjects.Image {
+    const img = this.add.image(0, 0, key);
+    const src = img.texture.getSourceImage() as HTMLImageElement | HTMLCanvasElement;
+    const tw = Math.max(1, src.width);
+    const th = Math.max(1, src.height);
+    const scale = Math.min(maxW / tw, maxH / th);
+    img.setDisplaySize(Math.round(tw * scale), Math.round(th * scale));
+    return img;
   }
 
   private renderShop(): void {
     const w = this.scale.width;
     const h = this.scale.height;
     const listTop = this.addFramedPanel('Tomes');
-    const rowH = 72;
-    const visibleH = h - NAV_H - listTop - 12;
+    // Tome box art is 840×260; keep that aspect so rows aren't vertically squashed.
+    const scrollGutter = 18;
+    const sidePad = 14;
+    const innerW = w - sidePad * 2 - scrollGutter;
+    const boxH = Math.round(innerW * (260 / 840));
+    const rowGap = 8;
+    const rowH = boxH + rowGap;
+    const listBottom = h - NAV_H - 10;
+    const visibleH = listBottom - listTop;
     const maxScroll = Math.max(
       0,
       this.ctx.economy.helpers.length * rowH - visibleH,
@@ -655,11 +682,12 @@ export class PlayScene extends Phaser.Scene {
     this.shopScroll = Phaser.Math.Clamp(this.shopScroll, 0, maxScroll);
 
     const cards: Phaser.GameObjects.Container[] = [];
+    const scrollX = w - sidePad - 4;
     const scrollTrack = this.add
-      .rectangle(w - 14, listTop + visibleH / 2, 6, visibleH, 0x1a140c, 0.8)
+      .rectangle(scrollX, listTop + visibleH / 2, 6, visibleH, 0x1a140c, 0.85)
       .setStrokeStyle(1, 0x5a4030);
     const scrollThumb = this.add
-      .image(w - 14, listTop + 20, 'ui-scroll')
+      .image(scrollX, listTop + 20, 'ui-scroll')
       .setDisplaySize(8, 28);
     this.panel.add(scrollTrack);
     this.panel.add(scrollThumb);
@@ -668,7 +696,7 @@ export class PlayScene extends Phaser.Scene {
       cards.forEach((card, i) => {
         const y = listTop + i * rowH - this.shopScroll + rowH / 2;
         card.setY(y);
-        card.setVisible(y > listTop - 10 && y < h - NAV_H - 4);
+        card.setVisible(y > listTop - boxH / 2 && y < listBottom + boxH / 2);
       });
       if (maxScroll > 0) {
         const t = this.shopScroll / maxScroll;
@@ -697,56 +725,94 @@ export class PlayScene extends Phaser.Scene {
       applyScroll();
     };
 
-    const innerW = w - 36;
+    const avatarSize = Math.round(boxH * 0.72);
+    const textLeft = -innerW / 2 + avatarSize + 18;
+    const textRight = innerW / 2 - 12;
+
     this.ctx.economy.helpers.forEach((def, i) => {
       const save = this.ctx.state.helpers.find((hh) => hh.id === def.id)!;
       const locked = this.ctx.state.playerLevel < def.unlockLevel;
       const y = listTop + i * rowH - this.shopScroll + rowH / 2;
 
       const boxKey = locked ? 'ui-tome-locked' : 'ui-tome-box';
-      const box = this.add.image(0, 0, boxKey).setDisplaySize(innerW, 66);
+      const box = this.add.image(0, 0, boxKey).setDisplaySize(innerW, boxH);
+
+      // Unity swaps the avatar for lvl_lock_block when locked (no emblem underneath).
+      const avatarX = -innerW / 2 + 10 + avatarSize / 2;
       const emblemKey = `tome-${def.id}`;
-      const emblem = this.textures.exists(emblemKey)
-        ? this.add.image(-innerW / 2 + 36, 0, emblemKey).setDisplaySize(36, 36)
-        : this.add.circle(-innerW / 2 + 36, 0, 18, 0x445544);
+      let avatar: Phaser.GameObjects.GameObject;
+      if (locked && this.textures.exists('ui-lock')) {
+        const lockImg = this.fitInBox('ui-lock', avatarSize, avatarSize);
+        lockImg.setPosition(avatarX, 0);
+        avatar = lockImg;
+      } else if (this.textures.exists(emblemKey)) {
+        const emblem = this.fitInBox(emblemKey, avatarSize, avatarSize);
+        emblem.setPosition(avatarX, 0);
+        avatar = emblem;
+      } else {
+        avatar = this.add.circle(avatarX, 0, avatarSize / 2, 0x445544);
+      }
 
-      const lockImg =
-        locked && this.textures.exists('ui-lock')
-          ? this.add.image(-innerW / 2 + 36, 0, 'ui-lock').setDisplaySize(22, 22)
-          : null;
+      const titleColor = locked ? '#4a4038' : '#1a1208';
+      const metaColor = locked ? '#5a5048' : '#1a1208';
 
-      const title = this.add.text(-innerW / 2 + 64, -14, def.name, {
-        fontFamily: FONT,
-        fontSize: '11px',
-        color: locked ? '#888' : '#f3ead7',
-        stroke: '#1a1208',
-        strokeThickness: 2,
-      });
-
-      const costIcon = !locked
-        ? this.add.image(-innerW / 2 + 72, 12, 'ui-influence').setDisplaySize(12, 12)
-        : null;
-      const meta = this.add.text(
-        -innerW / 2 + (locked ? 64 : 82),
-        6,
-        locked
-          ? `Lvl ${def.unlockLevel}`
-          : `${formatNumber(save.dynamicCost)}  ×${save.amountOwned}  +${formatNumber(save.dynamicIncrement)}/s`,
-        {
+      const title = this.add
+        .text(textLeft, -boxH * 0.22, def.name, {
           fontFamily: FONT,
-          fontSize: '9px',
-          color: locked ? '#666' : '#c8b89a',
-          stroke: '#1a1208',
-          strokeThickness: 2,
-        },
-      );
+          fontSize: '12px',
+          color: titleColor,
+        })
+        .setOrigin(0, 0.5);
 
-      const parts: Phaser.GameObjects.GameObject[] = [box, emblem, title, meta];
-      if (lockImg) parts.push(lockImg);
-      if (costIcon) parts.push(costIcon);
-      const card = this.add.container(w / 2, y, parts).setSize(innerW, 66);
+      // Cost row: influence gem + price (shown for locked and unlocked, like Unity).
+      const costIcon = this.add
+        .image(textLeft + 6, boxH * 0.2, 'ui-influence')
+        .setDisplaySize(14, 14);
+      const costText = this.add
+        .text(textLeft + 18, boxH * 0.2, formatNumber(save.dynamicCost), {
+          fontFamily: FONT,
+          fontSize: '10px',
+          color: metaColor,
+        })
+        .setOrigin(0, 0.5);
+
+      // Right column: owned count (large) or "Lvl N", with /sec underneath.
+      const countLabel = locked
+        ? `Lvl ${def.unlockLevel}`
+        : String(save.amountOwned);
+      const count = this.add
+        .text(textRight, -boxH * 0.2, countLabel, {
+          fontFamily: FONT,
+          fontSize: locked ? '11px' : '16px',
+          color: titleColor,
+        })
+        .setOrigin(1, 0.5);
+
+      const rate = this.add
+        .text(
+          textRight,
+          boxH * 0.22,
+          `${formatNumber(save.dynamicIncrement)}/sec`,
+          {
+            fontFamily: FONT,
+            fontSize: '9px',
+            color: metaColor,
+          },
+        )
+        .setOrigin(1, 0.5);
+
+      const parts: Phaser.GameObjects.GameObject[] = [
+        box,
+        avatar,
+        title,
+        costIcon,
+        costText,
+        count,
+        rate,
+      ];
+      const card = this.add.container(w / 2 - scrollGutter / 2, y, parts).setSize(innerW, boxH);
       card.setInteractive(
-        new Phaser.Geom.Rectangle(-innerW / 2, -33, innerW, 66),
+        new Phaser.Geom.Rectangle(-innerW / 2, -boxH / 2, innerW, boxH),
         Phaser.Geom.Rectangle.Contains,
       );
       card.on('pointerdown', onDragStart);
