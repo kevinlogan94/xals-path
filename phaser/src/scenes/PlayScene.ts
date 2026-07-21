@@ -128,6 +128,7 @@ export class PlayScene extends Phaser.Scene {
       document.removeEventListener('visibilitychange', this.persistHidden);
       window.removeEventListener('pagehide', this.persistPageHide);
       this.scale.off('resize', this.onResizeBound);
+      this.ctx.audio.attach(null);
       this.ctx.spawn.clear();
     });
 
@@ -200,7 +201,7 @@ export class PlayScene extends Phaser.Scene {
 
     // Left influence cloud
     const leftCloud = this.add
-      .image(0, 0, 'ui-square-cloud')
+      .image(0, 0, 'ui-cloud')
       .setDisplaySize(150, 78);
     const inflIcon = this.add.image(-48, -8, 'ui-influence').setDisplaySize(22, 22);
     this.influenceAmt = this.add
@@ -213,14 +214,14 @@ export class PlayScene extends Phaser.Scene {
       })
       .setOrigin(0, 0.5);
     this.influenceRate = this.add
-      .text(0, 16, '', {
+      .text(-30, 16, '', {
         fontFamily: FONT,
         fontSize: '9px',
         color: '#b8e0a8',
         stroke: '#1a1208',
         strokeThickness: 2,
       })
-      .setOrigin(0.5);
+      .setOrigin(0, 0.5);
     this.add
       .container(78, 48, [leftCloud, inflIcon, this.influenceAmt, this.influenceRate])
       .setDepth(20);
@@ -385,12 +386,13 @@ export class PlayScene extends Phaser.Scene {
 
   private refreshChapterCard(): void {
     this.chapterCard.removeAll(true);
+    this.chapterCard.disableInteractive();
     const next = this.nextChapter();
     if (!next || this.tab !== 'scene' || this.ctx.story.reading) {
       this.chapterCard.setVisible(false);
       return;
     }
-    const locked = this.ctx.state.playerLevel < next.levelRequirement;
+    const locked = !this.ctx.story.canStart(this.ctx.state, next.id);
     const cardW = 220;
     const cardH = 88;
     const bg = this.add
@@ -448,12 +450,14 @@ export class PlayScene extends Phaser.Scene {
     }
     this.chapterCard.add(parts);
     this.chapterCard.setSize(cardW, cardH);
-    this.chapterCard.setInteractive(
-      new Phaser.Geom.Rectangle(-cardW / 2, -cardH / 2, cardW, cardH),
-      Phaser.Geom.Rectangle.Contains,
-    );
     this.chapterCard.off('pointerdown');
-    this.chapterCard.on('pointerdown', () => this.onChapterButton());
+    if (!locked) {
+      this.chapterCard.setInteractive(
+        new Phaser.Geom.Rectangle(-cardW / 2, -cardH / 2, cardW, cardH),
+        Phaser.Geom.Rectangle.Contains,
+      );
+      this.chapterCard.on('pointerdown', () => this.onChapterButton());
+    }
     this.chapterCard.setAlpha(locked ? 0.75 : 1);
     this.chapterCard.setVisible(true);
   }
@@ -527,7 +531,11 @@ export class PlayScene extends Phaser.Scene {
       const bg = this.add
         .image(0, -6, 'ui-nav-default')
         .setDisplaySize(slotW, 44);
-      const icon = this.add.image(0, -10, item.icon).setDisplaySize(26, 26);
+      const icon = this.add.image(0, -10, item.icon);
+      const src = icon.texture.getSourceImage() as { width: number; height: number };
+      const max = 26;
+      const s = Math.min(max / Math.max(1, src.width), max / Math.max(1, src.height));
+      icon.setDisplaySize(Math.round(src.width * s), Math.round(src.height * s));
       const label = this.add
         .text(0, 22, item.label, {
           fontFamily: FONT,
@@ -815,49 +823,44 @@ export class PlayScene extends Phaser.Scene {
     const contentTop = this.addFramedPanel('Settings');
     let y = contentTop + 36;
 
-    const mkToggle = (
-      label: string,
-      muted: boolean,
-      fn: () => void,
-    ) => {
+    const mkToggle = (initial: string, muted: boolean, onToggle: () => string) => {
       const speaker = this.add
         .image(w / 2 - 70, y, muted ? 'ui-speaker-off' : 'ui-speaker-on')
         .setDisplaySize(28, 28)
         .setInteractive({ useHandCursor: true });
-      speaker.on('pointerdown', fn);
-      this.panel.add(speaker);
       const btn = this.add
         .image(w / 2 + 24, y, 'ui-btn-blue')
         .setDisplaySize(140, 36)
         .setInteractive({ useHandCursor: true });
-      btn.on('pointerdown', fn);
-      this.panel.add(btn);
-      this.panel.add(
-        this.add
-          .text(w / 2 + 24, y, label, {
-            fontFamily: FONT,
-            fontSize: '10px',
-            color: '#f3ead7',
-            stroke: '#1a1208',
-            strokeThickness: 2,
-          })
-          .setOrigin(0.5),
-      );
+      const label = this.add
+        .text(w / 2 + 24, y, initial, {
+          fontFamily: FONT,
+          fontSize: '10px',
+          color: '#f3ead7',
+          stroke: '#1a1208',
+          strokeThickness: 2,
+        })
+        .setOrigin(0.5);
+      const apply = () => {
+        const text = onToggle();
+        const nowMuted = text.endsWith('Off');
+        speaker.setTexture(nowMuted ? 'ui-speaker-off' : 'ui-speaker-on');
+        label.setText(text);
+      };
+      speaker.on('pointerdown', apply);
+      btn.on('pointerdown', apply);
+      this.panel.add([speaker, btn, label]);
       y += 52;
     };
 
     mkToggle(this.ctx.audio.muteBgm ? 'BGM Off' : 'BGM On', this.ctx.audio.muteBgm, () => {
       const muted = this.ctx.audio.toggleMuteBgm();
-      if (!muted) {
-        if (this.tab === 'outlook') this.ctx.audio.playRegion(this.ctx.state.region);
-        else this.ctx.audio.playBgm('xals-theme');
-      }
-      this.setTab('settings', true);
+      return muted ? 'BGM Off' : 'BGM On';
     });
 
     mkToggle(this.ctx.audio.muteSfx ? 'SFX Off' : 'SFX On', this.ctx.audio.muteSfx, () => {
-      this.ctx.audio.toggleMuteSfx();
-      this.setTab('settings', true);
+      const muted = this.ctx.audio.toggleMuteSfx();
+      return muted ? 'SFX Off' : 'SFX On';
     });
 
     const mkImgBtn = (key: string, label: string, fn: () => void) => {
