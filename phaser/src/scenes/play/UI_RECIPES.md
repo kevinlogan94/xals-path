@@ -15,9 +15,9 @@ Canonical chrome lives under `public/assets/ui/`. Prefer remaster PNGs + Phaser 
 
 ## Recipes
 
-- **Framed modal:** `addFramedPanel(scene, panel, title)` — dimmer + `ui-panel` + `ui-banner` + title text.
+- **Framed modal:** `addFramedPanel(scene, panel, title)` → `{ contentTop, dimmer }` — dimmer + `ui-panel` + `ui-banner` + title text. Use returned `dimmer` for overlay input (do not assume `panel.list[0]`).
 - **Button:** `ui-btn-green` / `ui-btn-blue` / `ui-btn-orange` image + centered `Text` (FONT, white, dark stroke). Stretch with `setDisplaySize`.
-- **Card boxes:** `ui-tome-box` / `ui-tome-locked`, `ui-achiev-box` (+ `-pressed`).
+- **Card boxes:** `ui-tome-box` / `ui-tome-locked`, `ui-achiev-box`. Use `ui-achiev-box-pressed` only for Map chapter cards in `PlayScene`.
 - **Anonymous chrome only:** rectangles for dimmers, XP/mana fills, scroll tracks — not for buttons/panels.
 - **Text:** always `FONT` from `constants.ts`; typical stroke `#1a1208`.
 

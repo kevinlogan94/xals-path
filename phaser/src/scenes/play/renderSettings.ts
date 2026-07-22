@@ -11,12 +11,21 @@ export function renderSettings(opts: {
   showToast: (msg: string) => void;
   applyRegionVisual: () => void;
   goOutlook: () => void;
+  goScene: () => void;
   onNewGame: () => void;
 }): void {
-  const { scene, panel, ctx, showToast, applyRegionVisual, goOutlook, onNewGame } =
-    opts;
+  const {
+    scene,
+    panel,
+    ctx,
+    showToast,
+    applyRegionVisual,
+    goOutlook,
+    goScene,
+    onNewGame,
+  } = opts;
   const w = scene.scale.width;
-  const contentTop = addFramedPanel(scene, panel, 'Settings');
+  const { contentTop } = addFramedPanel(scene, panel, 'Settings');
   let y = contentTop + 28;
 
   const section = (label: string) => {
@@ -134,5 +143,6 @@ export function renderSettings(opts: {
     ctx.reset();
     onNewGame();
     showToast('Save cleared');
+    goScene();
   });
 }

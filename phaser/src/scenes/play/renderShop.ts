@@ -17,7 +17,7 @@ export function renderShop(opts: {
     opts;
   const w = scene.scale.width;
   const h = scene.scale.height;
-  const listTop = addFramedPanel(scene, panel, 'Tomes');
+  const { contentTop: listTop, dimmer } = addFramedPanel(scene, panel, 'Tomes');
   const rowH = 72;
   const visibleH = h - NAV_H - listTop - 12;
   const maxScroll = Math.max(
@@ -144,13 +144,12 @@ export function renderShop(opts: {
   });
   applyScroll();
 
-  const dim = panel.list[0] as Phaser.GameObjects.Rectangle;
-  dim.on('wheel', (_p: Phaser.Input.Pointer, _dx: number, dy: number) => {
+  dimmer.on('wheel', (_p: Phaser.Input.Pointer, _dx: number, dy: number) => {
     setShopScroll(
       Phaser.Math.Clamp(getShopScroll() + dy * 0.4, 0, maxScroll),
     );
     applyScroll();
   });
-  dim.on('pointerdown', onDragStart);
-  dim.on('pointermove', onDragMove);
+  dimmer.on('pointerdown', onDragStart);
+  dimmer.on('pointermove', onDragMove);
 }

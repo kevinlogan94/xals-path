@@ -12,7 +12,7 @@ export function renderRewards(opts: {
 }): void {
   const { scene, panel, ctx, showToast, reload } = opts;
   const w = scene.scale.width;
-  const contentTop = addFramedPanel(scene, panel, 'Rewards');
+  const { contentTop } = addFramedPanel(scene, panel, 'Rewards');
   const a = ctx.state.achievements;
   const rows: {
     id: 'clicker' | 'helper' | 'login' | 'story';

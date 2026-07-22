@@ -635,10 +635,10 @@ export class PlayScene extends Phaser.Scene {
         showToast: (m) => this.showToast(m),
         applyRegionVisual: () => this.applyRegionVisual(),
         goOutlook: () => this.setTab('outlook', true),
+        goScene: () => this.setTab('scene', true),
         onNewGame: () => {
           this.lastLevel = 1;
           this.applyRegionVisual();
-          this.setTab('scene', true);
         },
       });
     }
