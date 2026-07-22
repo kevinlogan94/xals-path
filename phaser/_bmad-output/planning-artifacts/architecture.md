@@ -8,7 +8,7 @@
 
 - Simple folder layout, no singleton soup
 - Data-driven content (JSON) separated from systems
-- Play hub with bottom nav; scenes stay thin
+- Play hub with bottom nav; scene facade stays thin with scene-local views co-located
 
 ## Folder structure
 
@@ -19,7 +19,8 @@ src/
   data/                   # chapters, helpers, creatures, economy
   game/GameContext.ts     # owns systems + mutable save state
   systems/                # Economy, Story, Save, Audio, Spawn
-  scenes/                 # Boot, Preload, Play
+  scenes/                 # Boot, Preload, Play facade
+    play/                 # Play-only HUD, nav, panels, map/outlook UI helpers
   utils/format.ts
 public/assets/            # backgrounds, xal, creatures, audio
 docs/seed.md
@@ -32,14 +33,14 @@ _bmad-output/             # BMAD planning + implementation artifacts
 ```
 Boot → Preload → Play
                    ├ Outlook  (BAM world: cast, creatures, region BGM)
-                   ├ Scene    (Xal tower: portrait, chapters, banter)
+                   ├ Map      (Xal tower: portrait, chapters, banter)
                    ├ Tomes    (shop cards — emblems, cost, owned, /sec)
-                   ├ Goals
-                   └ More     (mute, portal travel after story, reset)
+                   ├ Rewards  (achievement cards + claim flow)
+                   └ Settings (mute, portal travel after story, reset)
 ```
 
 Bottom nav matches Unity order. Re-tapping the active tab returns to Outlook.
-Dialogue runs on Scene; economy keeps ticking everywhere.
+Dialogue runs on Map; economy keeps ticking everywhere.
 
 ## Systems
 
