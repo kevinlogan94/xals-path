@@ -609,14 +609,33 @@ export class PlayScene extends Phaser.Scene {
     if (tab === 'settings') this.renderSettings();
   }
 
-  /** Framed modal: panel + banner. Returns content start Y. */
-  private addFramedPanel(title: string): number {
+  /**
+   * Framed modal: panel + banner.
+   * Returns list geometry inside the parchment (not screen edges).
+   */
+  private addFramedPanel(title: string): {
+    listTop: number;
+    listBottom: number;
+    listLeft: number;
+    listWidth: number;
+    scrollX: number;
+  } {
     const w = this.scale.width;
     const h = this.scale.height;
-    const top = 100;
-    const panelH = h - NAV_H - top - 8;
-    const panelW = w - 16;
-    const cy = top + panelH / 2;
+    const panelTop = 96;
+    const panelW = w - 28;
+    const panelH = h - NAV_H - panelTop - 8;
+    const panelLeft = (w - panelW) / 2;
+    const cy = panelTop + panelH / 2;
+
+    // Keep rows clearly inside the parchment, with equal left/right inset.
+    const inset = Math.max(14, Math.round(panelW * 0.045));
+    const scrollGutter = 16;
+
+    const bannerW = panelW * 0.72;
+    const bannerH = Math.round(bannerW / 4.5);
+    const bannerY = panelTop + inset + bannerH / 2;
+
     this.panel.add(
       this.add
         .rectangle(w / 2, (h - NAV_H) / 2, w, h - NAV_H, 0x0d140d, 0.55)
@@ -626,41 +645,80 @@ export class PlayScene extends Phaser.Scene {
       this.add.image(w / 2, cy, 'ui-panel').setDisplaySize(panelW, panelH),
     );
     this.panel.add(
-      this.add.image(w / 2, top + 18, 'ui-banner').setDisplaySize(panelW * 0.72, 34),
+      this.add.image(w / 2, bannerY, 'ui-banner').setDisplaySize(bannerW, bannerH),
     );
     this.panel.add(
       this.add
-        .text(w / 2, top + 18, title, {
+        .text(w / 2, bannerY, title, {
           fontFamily: FONT,
-          fontSize: '11px',
+          fontSize: '13px',
           color: '#ffffff',
           stroke: '#1a1208',
           strokeThickness: 4,
         })
         .setOrigin(0.5),
     );
-    return top + 44;
+
+    const listTop = bannerY + bannerH / 2 + 12;
+    const listBottom = panelTop + panelH - inset;
+    const listLeft = panelLeft + inset;
+    const listWidth = panelW - inset * 2 - scrollGutter;
+    const scrollX = listLeft + listWidth + scrollGutter / 2;
+
+    return { listTop, listBottom, listLeft, listWidth, scrollX };
+  }
+
+  /** Fit a texture into a box without distorting aspect ratio. */
+  private fitInBox(
+    key: string,
+    maxW: number,
+    maxH: number,
+  ): Phaser.GameObjects.Image {
+    const img = this.add.image(0, 0, key);
+    const src = img.texture.getSourceImage() as HTMLImageElement | HTMLCanvasElement;
+    const tw = Math.max(1, src.width);
+    const th = Math.max(1, src.height);
+    const scale = Math.min(maxW / tw, maxH / th);
+    img.setDisplaySize(Math.round(tw * scale), Math.round(th * scale));
+    return img;
   }
 
   private renderShop(): void {
-    const w = this.scale.width;
-    const h = this.scale.height;
-    const listTop = this.addFramedPanel('Tomes');
-    const rowH = 72;
-    const visibleH = h - NAV_H - listTop - 12;
+    const {
+      listTop,
+      listBottom,
+      listLeft,
+      listWidth: innerW,
+      scrollX,
+    } = this.addFramedPanel('Tomes');
+
+    // Tome box art is 840×260; keep that aspect so rows aren't vertically squashed.
+    const boxH = Math.round(innerW * (260 / 840));
+    const rowGap = 10;
+    const rowH = boxH + rowGap;
+    const visibleH = listBottom - listTop;
     const maxScroll = Math.max(
       0,
       this.ctx.economy.helpers.length * rowH - visibleH,
     );
     this.shopScroll = Phaser.Math.Clamp(this.shopScroll, 0, maxScroll);
 
+    // Clip rows to the parchment list area so cards can't draw off the panel.
+    const listMidX = listLeft + innerW / 2;
+    const listMidY = listTop + visibleH / 2;
+    const listMask = this.add
+      .rectangle(listMidX, listMidY, innerW + 4, visibleH, 0xffffff)
+      .setVisible(false);
+    this.panel.add(listMask);
+    const mask = listMask.createGeometryMask();
+
     const cards: Phaser.GameObjects.Container[] = [];
     const scrollTrack = this.add
-      .rectangle(w - 14, listTop + visibleH / 2, 6, visibleH, 0x1a140c, 0.8)
+      .rectangle(scrollX, listMidY, 5, visibleH, 0x1a140c, 0.85)
       .setStrokeStyle(1, 0x5a4030);
     const scrollThumb = this.add
-      .image(w - 14, listTop + 20, 'ui-scroll')
-      .setDisplaySize(8, 28);
+      .image(scrollX, listTop + 20, 'ui-scroll')
+      .setDisplaySize(7, 26);
     this.panel.add(scrollTrack);
     this.panel.add(scrollThumb);
 
@@ -668,11 +726,11 @@ export class PlayScene extends Phaser.Scene {
       cards.forEach((card, i) => {
         const y = listTop + i * rowH - this.shopScroll + rowH / 2;
         card.setY(y);
-        card.setVisible(y > listTop - 10 && y < h - NAV_H - 4);
+        card.setVisible(y > listTop - boxH / 2 && y < listBottom + boxH / 2);
       });
       if (maxScroll > 0) {
         const t = this.shopScroll / maxScroll;
-        const thumbTravel = visibleH - 32;
+        const thumbTravel = Math.max(0, visibleH - 32);
         scrollThumb.setY(listTop + 16 + t * thumbTravel);
         scrollThumb.setVisible(true);
         scrollTrack.setVisible(true);
@@ -697,56 +755,107 @@ export class PlayScene extends Phaser.Scene {
       applyScroll();
     };
 
-    const innerW = w - 36;
+    // achiev_box bakes a 160×160 white well at (46,46) inside 840×260.
+    const wellX = ((46 + 205) / 2 / 840) * innerW;
+    const wellY = ((46 + 205) / 2 / 260) * boxH;
+    const wellSize = innerW * (160 / 840);
+    // Equal inset on all sides so emblems don't kiss the brown frame.
+    const avatarPad = wellSize * 0.1;
+    const avatarMax = wellSize - avatarPad * 2;
+    // lock.png has ~8px empty margin in a 130px asset — enlarge so visible art matches emblems.
+    const lockMax = avatarMax * (130 / 112);
+    const textLeft = -innerW / 2 + innerW * (221 / 840) + 8;
+    const textRight = innerW / 2 - 10;
+
     this.ctx.economy.helpers.forEach((def, i) => {
       const save = this.ctx.state.helpers.find((hh) => hh.id === def.id)!;
       const locked = this.ctx.state.playerLevel < def.unlockLevel;
       const y = listTop + i * rowH - this.shopScroll + rowH / 2;
 
       const boxKey = locked ? 'ui-tome-locked' : 'ui-tome-box';
-      const box = this.add.image(0, 0, boxKey).setDisplaySize(innerW, 66);
+      const box = this.add.image(0, 0, boxKey).setDisplaySize(innerW, boxH);
+
+      const avatarX = -innerW / 2 + wellX;
+      const avatarY = -boxH / 2 + wellY;
       const emblemKey = `tome-${def.id}`;
-      const emblem = this.textures.exists(emblemKey)
-        ? this.add.image(-innerW / 2 + 36, 0, emblemKey).setDisplaySize(36, 36)
-        : this.add.circle(-innerW / 2 + 36, 0, 18, 0x445544);
+      let avatar: Phaser.GameObjects.GameObject;
+      if (locked && this.textures.exists('ui-lock')) {
+        const lockImg = this.fitInBox('ui-lock', lockMax, lockMax);
+        lockImg.setPosition(avatarX, avatarY);
+        avatar = lockImg;
+      } else if (this.textures.exists(emblemKey)) {
+        const emblem = this.fitInBox(emblemKey, avatarMax, avatarMax);
+        emblem.setPosition(avatarX, avatarY);
+        avatar = emblem;
+      } else {
+        avatar = this.add.circle(avatarX, avatarY, avatarMax / 2, 0x445544);
+      }
 
-      const lockImg =
-        locked && this.textures.exists('ui-lock')
-          ? this.add.image(-innerW / 2 + 36, 0, 'ui-lock').setDisplaySize(22, 22)
-          : null;
+      const titleColor = locked ? '#4a4038' : '#1a1208';
+      const metaColor = locked ? '#5a5048' : '#1a1208';
 
-      const title = this.add.text(-innerW / 2 + 64, -14, def.name, {
-        fontFamily: FONT,
-        fontSize: '11px',
-        color: locked ? '#888' : '#f3ead7',
-        stroke: '#1a1208',
-        strokeThickness: 2,
-      });
-
-      const costIcon = !locked
-        ? this.add.image(-innerW / 2 + 72, 12, 'ui-influence').setDisplaySize(12, 12)
-        : null;
-      const meta = this.add.text(
-        -innerW / 2 + (locked ? 64 : 82),
-        6,
-        locked
-          ? `Lvl ${def.unlockLevel}`
-          : `${formatNumber(save.dynamicCost)}  ×${save.amountOwned}  +${formatNumber(save.dynamicIncrement)}/s`,
-        {
+      const title = this.add
+        .text(textLeft, -boxH * 0.22, def.name, {
           fontFamily: FONT,
-          fontSize: '9px',
-          color: locked ? '#666' : '#c8b89a',
-          stroke: '#1a1208',
-          strokeThickness: 2,
-        },
-      );
+          fontSize: '12px',
+          color: titleColor,
+        })
+        .setOrigin(0, 0.5);
 
-      const parts: Phaser.GameObjects.GameObject[] = [box, emblem, title, meta];
-      if (lockImg) parts.push(lockImg);
-      if (costIcon) parts.push(costIcon);
-      const card = this.add.container(w / 2, y, parts).setSize(innerW, 66);
+      const costIcon = this.fitInBox('ui-influence', 16, 14);
+      costIcon.setPosition(textLeft + costIcon.displayWidth / 2, boxH * 0.2);
+      const costText = this.add
+        .text(
+          textLeft + costIcon.displayWidth + 4,
+          boxH * 0.2,
+          formatNumber(save.dynamicCost),
+          {
+            fontFamily: FONT,
+            fontSize: '10px',
+            color: metaColor,
+          },
+        )
+        .setOrigin(0, 0.5);
+
+      const countLabel = locked
+        ? `Lvl ${def.unlockLevel}`
+        : String(save.amountOwned);
+      const count = this.add
+        .text(textRight, -boxH * 0.2, countLabel, {
+          fontFamily: FONT,
+          fontSize: locked ? '11px' : '16px',
+          color: titleColor,
+        })
+        .setOrigin(1, 0.5);
+
+      const rate = this.add
+        .text(
+          textRight,
+          boxH * 0.22,
+          `${formatNumber(save.dynamicIncrement)}/sec`,
+          {
+            fontFamily: FONT,
+            fontSize: '9px',
+            color: metaColor,
+          },
+        )
+        .setOrigin(1, 0.5);
+
+      const parts: Phaser.GameObjects.GameObject[] = [
+        box,
+        avatar,
+        title,
+        costIcon,
+        costText,
+        count,
+        rate,
+      ];
+      const card = this.add
+        .container(listMidX, y, parts)
+        .setSize(innerW, boxH);
+      card.setMask(mask);
       card.setInteractive(
-        new Phaser.Geom.Rectangle(-innerW / 2, -33, innerW, 66),
+        new Phaser.Geom.Rectangle(-innerW / 2, -boxH / 2, innerW, boxH),
         Phaser.Geom.Rectangle.Contains,
       );
       card.on('pointerdown', onDragStart);
@@ -786,7 +895,7 @@ export class PlayScene extends Phaser.Scene {
 
   private renderAchievements(): void {
     const w = this.scale.width;
-    const contentTop = this.addFramedPanel('Rewards');
+    const contentTop = this.addFramedPanel('Rewards').listTop;
     const a = this.ctx.state.achievements;
     const rows: {
       id: 'clicker' | 'helper' | 'login' | 'story';
@@ -944,7 +1053,7 @@ export class PlayScene extends Phaser.Scene {
 
   private renderSettings(): void {
     const w = this.scale.width;
-    const contentTop = this.addFramedPanel('Settings');
+    const contentTop = this.addFramedPanel('Settings').listTop;
     let y = contentTop + 28;
 
     const section = (label: string) => {

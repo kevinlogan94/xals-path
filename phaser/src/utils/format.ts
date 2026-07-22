@@ -1,11 +1,16 @@
-/** Format large influence numbers like the Unity game. */
+/** Format influence numbers like Unity `Monitor.FormatNumberToString`. */
 export function formatNumber(n: number): string {
   const abs = Math.abs(n);
-  if (abs < 1000) return Math.floor(n).toString();
-  if (abs < 1_000_000) return `${(n / 1_000).toFixed(2)}K`;
-  if (abs < 1_000_000_000) return `${(n / 1_000_000).toFixed(2)} mill`;
-  if (abs < 1_000_000_000_000) return `${(n / 1_000_000_000).toFixed(2)} bill`;
-  return `${(n / 1_000_000_000_000).toFixed(2)} trill`;
+  if (abs >= 1_000_000 && abs < 1_000_000_000) {
+    return `${Math.round((n / 1_000_000) * 100) / 100}mill`;
+  }
+  if (abs >= 1_000_000_000 && abs < 1_000_000_000_000) {
+    return `${Math.round((n / 1_000_000_000) * 100) / 100}bill`;
+  }
+  if (abs >= 1_000_000_000_000) {
+    return `${Math.round((n / 1_000_000_000_000) * 100) / 100}trill`;
+  }
+  return Math.floor(n).toLocaleString('en-US');
 }
 
 export function todayKey(): string {
