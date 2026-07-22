@@ -88,7 +88,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-trophy-nav', 'assets/ui/trophy-nav.png');
     this.load.image('ui-portal-nav', 'assets/ui/portal-nav.png');
     this.load.image('ui-tomes-nav', 'assets/ui/tomes-nav.png');
-    // Scene.png intentionally not loaded — Map uses full-frame xal-* tower scenes.
+    // Scene.png dropped — Map uses full-frame xal-* tower scenes.
 
     for (const h of helpersData.helpers as HelperDef[]) {
       this.load.image(`tome-${h.id}`, `assets/ui/tomes/${h.id}.png`);

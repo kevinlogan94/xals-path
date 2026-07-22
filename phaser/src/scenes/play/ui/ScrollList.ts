@@ -22,6 +22,7 @@ export interface ScrollList {
   pointerDown: (pointer: Phaser.Input.Pointer) => void;
   pointerMove: (pointer: Phaser.Input.Pointer) => void;
   wasDrag: () => boolean;
+  resetDrag: () => void;
   apply: () => void;
 }
 
@@ -120,6 +121,9 @@ export function createScrollList(config: ScrollListConfig): ScrollList {
     pointerDown,
     pointerMove,
     wasDrag: () => dragMoved > 10,
+    resetDrag: () => {
+      dragMoved = 0;
+    },
     apply,
   };
 }

@@ -3,7 +3,7 @@ import { whiteText } from './textStyles';
 
 /**
  * Image + centered label with an explicit display-sized hit rect.
- * Returns a single container so panel.add / removeAll stay simple.
+ * Click fires on pointerup so scroll lists can suppress after a drag.
  */
 export function createImageButton(
   scene: Phaser.Scene,
@@ -16,18 +16,20 @@ export function createImageButton(
   onClick?: () => void,
   alpha = 1,
   fontSize = '8px',
+  onPressStart?: () => void,
 ): Phaser.GameObjects.Container {
   const image = scene.add.image(0, 0, key).setDisplaySize(width, height).setAlpha(alpha);
   const text = scene.add.text(0, 0, label, whiteText(fontSize)).setOrigin(0.5);
   const button = scene.add.container(x, y, [image, text]).setSize(width, height);
 
-  if (onClick) {
+  if (onClick || onPressStart) {
     button.setInteractive(
       new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height),
       Phaser.Geom.Rectangle.Contains,
     );
     button.input!.cursor = 'pointer';
-    button.on('pointerdown', onClick);
+    if (onPressStart) button.on('pointerdown', onPressStart);
+    if (onClick) button.on('pointerup', onClick);
   }
 
   return button;

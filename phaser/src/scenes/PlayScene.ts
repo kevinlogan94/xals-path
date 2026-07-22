@@ -279,19 +279,16 @@ export class PlayScene extends Phaser.Scene {
 
   private refreshChapterCard(): void {
     const next = this.nextChapter();
-    const visible = !!next && this.tab === 'scene' && !this.ctx.story.reading;
+    const chapterVisible = !!next && this.tab === 'scene' && !this.ctx.story.reading;
     this.map.refreshChapterCard(
       next,
       next ? !this.ctx.story.canStart(this.ctx.state, next.id) : false,
-      visible,
+      chapterVisible,
     );
-    this.refreshPortalBar();
-  }
-
-  private refreshPortalBar(): void {
+    // Portal bar sits under the chapter card — hide while the card is up.
     this.map.refreshPortalBar(
       this.ctx.state.portalUnlocked,
-      this.tab === 'scene' && !this.ctx.story.reading,
+      this.tab === 'scene' && !this.ctx.story.reading && !chapterVisible,
       this.ctx.state.region,
     );
   }
@@ -405,6 +402,8 @@ export class PlayScene extends Phaser.Scene {
   private onNewGame(): void {
     this.ctx.reset();
     this.lastLevel = 1;
+    this.shopScroll = 0;
+    this.rewardsScroll = 0;
     this.outlook.applyRegionVisual();
     this.showToast('Save cleared');
     this.setTab('scene', true);

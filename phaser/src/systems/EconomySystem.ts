@@ -163,25 +163,25 @@ export class EconomySystem {
     return true;
   }
 
+  /** Unity VideoLogic — keep cumulative watches; double goal; bump meta count. */
   claimVideo(state: GameSave): boolean {
     const a = state.achievements;
     a.videoGoal = Math.max(1, a.videoGoal);
     if (a.videoCount < a.videoGoal) return false;
-    a.videoCount -= a.videoGoal;
     a.videoGoal *= 2;
     this.addInfluence(state, this.passivePerSecond(state) * 36000);
     a.achievementCount += 1;
     return true;
   }
 
-  /** Earn N Rewards — 1h influence. */
+  /** Unity AchievementLogic — keep cumulative claims; double goal; then ++. */
   claimMeta(state: GameSave): boolean {
     const a = state.achievements;
     a.achievementGoal = Math.max(1, a.achievementGoal);
     if (a.achievementCount < a.achievementGoal) return false;
-    a.achievementCount -= a.achievementGoal;
     a.achievementGoal *= 2;
     this.addInfluence(state, this.passivePerSecond(state) * 3600);
+    a.achievementCount += 1;
     return true;
   }
 

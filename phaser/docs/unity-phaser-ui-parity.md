@@ -180,7 +180,7 @@ Save/schema notes for R2:
 See [`parity-screens/11-map-seeded.png`](parity-screens/11-map-seeded.png).
 
 - Study scene comes from full-frame `xal_*.png` expressions (good direction).
-- `Scene.png` is **loaded in Preload but unused**.
+- `Scene.png` was unused and has been **removed** (Map uses full-frame `xal-*`).
 - Chapter card (`260×92`) using achiev-box:
   - Locked: shows `Lvl 10`, **hides** `2x Mana Increase`
   - Unlocked: shows `2x Mana Increase`, hides level

@@ -19,7 +19,7 @@
 - Map chapter card: locked ch 2–4 shows Lvl **and** 2x Mana Increase
 - HUD `!` = chapter ready; Tomes affordability `!` + Rewards claim `!`
 - Creatures aspect-true; mana-bar art; scroll thumb rotated (no horizontal→vertical squash)
-- `Scene.png` intentionally unused (full-frame `xal-*` tower scenes)
+- `Scene.png` removed (full-frame `xal-*` tower scenes)
 - Separate BGM / SFX mute; localStorage saves; PWA manifest
 
 ## Remaining vs Unity (P2 only)

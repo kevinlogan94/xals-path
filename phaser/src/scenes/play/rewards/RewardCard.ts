@@ -14,35 +14,34 @@ export interface RewardRow {
   onWatch?: () => void;
 }
 
-/**
- * Reward card: achiev-box keeps 840×260 aspect (no tall squash).
- * Slot is a bit taller than the frame so title/bar/Receive stay readable.
- */
+/** Readable 2-col card; achiev-box stretches to the slot (Unity Image stretch). */
 export function createRewardCard(
   scene: Phaser.Scene,
   colW: number,
   row: RewardRow,
   onClaim: () => void,
+  onPressStart?: () => void,
 ): Phaser.GameObjects.Container {
   const ready = row.n >= row.goal;
   const cardW = colW - 4;
-  const frameH = Math.round(cardW * (260 / 840));
-  const slotH = Math.max(frameH + 36, 96);
+  const slotH = rewardSlotHeight(colW);
   const barW = cardW - 24;
+  const iconX = -cardW / 2 + 14;
+  const titleY = -slotH * 0.32;
 
   const parts: Phaser.GameObjects.GameObject[] = [
-    scene.add.image(0, -((slotH - frameH) / 2), 'ui-achiev-box').setDisplaySize(cardW, frameH),
-    scene.add.image(-cardW / 2 + 16, -slotH * 0.32, row.icon).setDisplaySize(18, 18),
+    scene.add.image(0, 0, 'ui-achiev-box').setDisplaySize(cardW, slotH),
+    scene.add.image(iconX, titleY, row.icon).setDisplaySize(16, 16),
     scene.add
-      .text(6, -slotH * 0.32, row.title, whiteText('6px', { wordWrap: { width: cardW - 40 } }))
-      .setOrigin(0.5),
-    scene.add.rectangle(0, -slotH * 0.08, barW, 8, 0x1a140c).setStrokeStyle(1, 0x5a4030),
+      .text(iconX + 12, titleY, row.title, whiteText('6px', { wordWrap: { width: cardW - 40 } }))
+      .setOrigin(0, 0.5),
+    scene.add.rectangle(0, -slotH * 0.08, barW, 7, 0x1a140c).setStrokeStyle(1, 0x5a4030),
     scene.add
       .rectangle(
         -barW / 2,
         -slotH * 0.08,
         Math.max(2, barW * Math.min(1, row.n / Math.max(1, row.goal))),
-        8,
+        7,
         0x5ecf5a,
       )
       .setOrigin(0, 0.5),
@@ -50,7 +49,7 @@ export function createRewardCard(
     scene.add
       .text(
         0,
-        slotH * 0.12,
+        slotH * 0.14,
         row.hint,
         whiteText('5px', {
           color: '#ffe6a8',
@@ -62,6 +61,7 @@ export function createRewardCard(
   ];
 
   const btnY = slotH * 0.36;
+  const btnH = 18;
   if (row.onWatch) {
     parts.push(
       createImageButton(
@@ -71,10 +71,11 @@ export function createRewardCard(
         'ui-btn-blue',
         'Watch',
         cardW * 0.4,
-        18,
+        btnH,
         row.onWatch,
         1,
         '5px',
+        onPressStart,
       ),
       createImageButton(
         scene,
@@ -83,10 +84,11 @@ export function createRewardCard(
         'ui-btn-green',
         'Receive',
         cardW * 0.4,
-        18,
+        btnH,
         ready ? onClaim : undefined,
         ready ? 1 : 0.45,
         '5px',
+        onPressStart,
       ),
     );
   } else {
@@ -98,10 +100,11 @@ export function createRewardCard(
         'ui-btn-green',
         'Receive',
         cardW - 28,
-        18,
+        btnH,
         ready ? onClaim : undefined,
         ready ? 1 : 0.45,
         '5px',
+        onPressStart,
       ),
     );
   }
@@ -110,7 +113,6 @@ export function createRewardCard(
 }
 
 export function rewardSlotHeight(colW: number): number {
-  const cardW = colW - 4;
-  const frameH = Math.round(cardW * (260 / 840));
-  return Math.max(frameH + 36, 96);
+  // Tall enough for title/bar/hint/buttons; wider than pure 840×260 at 2-col width.
+  return Math.max(112, Math.round((colW - 4) * 0.62));
 }

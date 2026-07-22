@@ -128,49 +128,52 @@ export class SaveSystem {
       achievements: {
         ...fresh.achievements,
         ...save.achievements,
-        clickerGoal: finite(
-          save.achievements?.clickerGoal,
-          fresh.achievements.clickerGoal,
+        clickerGoal: Math.max(
+          1,
+          finite(save.achievements?.clickerGoal, fresh.achievements.clickerGoal),
         ),
         clickerCount: finite(
           save.achievements?.clickerCount,
           fresh.achievements.clickerCount,
         ),
-        helperGoal: finite(
-          save.achievements?.helperGoal,
-          fresh.achievements.helperGoal,
+        helperGoal: Math.max(
+          1,
+          finite(save.achievements?.helperGoal, fresh.achievements.helperGoal),
         ),
         helperCount: finite(
           save.achievements?.helperCount,
           fresh.achievements.helperCount,
         ),
-        videoGoal: finite(
-          save.achievements?.videoGoal,
-          fresh.achievements.videoGoal,
+        videoGoal: Math.max(
+          1,
+          finite(save.achievements?.videoGoal, fresh.achievements.videoGoal),
         ),
         videoCount: finite(
           save.achievements?.videoCount,
           fresh.achievements.videoCount,
         ),
-        achievementGoal: finite(
-          save.achievements?.achievementGoal,
-          fresh.achievements.achievementGoal,
+        achievementGoal: Math.max(
+          1,
+          finite(
+            save.achievements?.achievementGoal,
+            fresh.achievements.achievementGoal,
+          ),
         ),
         achievementCount: finite(
           save.achievements?.achievementCount,
           fresh.achievements.achievementCount,
         ),
-        loginGoal: finite(
-          save.achievements?.loginGoal,
-          fresh.achievements.loginGoal,
+        loginGoal: Math.max(
+          1,
+          finite(save.achievements?.loginGoal, fresh.achievements.loginGoal),
         ),
         loginCount: finite(
           save.achievements?.loginCount,
           fresh.achievements.loginCount,
         ),
-        storyGoal: finite(
-          save.achievements?.storyGoal,
-          fresh.achievements.storyGoal,
+        storyGoal: Math.max(
+          1,
+          finite(save.achievements?.storyGoal, fresh.achievements.storyGoal),
         ),
         storyCount: finite(
           save.achievements?.storyCount,

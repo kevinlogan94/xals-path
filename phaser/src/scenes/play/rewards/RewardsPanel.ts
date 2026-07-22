@@ -32,7 +32,28 @@ export function renderRewardsPanel({
   const a = ctx.state.achievements;
   const passive = ctx.economy.passivePerSecond(ctx.state);
   const hoursHint = (hours: number, base: string) =>
-    `Rewards: ${base} (${formatNumber(passive * hours * 3600)} influence)`;
+    `Rewards: ${base}\n(${formatNumber(passive * hours * 3600)} influence)`;
+
+  const gap = 8;
+  const colW = (innerW - gap) / 2;
+  const slotH = rewardSlotHeight(colW);
+  const rowH = slotH + gap;
+  const rowCount = 3;
+  const scroll = createScrollList({
+    scene,
+    panel,
+    dim,
+    listTop,
+    listBottom,
+    listLeft,
+    listWidth: innerW,
+    scrollX,
+    rowHeight: rowH,
+    itemHeight: slotH,
+    rowCount,
+    scroll: rewardsScroll,
+    onScroll,
+  });
 
   // Unity grid order: Helper, Clicker, Video, Earn Rewards, Login, Story
   const rows: RewardRow[] = [
@@ -60,6 +81,7 @@ export function renderRewardsPanel({
       hint: hoursHint(10, '10 hours worth of influence'),
       icon: 'ui-reward-video',
       onWatch: () => {
+        if (scroll.wasDrag()) return;
         ctx.economy.watchProjection(ctx.state);
         showToast('Projection watched');
         rerender();
@@ -91,27 +113,6 @@ export function renderRewardsPanel({
     },
   ];
 
-  const gap = 8;
-  const colW = (innerW - gap) / 2;
-  const slotH = rewardSlotHeight(colW);
-  const rowH = slotH + gap;
-  const rowCount = Math.ceil(rows.length / 2);
-  const scroll = createScrollList({
-    scene,
-    panel,
-    dim,
-    listTop,
-    listBottom,
-    listLeft,
-    listWidth: innerW,
-    scrollX,
-    rowHeight: rowH,
-    itemHeight: slotH,
-    rowCount,
-    scroll: rewardsScroll,
-    onScroll,
-  });
-
   const claim = (id: RewardRow['id']): boolean => {
     switch (id) {
       case 'helper':
@@ -135,14 +136,20 @@ export function renderRewardsPanel({
     const pair = scene.add.container(0, 0);
     const addSide = (row: RewardRow | undefined, x: number) => {
       if (!row) return;
-      const card = createRewardCard(scene, colW, row, () => {
-        if (scroll.wasDrag()) return;
-        if (claim(row.id)) {
-          ctx.audio.playSfx('coin');
-          showToast('Reward received');
-          rerender();
-        }
-      });
+      const card = createRewardCard(
+        scene,
+        colW,
+        row,
+        () => {
+          if (scroll.wasDrag()) return;
+          if (claim(row.id)) {
+            ctx.audio.playSfx('coin');
+            showToast('Reward received');
+            rerender();
+          }
+        },
+        () => scroll.resetDrag(),
+      );
       card.setX(x);
       pair.add(card);
     };
