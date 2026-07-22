@@ -18,13 +18,22 @@
 
 ## Remaining vs Unity polish
 
+Canonical gap + cleanup checklist: [`docs/unity-phaser-ui-parity.md`](docs/unity-phaser-ui-parity.md)
+
+Highlights still open:
+
+- Settings audio rows + Achievements/Credits/New Game button set
+- Rewards: 6-card grid, scroll, copy, aspect-true frames
+- Map chapter card shows Lvl + 2x Mana together when locked
+- HUD `!` = chapter ready; Tomes `!` = affordable helper
 - Guided finger-pointer tutorial tour
-- Creature walk-cycle / Xal book idle layers
+- Creature walk-cycle / aspect-true spawns / Xal book idle layers
 - First-tome creature unlock splash panel
 - News prompts, influence crystal
 - Barlog full overlay presentation
 - Achievement jingle
 - Finer cloud/bar nine-slice fidelity
+- Co-locate PlayScene UI under `src/scenes/play/` (see CLEAN tasks in parity doc)
 
 ## Run
 
