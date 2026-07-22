@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import type { GameContext } from '../../../game/GameContext';
-import type { RegionId } from '../../../types';
 import { addFramedPanel } from '../ui/FramedPanel';
 import { createImageButton } from '../ui/ImageButton';
 import { whiteText } from '../ui/textStyles';
@@ -9,8 +8,8 @@ interface SettingsPanelConfig {
   scene: Phaser.Scene;
   panel: Phaser.GameObjects.Container;
   ctx: GameContext;
-  showToast: (message: string) => void;
-  onPortalTravel: (region: RegionId) => void;
+  onAchievements: () => void;
+  onCredits: () => void;
   onNewGame: () => void;
 }
 
@@ -18,8 +17,8 @@ export function renderSettingsPanel({
   scene,
   panel,
   ctx,
-  showToast,
-  onPortalTravel,
+  onAchievements,
+  onCredits,
   onNewGame,
 }: SettingsPanelConfig): void {
   const w = scene.scale.width;
@@ -31,26 +30,27 @@ export function renderSettingsPanel({
     y += 22;
   };
 
-  const mkToggle = (initial: string, muted: boolean, onToggle: () => string) => {
+  /** Unity audio row: label + speaker + thick black mute line (boolean toggle). */
+  const mkMuteRow = (muted: boolean, onToggle: () => boolean) => {
+    let isMuted = muted;
     const speaker = scene.add
-      .image(w / 2 - 70, y, muted ? 'ui-speaker-off' : 'ui-speaker-on')
+      .image(w / 2 - 78, y, isMuted ? 'ui-speaker-off' : 'ui-speaker-on')
       .setDisplaySize(28, 28)
       .setInteractive({ useHandCursor: true });
-    const btn = scene.add
-      .image(w / 2 + 24, y, 'ui-btn-blue')
-      .setDisplaySize(140, 36)
+    const line = scene.add
+      .rectangle(w / 2 + 20, y, 150, 10, 0x0a0a0a)
+      .setStrokeStyle(2, 0x1a1a1a)
       .setInteractive({ useHandCursor: true });
-    const label = scene.add.text(w / 2 + 24, y, initial, whiteText('8px')).setOrigin(0.5);
     const apply = () => {
-      const text = onToggle();
-      const nowMuted = text.endsWith('Off');
-      speaker.setTexture(nowMuted ? 'ui-speaker-off' : 'ui-speaker-on');
-      label.setText(text);
+      isMuted = onToggle();
+      speaker.setTexture(isMuted ? 'ui-speaker-off' : 'ui-speaker-on');
+      line.setFillStyle(isMuted ? 0x3a3a3a : 0x0a0a0a);
     };
     speaker.on('pointerdown', apply);
-    btn.on('pointerdown', apply);
-    panel.add([speaker, btn, label]);
-    y += 48;
+    line.on('pointerdown', apply);
+    if (isMuted) line.setFillStyle(0x3a3a3a);
+    panel.add([speaker, line]);
+    y += 44;
   };
 
   const mkImgBtn = (key: string, label: string, fn: () => void) => {
@@ -59,31 +59,12 @@ export function renderSettingsPanel({
   };
 
   section('Background Music');
-  mkToggle(
-    ctx.audio.muteBgm ? 'Music Off' : 'Music On',
-    ctx.audio.muteBgm,
-    () => (ctx.audio.toggleMuteBgm() ? 'Music Off' : 'Music On'),
-  );
+  mkMuteRow(ctx.audio.muteBgm, () => ctx.audio.toggleMuteBgm());
 
   section('Sound Effects');
-  mkToggle(
-    ctx.audio.muteSfx ? 'SFX Off' : 'SFX On',
-    ctx.audio.muteSfx,
-    () => (ctx.audio.toggleMuteSfx() ? 'SFX Off' : 'SFX On'),
-  );
+  mkMuteRow(ctx.audio.muteSfx, () => ctx.audio.toggleMuteSfx());
 
-  mkImgBtn('ui-btn-green', 'Credits', () => {
-    showToast("Xal's Path — web remake");
-  });
-
-  if (ctx.state.portalUnlocked) {
-    (['meadow', 'river', 'altar'] as RegionId[]).forEach((r) => {
-      mkImgBtn('ui-btn-blue', `Portal: ${r}`, () => onPortalTravel(r));
-    });
-  } else {
-    panel.add(scene.add.text(w / 2, y, 'Portal sealed', whiteText('8px', { color: '#888' })).setOrigin(0.5));
-    y += 40;
-  }
-
+  mkImgBtn('ui-btn-green', 'Achievements', onAchievements);
+  mkImgBtn('ui-btn-blue', 'Credits', onCredits);
   mkImgBtn('ui-btn-orange', 'New Game', onNewGame);
 }

@@ -65,6 +65,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-banner', 'assets/ui/PanelBanner.png');
     this.load.image('ui-quote-box', 'assets/ui/QuoteBox.png');
     this.load.image('ui-mana-icon', 'assets/ui/manaIcon.png');
+    this.load.image('ui-mana-bar', 'assets/ui/mana-bar.png');
     this.load.image('ui-star', 'assets/ui/star.png');
     this.load.image('ui-speaker-on', 'assets/ui/SpeakerOn.png');
     this.load.image('ui-speaker-off', 'assets/ui/SpeakerOff.png');
@@ -81,10 +82,13 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-reward-shop', 'assets/ui/reward-shop.png');
     this.load.image('ui-reward-notepad', 'assets/ui/reward-notepad.png');
     this.load.image('ui-reward-portal', 'assets/ui/reward-portal.png');
+    this.load.image('ui-reward-video', 'assets/ui/reward-video.png');
+    this.load.image('ui-reward-trophy', 'assets/ui/reward-trophy.png');
     // Prefer cropped nav icons when present
     this.load.image('ui-trophy-nav', 'assets/ui/trophy-nav.png');
     this.load.image('ui-portal-nav', 'assets/ui/portal-nav.png');
     this.load.image('ui-tomes-nav', 'assets/ui/tomes-nav.png');
+    // Scene.png intentionally not loaded — Map uses full-frame xal-* tower scenes.
 
     for (const h of helpersData.helpers as HelperDef[]) {
       this.load.image(`tome-${h.id}`, `assets/ui/tomes/${h.id}.png`);

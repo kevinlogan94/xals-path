@@ -7,6 +7,7 @@ import { BottomNav } from './play/nav/BottomNav';
 import { MapView } from './play/map/MapView';
 import { OutlookView } from './play/outlook/OutlookView';
 import { renderRewardsPanel } from './play/rewards/RewardsPanel';
+import { showCreditsModal } from './play/settings/CreditsModal';
 import { renderSettingsPanel } from './play/settings/SettingsPanel';
 import { renderTomesPanel } from './play/tomes/TomesPanel';
 import { FONT } from './play/ui/constants';
@@ -26,6 +27,7 @@ export class PlayScene extends Phaser.Scene {
   private passiveSpawnTimer = 0;
   private ignoreCastUntil = 0;
   private shopScroll = 0;
+  private rewardsScroll = 0;
   private banterTimer?: Phaser.Time.TimerEvent;
   private persistHidden!: () => void;
   private persistPageHide!: () => void;
@@ -59,6 +61,7 @@ export class PlayScene extends Phaser.Scene {
       () => this.onChapterButton(),
     );
     this.map.build();
+    this.map.setPortalTravelHandler((region) => this.onPortalTravel(region));
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (this.tab !== 'outlook') return;
@@ -282,6 +285,15 @@ export class PlayScene extends Phaser.Scene {
       next ? !this.ctx.story.canStart(this.ctx.state, next.id) : false,
       visible,
     );
+    this.refreshPortalBar();
+  }
+
+  private refreshPortalBar(): void {
+    this.map.refreshPortalBar(
+      this.ctx.state.portalUnlocked,
+      this.tab === 'scene' && !this.ctx.story.reading,
+      this.ctx.state.region,
+    );
   }
 
   private renderQuote(): void {
@@ -290,6 +302,7 @@ export class PlayScene extends Phaser.Scene {
     this.clearBanterTimer();
     this.map.showQuote(line.text);
     this.map.hideChapterCard();
+    this.map.refreshPortalBar(false, false, this.ctx.state.region);
     if (line.speaker === 'barlog') {
       // Barlog uses a separate overlay in Unity; keep Xal tower scene underneath for now.
       this.ctx.audio.playBgm('barlogs-theme');
@@ -318,6 +331,7 @@ export class PlayScene extends Phaser.Scene {
 
     if (tab === 'outlook') {
       this.map.hideChapterCard();
+      this.map.refreshPortalBar(false, false, this.ctx.state.region);
       this.ctx.audio.playRegion(this.ctx.state.region);
       return;
     }
@@ -332,6 +346,7 @@ export class PlayScene extends Phaser.Scene {
     }
 
     this.map.hideChapterCard();
+    this.map.refreshPortalBar(false, false, this.ctx.state.region);
     this.ctx.spawn.clear();
     if (tab === 'shop') this.renderShop();
     if (tab === 'achievements') this.renderAchievements();
@@ -357,6 +372,10 @@ export class PlayScene extends Phaser.Scene {
       scene: this,
       panel: this.panel,
       ctx: this.ctx,
+      rewardsScroll: this.rewardsScroll,
+      onScroll: (scroll) => {
+        this.rewardsScroll = scroll;
+      },
       showToast: (message) => this.showToast(message),
       rerender: () => this.setTab('achievements', true),
     });
@@ -367,8 +386,8 @@ export class PlayScene extends Phaser.Scene {
       scene: this,
       panel: this.panel,
       ctx: this.ctx,
-      showToast: (message) => this.showToast(message),
-      onPortalTravel: (region) => this.onPortalTravel(region),
+      onAchievements: () => this.setTab('achievements', true),
+      onCredits: () => showCreditsModal(this, this.panel),
       onNewGame: () => this.onNewGame(),
     });
   }
@@ -392,8 +411,12 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private refreshHud(): void {
+    const next = this.nextChapter();
+    this.hud.setChapterReady(
+      this.ctx.economy.chapterReady(this.ctx.state, next, this.ctx.story.reading),
+    );
     this.hud.refresh();
-    this.nav.refreshRewardsBadge();
+    this.nav.refreshBadges(this.ctx.story.reading);
   }
 
   private showToast(msg: string): void {

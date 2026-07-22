@@ -32,6 +32,10 @@ function createDefaultSave(): GameSave {
       clickerCount: 0,
       helperGoal: economy.helperAchievementGoalStart,
       helperCount: 0,
+      videoGoal: economy.videoAchievementGoalStart,
+      videoCount: 0,
+      achievementGoal: economy.achievementGoalStart,
+      achievementCount: 0,
       loginGoal: 2,
       loginCount: 0,
       lastLoginDay: '',
@@ -139,6 +143,22 @@ export class SaveSystem {
         helperCount: finite(
           save.achievements?.helperCount,
           fresh.achievements.helperCount,
+        ),
+        videoGoal: finite(
+          save.achievements?.videoGoal,
+          fresh.achievements.videoGoal,
+        ),
+        videoCount: finite(
+          save.achievements?.videoCount,
+          fresh.achievements.videoCount,
+        ),
+        achievementGoal: finite(
+          save.achievements?.achievementGoal,
+          fresh.achievements.achievementGoal,
+        ),
+        achievementCount: finite(
+          save.achievements?.achievementCount,
+          fresh.achievements.achievementCount,
         ),
         loginGoal: finite(
           save.achievements?.loginGoal,

@@ -25,41 +25,44 @@ export function renderChapterCard({
     return;
   }
 
-  const cardW = 260;
-  const cardH = 92;
+  // Slightly taller than old strip so Lvl + 2x Mana both read when locked.
+  const cardW = 268;
+  const cardH = 104;
   const bg = scene.add
     .image(0, 0, locked ? 'ui-achiev-box-pressed' : 'ui-achiev-box')
     .setDisplaySize(cardW, cardH);
-  const icon = fitInBox(scene, locked ? 'ui-lock' : 'ui-portal-nav', 36, 36).setPosition(-92, 0);
+  const icon = fitInBox(scene, locked ? 'ui-lock' : 'ui-portal-nav', 36, 36).setPosition(-96, -4);
   const parts: Phaser.GameObjects.GameObject[] = [
     bg,
     icon,
     scene.add
-      .text(-64, -22, `Chapter ${chapter.id}`, whiteText('8px', { color: '#c8b89a' }))
+      .text(-64, -28, `Chapter ${chapter.id}`, whiteText('8px', { color: '#c8b89a' }))
       .setOrigin(0, 0.5),
     scene.add
       .text(
         -64,
-        0,
+        -6,
         chapter.name,
         whiteText('9px', {
           color: locked ? '#888' : '#ffffff',
-          wordWrap: { width: 150 },
+          wordWrap: { width: 160 },
         }),
       )
       .setOrigin(0, 0.5),
   ];
 
+  // Unity ChapterButton: Lvl when locked; 2x Mana for ch 2–4 even while locked.
   if (locked) {
     parts.push(
       scene.add
-        .text(-64, 24, `Lvl ${chapter.levelRequirement}`, whiteText('8px', { color: '#e08080' }))
+        .text(-64, 18, `Lvl ${chapter.levelRequirement}`, whiteText('8px', { color: '#e08080' }))
         .setOrigin(0, 0.5),
     );
-  } else if (chapter.id >= 2 && chapter.id <= 4) {
+  }
+  if (chapter.id >= 2 && chapter.id <= 4) {
     parts.push(
       scene.add
-        .text(-64, 24, '2x Mana Increase', whiteText('7px', { color: '#9ec9ff' }))
+        .text(-64, locked ? 36 : 22, '2x Mana Increase', whiteText('7px', { color: '#9ec9ff' }))
         .setOrigin(0, 0.5),
     );
   }

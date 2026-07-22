@@ -1,12 +1,16 @@
 import Phaser from 'phaser';
 import type { GameContext } from '../../../game/GameContext';
+import { formatNumber } from '../../../utils/format';
 import { addFramedPanel } from '../ui/FramedPanel';
-import { addRewardCard, type RewardRow } from './RewardCard';
+import { createScrollList } from '../ui/ScrollList';
+import { createRewardCard, rewardSlotHeight, type RewardRow } from './RewardCard';
 
 interface RewardsPanelConfig {
   scene: Phaser.Scene;
   panel: Phaser.GameObjects.Container;
   ctx: GameContext;
+  rewardsScroll: number;
+  onScroll: (scroll: number) => void;
   showToast: (message: string) => void;
   rerender: () => void;
 }
@@ -15,35 +19,66 @@ export function renderRewardsPanel({
   scene,
   panel,
   ctx,
+  rewardsScroll,
+  onScroll,
   showToast,
   rerender,
 }: RewardsPanelConfig): void {
-  const w = scene.scale.width;
-  const contentTop = addFramedPanel(scene, panel, 'Rewards').listTop;
+  const { dim, listTop, listBottom, listLeft, listWidth: innerW, scrollX } = addFramedPanel(
+    scene,
+    panel,
+    'Rewards',
+  );
   const a = ctx.state.achievements;
+  const passive = ctx.economy.passivePerSecond(ctx.state);
+  const hoursHint = (hours: number, base: string) =>
+    `Rewards: ${base} (${formatNumber(passive * hours * 3600)} influence)`;
+
+  // Unity grid order: Helper, Clicker, Video, Earn Rewards, Login, Story
   const rows: RewardRow[] = [
-    {
-      id: 'clicker',
-      title: `Cast ${a.clickerGoal} spells`,
-      n: a.clickerCount,
-      goal: a.clickerGoal,
-      hint: '×15 influence per click',
-      icon: 'ui-reward-star',
-    },
     {
       id: 'helper',
       title: `Buy ${a.helperGoal} Tomes`,
       n: a.helperCount,
       goal: a.helperGoal,
-      hint: '×3 influence from tomes',
+      hint: 'Rewards: 3x influence from tomes',
       icon: 'ui-reward-shop',
+    },
+    {
+      id: 'clicker',
+      title: `Cast ${a.clickerGoal} spells`,
+      n: a.clickerCount,
+      goal: a.clickerGoal,
+      hint: 'Rewards: 15x influence per click',
+      icon: 'ui-reward-star',
+    },
+    {
+      id: 'video',
+      title: `Watch ${a.videoGoal} projections`,
+      n: a.videoCount,
+      goal: a.videoGoal,
+      hint: hoursHint(10, '10 hours worth of influence'),
+      icon: 'ui-reward-video',
+      onWatch: () => {
+        ctx.economy.watchProjection(ctx.state);
+        showToast('Projection watched');
+        rerender();
+      },
+    },
+    {
+      id: 'meta',
+      title: `Earn ${a.achievementGoal} Rewards`,
+      n: a.achievementCount,
+      goal: a.achievementGoal,
+      hint: hoursHint(1, '1 hour worth of influence'),
+      icon: 'ui-reward-trophy',
     },
     {
       id: 'login',
       title: `Log in for ${a.loginGoal} days`,
       n: a.loginCount,
       goal: a.loginGoal,
-      hint: '1 hour of influence',
+      hint: hoursHint(1, '1 hour worth of influence'),
       icon: 'ui-reward-notepad',
     },
     {
@@ -51,32 +86,77 @@ export function renderRewardsPanel({
       title: 'Finish the Story',
       n: a.storyCount,
       goal: a.storyGoal,
-      hint: '10 hours of influence',
+      hint: hoursHint(10, '10 hours worth of influence'),
       icon: 'ui-reward-portal',
     },
   ];
 
-  const colW = (w - 40) / 2;
-  const cardH = 148;
-  rows.forEach((r, i) => {
-    const col = i % 2;
-    const row = Math.floor(i / 2);
-    const x = 20 + col * (colW + 4) + colW / 2;
-    const y = contentTop + 16 + row * (cardH + 10) + cardH / 2;
-    addRewardCard(scene, panel, x, y, colW, cardH, r, () => {
-      const ok =
-        r.id === 'clicker'
-          ? ctx.economy.claimClicker(ctx.state)
-          : r.id === 'helper'
-            ? ctx.economy.claimHelper(ctx.state)
-            : r.id === 'login'
-              ? ctx.economy.claimLogin(ctx.state)
-              : ctx.economy.claimStory(ctx.state);
-      if (ok) {
-        ctx.audio.playSfx('coin');
-        showToast('Reward received');
-        rerender();
-      }
-    });
+  const gap = 8;
+  const colW = (innerW - gap) / 2;
+  const slotH = rewardSlotHeight(colW);
+  const rowH = slotH + gap;
+  const rowCount = Math.ceil(rows.length / 2);
+  const scroll = createScrollList({
+    scene,
+    panel,
+    dim,
+    listTop,
+    listBottom,
+    listLeft,
+    listWidth: innerW,
+    scrollX,
+    rowHeight: rowH,
+    itemHeight: slotH,
+    rowCount,
+    scroll: rewardsScroll,
+    onScroll,
   });
+
+  const claim = (id: RewardRow['id']): boolean => {
+    switch (id) {
+      case 'helper':
+        return ctx.economy.claimHelper(ctx.state);
+      case 'clicker':
+        return ctx.economy.claimClicker(ctx.state);
+      case 'video':
+        return ctx.economy.claimVideo(ctx.state);
+      case 'meta':
+        return ctx.economy.claimMeta(ctx.state);
+      case 'login':
+        return ctx.economy.claimLogin(ctx.state);
+      case 'story':
+        return ctx.economy.claimStory(ctx.state);
+    }
+  };
+
+  for (let i = 0; i < rowCount; i++) {
+    const left = rows[i * 2];
+    const right = rows[i * 2 + 1];
+    const pair = scene.add.container(0, 0);
+    const addSide = (row: RewardRow | undefined, x: number) => {
+      if (!row) return;
+      const card = createRewardCard(scene, colW, row, () => {
+        if (scroll.wasDrag()) return;
+        if (claim(row.id)) {
+          ctx.audio.playSfx('coin');
+          showToast('Reward received');
+          rerender();
+        }
+      });
+      card.setX(x);
+      pair.add(card);
+    };
+    addSide(left, -colW / 2 - gap / 4);
+    addSide(right, colW / 2 + gap / 4);
+    pair.setSize(innerW, slotH);
+    pair.setInteractive(
+      new Phaser.Geom.Rectangle(-innerW / 2, -slotH / 2, innerW, slotH),
+      Phaser.Geom.Rectangle.Contains,
+    );
+    pair.on('pointerdown', scroll.pointerDown);
+    pair.on('pointermove', scroll.pointerMove);
+    pair.setX(listLeft + innerW / 2);
+    scroll.addCard(pair);
+  }
+  scroll.apply();
 }
