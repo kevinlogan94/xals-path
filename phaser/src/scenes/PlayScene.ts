@@ -609,18 +609,33 @@ export class PlayScene extends Phaser.Scene {
     if (tab === 'settings') this.renderSettings();
   }
 
-  /** Framed modal: panel + banner. Returns content start Y. */
-  private addFramedPanel(title: string): number {
+  /**
+   * Framed modal: panel + banner.
+   * Returns list geometry inside the parchment (not screen edges).
+   */
+  private addFramedPanel(title: string): {
+    listTop: number;
+    listBottom: number;
+    listLeft: number;
+    listWidth: number;
+    scrollX: number;
+  } {
     const w = this.scale.width;
     const h = this.scale.height;
-    const top = 96;
-    const panelH = h - NAV_H - top - 6;
-    const panelW = w - 20;
-    const cy = top + panelH / 2;
-    const bannerW = panelW * 0.78;
-    // Unity PanelTop is ~4.5:1; keep banner readable without crushing gem corners.
+    const panelTop = 96;
+    const panelW = w - 28;
+    const panelH = h - NAV_H - panelTop - 8;
+    const panelLeft = (w - panelW) / 2;
+    const cy = panelTop + panelH / 2;
+
+    // Keep rows clearly inside the parchment, with equal left/right inset.
+    const inset = Math.max(14, Math.round(panelW * 0.045));
+    const scrollGutter = 16;
+
+    const bannerW = panelW * 0.72;
     const bannerH = Math.round(bannerW / 4.5);
-    const bannerY = top + 10 + bannerH / 2;
+    const bannerY = panelTop + inset + bannerH / 2;
+
     this.panel.add(
       this.add
         .rectangle(w / 2, (h - NAV_H) / 2, w, h - NAV_H, 0x0d140d, 0.55)
@@ -630,9 +645,7 @@ export class PlayScene extends Phaser.Scene {
       this.add.image(w / 2, cy, 'ui-panel').setDisplaySize(panelW, panelH),
     );
     this.panel.add(
-      this.add
-        .image(w / 2, bannerY, 'ui-banner')
-        .setDisplaySize(panelW * 0.78, bannerH),
+      this.add.image(w / 2, bannerY, 'ui-banner').setDisplaySize(bannerW, bannerH),
     );
     this.panel.add(
       this.add
@@ -645,8 +658,14 @@ export class PlayScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
     );
-    // Leave clear margin under the banner before the first row (Unity).
-    return bannerY + bannerH / 2 + 14;
+
+    const listTop = bannerY + bannerH / 2 + 12;
+    const listBottom = panelTop + panelH - inset;
+    const listLeft = panelLeft + inset;
+    const listWidth = panelW - inset * 2 - scrollGutter;
+    const scrollX = listLeft + listWidth + scrollGutter / 2;
+
+    return { listTop, listBottom, listLeft, listWidth, scrollX };
   }
 
   /** Fit a texture into a box without distorting aspect ratio. */
@@ -665,17 +684,18 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private renderShop(): void {
-    const w = this.scale.width;
-    const h = this.scale.height;
-    const listTop = this.addFramedPanel('Tomes');
+    const {
+      listTop,
+      listBottom,
+      listLeft,
+      listWidth: innerW,
+      scrollX,
+    } = this.addFramedPanel('Tomes');
+
     // Tome box art is 840×260; keep that aspect so rows aren't vertically squashed.
-    const scrollGutter = 18;
-    const sidePad = 14;
-    const innerW = w - sidePad * 2 - scrollGutter;
     const boxH = Math.round(innerW * (260 / 840));
-    const rowGap = 8;
+    const rowGap = 10;
     const rowH = boxH + rowGap;
-    const listBottom = h - NAV_H - 10;
     const visibleH = listBottom - listTop;
     const maxScroll = Math.max(
       0,
@@ -683,14 +703,22 @@ export class PlayScene extends Phaser.Scene {
     );
     this.shopScroll = Phaser.Math.Clamp(this.shopScroll, 0, maxScroll);
 
+    // Clip rows to the parchment list area so cards can't draw off the panel.
+    const listMidX = listLeft + innerW / 2;
+    const listMidY = listTop + visibleH / 2;
+    const listMask = this.add
+      .rectangle(listMidX, listMidY, innerW + 4, visibleH, 0xffffff)
+      .setVisible(false);
+    this.panel.add(listMask);
+    const mask = listMask.createGeometryMask();
+
     const cards: Phaser.GameObjects.Container[] = [];
-    const scrollX = w - sidePad - 4;
     const scrollTrack = this.add
-      .rectangle(scrollX, listTop + visibleH / 2, 6, visibleH, 0x1a140c, 0.85)
+      .rectangle(scrollX, listMidY, 5, visibleH, 0x1a140c, 0.85)
       .setStrokeStyle(1, 0x5a4030);
     const scrollThumb = this.add
       .image(scrollX, listTop + 20, 'ui-scroll')
-      .setDisplaySize(8, 28);
+      .setDisplaySize(7, 26);
     this.panel.add(scrollTrack);
     this.panel.add(scrollThumb);
 
@@ -702,7 +730,7 @@ export class PlayScene extends Phaser.Scene {
       });
       if (maxScroll > 0) {
         const t = this.shopScroll / maxScroll;
-        const thumbTravel = visibleH - 32;
+        const thumbTravel = Math.max(0, visibleH - 32);
         scrollThumb.setY(listTop + 16 + t * thumbTravel);
         scrollThumb.setVisible(true);
         scrollTrack.setVisible(true);
@@ -727,13 +755,17 @@ export class PlayScene extends Phaser.Scene {
       applyScroll();
     };
 
-    // achiev_box art bakes in a 160×160 avatar well at (46,46) inside 840×260.
-    const slotFracX = (46 + 205) / 2 / 840;
-    const slotFracY = (46 + 205) / 2 / 260;
-    const slotSize = Math.round(innerW * (160 / 840));
-    const avatarMax = Math.round(slotSize * 0.92);
-    const textLeft = -innerW / 2 + innerW * (205 / 840) + 10;
-    const textRight = innerW / 2 - 12;
+    // achiev_box bakes a 160×160 white well at (46,46) inside 840×260.
+    const wellX = ((46 + 205) / 2 / 840) * innerW;
+    const wellY = ((46 + 205) / 2 / 260) * boxH;
+    const wellSize = innerW * (160 / 840);
+    // Equal inset on all sides so emblems don't kiss the brown frame.
+    const avatarPad = wellSize * 0.1;
+    const avatarMax = wellSize - avatarPad * 2;
+    // lock.png has ~8px empty margin in a 130px asset — enlarge so visible art matches emblems.
+    const lockMax = avatarMax * (130 / 112);
+    const textLeft = -innerW / 2 + innerW * (221 / 840) + 8;
+    const textRight = innerW / 2 - 10;
 
     this.ctx.economy.helpers.forEach((def, i) => {
       const save = this.ctx.state.helpers.find((hh) => hh.id === def.id)!;
@@ -743,13 +775,12 @@ export class PlayScene extends Phaser.Scene {
       const boxKey = locked ? 'ui-tome-locked' : 'ui-tome-box';
       const box = this.add.image(0, 0, boxKey).setDisplaySize(innerW, boxH);
 
-      // Sit emblems/lock inside the card art's inset square (Unity Avatar slot).
-      const avatarX = -innerW / 2 + innerW * slotFracX;
-      const avatarY = -boxH / 2 + boxH * slotFracY;
+      const avatarX = -innerW / 2 + wellX;
+      const avatarY = -boxH / 2 + wellY;
       const emblemKey = `tome-${def.id}`;
       let avatar: Phaser.GameObjects.GameObject;
       if (locked && this.textures.exists('ui-lock')) {
-        const lockImg = this.fitInBox('ui-lock', avatarMax, avatarMax);
+        const lockImg = this.fitInBox('ui-lock', lockMax, lockMax);
         lockImg.setPosition(avatarX, avatarY);
         avatar = lockImg;
       } else if (this.textures.exists(emblemKey)) {
@@ -771,7 +802,6 @@ export class PlayScene extends Phaser.Scene {
         })
         .setOrigin(0, 0.5);
 
-      // Cost row: influence gem + price (shown for locked and unlocked, like Unity).
       const costIcon = this.fitInBox('ui-influence', 16, 14);
       costIcon.setPosition(textLeft + costIcon.displayWidth / 2, boxH * 0.2);
       const costText = this.add
@@ -787,7 +817,6 @@ export class PlayScene extends Phaser.Scene {
         )
         .setOrigin(0, 0.5);
 
-      // Right column: owned count (large) or "Lvl N", with /sec underneath.
       const countLabel = locked
         ? `Lvl ${def.unlockLevel}`
         : String(save.amountOwned);
@@ -821,7 +850,10 @@ export class PlayScene extends Phaser.Scene {
         count,
         rate,
       ];
-      const card = this.add.container(w / 2 - scrollGutter / 2, y, parts).setSize(innerW, boxH);
+      const card = this.add
+        .container(listMidX, y, parts)
+        .setSize(innerW, boxH);
+      card.setMask(mask);
       card.setInteractive(
         new Phaser.Geom.Rectangle(-innerW / 2, -boxH / 2, innerW, boxH),
         Phaser.Geom.Rectangle.Contains,
@@ -863,7 +895,7 @@ export class PlayScene extends Phaser.Scene {
 
   private renderAchievements(): void {
     const w = this.scale.width;
-    const contentTop = this.addFramedPanel('Rewards');
+    const contentTop = this.addFramedPanel('Rewards').listTop;
     const a = this.ctx.state.achievements;
     const rows: {
       id: 'clicker' | 'helper' | 'login' | 'story';
@@ -1021,7 +1053,7 @@ export class PlayScene extends Phaser.Scene {
 
   private renderSettings(): void {
     const w = this.scale.width;
-    const contentTop = this.addFramedPanel('Settings');
+    const contentTop = this.addFramedPanel('Settings').listTop;
     let y = contentTop + 28;
 
     const section = (label: string) => {
