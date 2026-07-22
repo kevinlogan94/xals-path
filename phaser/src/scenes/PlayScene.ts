@@ -617,8 +617,10 @@ export class PlayScene extends Phaser.Scene {
     const panelH = h - NAV_H - top - 6;
     const panelW = w - 20;
     const cy = top + panelH / 2;
-    const bannerH = 48;
-    const bannerY = top + 28;
+    const bannerW = panelW * 0.78;
+    // Unity PanelTop is ~4.5:1; keep banner readable without crushing gem corners.
+    const bannerH = Math.round(bannerW / 4.5);
+    const bannerY = top + 10 + bannerH / 2;
     this.panel.add(
       this.add
         .rectangle(w / 2, (h - NAV_H) / 2, w, h - NAV_H, 0x0d140d, 0.55)
@@ -725,8 +727,12 @@ export class PlayScene extends Phaser.Scene {
       applyScroll();
     };
 
-    const avatarSize = Math.round(boxH * 0.72);
-    const textLeft = -innerW / 2 + avatarSize + 18;
+    // achiev_box art bakes in a 160×160 avatar well at (46,46) inside 840×260.
+    const slotFracX = (46 + 205) / 2 / 840;
+    const slotFracY = (46 + 205) / 2 / 260;
+    const slotSize = Math.round(innerW * (160 / 840));
+    const avatarMax = Math.round(slotSize * 0.92);
+    const textLeft = -innerW / 2 + innerW * (205 / 840) + 10;
     const textRight = innerW / 2 - 12;
 
     this.ctx.economy.helpers.forEach((def, i) => {
@@ -737,20 +743,21 @@ export class PlayScene extends Phaser.Scene {
       const boxKey = locked ? 'ui-tome-locked' : 'ui-tome-box';
       const box = this.add.image(0, 0, boxKey).setDisplaySize(innerW, boxH);
 
-      // Unity swaps the avatar for lvl_lock_block when locked (no emblem underneath).
-      const avatarX = -innerW / 2 + 10 + avatarSize / 2;
+      // Sit emblems/lock inside the card art's inset square (Unity Avatar slot).
+      const avatarX = -innerW / 2 + innerW * slotFracX;
+      const avatarY = -boxH / 2 + boxH * slotFracY;
       const emblemKey = `tome-${def.id}`;
       let avatar: Phaser.GameObjects.GameObject;
       if (locked && this.textures.exists('ui-lock')) {
-        const lockImg = this.fitInBox('ui-lock', avatarSize, avatarSize);
-        lockImg.setPosition(avatarX, 0);
+        const lockImg = this.fitInBox('ui-lock', avatarMax, avatarMax);
+        lockImg.setPosition(avatarX, avatarY);
         avatar = lockImg;
       } else if (this.textures.exists(emblemKey)) {
-        const emblem = this.fitInBox(emblemKey, avatarSize, avatarSize);
-        emblem.setPosition(avatarX, 0);
+        const emblem = this.fitInBox(emblemKey, avatarMax, avatarMax);
+        emblem.setPosition(avatarX, avatarY);
         avatar = emblem;
       } else {
-        avatar = this.add.circle(avatarX, 0, avatarSize / 2, 0x445544);
+        avatar = this.add.circle(avatarX, avatarY, avatarMax / 2, 0x445544);
       }
 
       const titleColor = locked ? '#4a4038' : '#1a1208';
@@ -765,15 +772,19 @@ export class PlayScene extends Phaser.Scene {
         .setOrigin(0, 0.5);
 
       // Cost row: influence gem + price (shown for locked and unlocked, like Unity).
-      const costIcon = this.add
-        .image(textLeft + 6, boxH * 0.2, 'ui-influence')
-        .setDisplaySize(14, 14);
+      const costIcon = this.fitInBox('ui-influence', 16, 14);
+      costIcon.setPosition(textLeft + costIcon.displayWidth / 2, boxH * 0.2);
       const costText = this.add
-        .text(textLeft + 18, boxH * 0.2, formatNumber(save.dynamicCost), {
-          fontFamily: FONT,
-          fontSize: '10px',
-          color: metaColor,
-        })
+        .text(
+          textLeft + costIcon.displayWidth + 4,
+          boxH * 0.2,
+          formatNumber(save.dynamicCost),
+          {
+            fontFamily: FONT,
+            fontSize: '10px',
+            color: metaColor,
+          },
+        )
         .setOrigin(0, 0.5);
 
       // Right column: owned count (large) or "Lvl N", with /sec underneath.
