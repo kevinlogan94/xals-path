@@ -1,7 +1,7 @@
 # Status — Xal's Path Web
 
-**Updated:** 2026-07-21  
-**Branch:** `cursor/unity-ui-parity-22ce`
+**Updated:** 2026-07-22  
+**Branch:** `cursor/agent-friendly-play-split-040e`
 
 ## Done
 
@@ -15,8 +15,9 @@
 - Rewards: achiev_box cards, progress bars, **Receive** claim flow
 - Separate BGM / SFX mute; chapter cards use achiev_box art
 - Creatures, portal travel, localStorage saves, PWA manifest
+- Hub panels colocated under `src/scenes/play/` (agent-friendly blast radius); see `UI_RECIPES.md`
 
-## Remaining vs Unity polish
+## Remaining (gameplay / content — not visual parity)
 
 - Guided finger-pointer tutorial tour
 - Creature walk-cycle / Xal book idle layers
@@ -24,7 +25,11 @@
 - News prompts, influence crystal
 - Barlog full overlay presentation
 - Achievement jingle
-- Finer cloud/bar nine-slice fidelity
+
+## Agent notes
+
+- Prefer remaster PNGs under `public/assets/ui/`; do not redraw branded chrome or chase nine-slice fidelity.
+- Edit Tomes / Rewards / Settings in `src/scenes/play/`, not by growing `PlayScene.ts`.
 
 ## Run
 

@@ -25,3 +25,5 @@ When interacting with files, prefer terminal commands over editing files directl
 ## Scene colocation
 
 Active remake lives in `phaser/`. Keep scene-specific UI and helpers next to the scene that uses them under `phaser/src/scenes/`. Shared systems live in `phaser/src/systems/`, shared data in `phaser/src/data/`. Move code to the closest shared parent only when multiple scenes use it. Treat `unity/` as reference only — do not import Unity managers, CloudOnce, ads, or analytics into `phaser/src/`.
+
+Hub overlay screens (Tomes / Rewards / Settings) live under `phaser/src/scenes/play/`. Follow `phaser/src/scenes/play/UI_RECIPES.md` for chrome — remaster PNGs + Image/Text, not Graphics-drawn UI or Unity nine-slice parity work.

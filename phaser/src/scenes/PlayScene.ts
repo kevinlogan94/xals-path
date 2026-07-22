@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
 import { getContext } from '../game/GameContext';
 import { formatNumber } from '../utils/format';
-import type { RegionId, TabId } from '../types';
-
-const FONT = "'Press Start 2P', 'Courier New', monospace";
-const NAV_H = 76;
+import type { TabId } from '../types';
+import { FONT, NAV_H } from './play/constants';
+import { renderRewards } from './play/renderRewards';
+import { renderSettings } from './play/renderSettings';
+import { renderShop } from './play/renderShop';
 
 /** Unity BottomNav: Settings · Rewards · Outlook · Map · Tomes */
 const NAV: { id: TabId; label: string; icon: string }[] = [
@@ -604,467 +605,43 @@ export class PlayScene extends Phaser.Scene {
 
     this.chapterCard.setVisible(false);
     this.ctx.spawn.clear();
-    if (tab === 'shop') this.renderShop();
-    if (tab === 'achievements') this.renderAchievements();
-    if (tab === 'settings') this.renderSettings();
-  }
-
-  /** Framed modal: panel + banner. Returns content start Y. */
-  private addFramedPanel(title: string): number {
-    const w = this.scale.width;
-    const h = this.scale.height;
-    const top = 100;
-    const panelH = h - NAV_H - top - 8;
-    const panelW = w - 16;
-    const cy = top + panelH / 2;
-    this.panel.add(
-      this.add
-        .rectangle(w / 2, (h - NAV_H) / 2, w, h - NAV_H, 0x0d140d, 0.55)
-        .setInteractive(),
-    );
-    this.panel.add(
-      this.add.image(w / 2, cy, 'ui-panel').setDisplaySize(panelW, panelH),
-    );
-    this.panel.add(
-      this.add.image(w / 2, top + 18, 'ui-banner').setDisplaySize(panelW * 0.72, 34),
-    );
-    this.panel.add(
-      this.add
-        .text(w / 2, top + 18, title, {
-          fontFamily: FONT,
-          fontSize: '11px',
-          color: '#ffffff',
-          stroke: '#1a1208',
-          strokeThickness: 4,
-        })
-        .setOrigin(0.5),
-    );
-    return top + 44;
-  }
-
-  private renderShop(): void {
-    const w = this.scale.width;
-    const h = this.scale.height;
-    const listTop = this.addFramedPanel('Tomes');
-    const rowH = 72;
-    const visibleH = h - NAV_H - listTop - 12;
-    const maxScroll = Math.max(
-      0,
-      this.ctx.economy.helpers.length * rowH - visibleH,
-    );
-    this.shopScroll = Phaser.Math.Clamp(this.shopScroll, 0, maxScroll);
-
-    const cards: Phaser.GameObjects.Container[] = [];
-    const scrollTrack = this.add
-      .rectangle(w - 14, listTop + visibleH / 2, 6, visibleH, 0x1a140c, 0.8)
-      .setStrokeStyle(1, 0x5a4030);
-    const scrollThumb = this.add
-      .image(w - 14, listTop + 20, 'ui-scroll')
-      .setDisplaySize(8, 28);
-    this.panel.add(scrollTrack);
-    this.panel.add(scrollThumb);
-
-    const applyScroll = () => {
-      cards.forEach((card, i) => {
-        const y = listTop + i * rowH - this.shopScroll + rowH / 2;
-        card.setY(y);
-        card.setVisible(y > listTop - 10 && y < h - NAV_H - 4);
-      });
-      if (maxScroll > 0) {
-        const t = this.shopScroll / maxScroll;
-        const thumbTravel = visibleH - 32;
-        scrollThumb.setY(listTop + 16 + t * thumbTravel);
-        scrollThumb.setVisible(true);
-        scrollTrack.setVisible(true);
-      } else {
-        scrollThumb.setVisible(false);
-        scrollTrack.setVisible(false);
-      }
-    };
-
-    let dragY = 0;
-    let dragMoved = 0;
-    const onDragStart = (p: Phaser.Input.Pointer) => {
-      dragY = p.y;
-      dragMoved = 0;
-    };
-    const onDragMove = (p: Phaser.Input.Pointer) => {
-      if (!p.isDown) return;
-      const dy = dragY - p.y;
-      dragY = p.y;
-      dragMoved += Math.abs(dy);
-      this.shopScroll = Phaser.Math.Clamp(this.shopScroll + dy, 0, maxScroll);
-      applyScroll();
-    };
-
-    const innerW = w - 36;
-    this.ctx.economy.helpers.forEach((def, i) => {
-      const save = this.ctx.state.helpers.find((hh) => hh.id === def.id)!;
-      const locked = this.ctx.state.playerLevel < def.unlockLevel;
-      const y = listTop + i * rowH - this.shopScroll + rowH / 2;
-
-      const boxKey = locked ? 'ui-tome-locked' : 'ui-tome-box';
-      const box = this.add.image(0, 0, boxKey).setDisplaySize(innerW, 66);
-      const emblemKey = `tome-${def.id}`;
-      const emblem = this.textures.exists(emblemKey)
-        ? this.add.image(-innerW / 2 + 36, 0, emblemKey).setDisplaySize(36, 36)
-        : this.add.circle(-innerW / 2 + 36, 0, 18, 0x445544);
-
-      const lockImg =
-        locked && this.textures.exists('ui-lock')
-          ? this.add.image(-innerW / 2 + 36, 0, 'ui-lock').setDisplaySize(22, 22)
-          : null;
-
-      const title = this.add.text(-innerW / 2 + 64, -14, def.name, {
-        fontFamily: FONT,
-        fontSize: '11px',
-        color: locked ? '#888' : '#f3ead7',
-        stroke: '#1a1208',
-        strokeThickness: 2,
-      });
-
-      const costIcon = !locked
-        ? this.add.image(-innerW / 2 + 72, 12, 'ui-influence').setDisplaySize(12, 12)
-        : null;
-      const meta = this.add.text(
-        -innerW / 2 + (locked ? 64 : 82),
-        6,
-        locked
-          ? `Lvl ${def.unlockLevel}`
-          : `${formatNumber(save.dynamicCost)}  ×${save.amountOwned}  +${formatNumber(save.dynamicIncrement)}/s`,
-        {
-          fontFamily: FONT,
-          fontSize: '9px',
-          color: locked ? '#666' : '#c8b89a',
-          stroke: '#1a1208',
-          strokeThickness: 2,
+    if (tab === 'shop') {
+      renderShop({
+        scene: this,
+        panel: this.panel,
+        ctx: this.ctx,
+        getShopScroll: () => this.shopScroll,
+        setShopScroll: (n) => {
+          this.shopScroll = n;
         },
-      );
-
-      const parts: Phaser.GameObjects.GameObject[] = [box, emblem, title, meta];
-      if (lockImg) parts.push(lockImg);
-      if (costIcon) parts.push(costIcon);
-      const card = this.add.container(w / 2, y, parts).setSize(innerW, 66);
-      card.setInteractive(
-        new Phaser.Geom.Rectangle(-innerW / 2, -33, innerW, 66),
-        Phaser.Geom.Rectangle.Contains,
-      );
-      card.on('pointerdown', onDragStart);
-      card.on('pointermove', onDragMove);
-      if (!locked) {
-        card.on('pointerup', () => {
-          if (dragMoved > 10) return;
-          if (this.ctx.economy.buyHelper(this.ctx.state, def.id)) {
-            this.ctx.audio.playSfx('coin');
-            const owned = this.ctx.state.helpers.find((hh) => hh.id === def.id)!;
-            if (owned.amountOwned === 1) {
-              this.showToast(`${def.name} tome — ${def.creatureId} unbound`);
-            }
-            this.setTab('shop', true);
-          } else {
-            this.showToast('Not enough influence');
-          }
-        });
-      }
-      cards.push(card);
-      this.panel.add(card);
-    });
-    applyScroll();
-
-    const dim = this.panel.list[0] as Phaser.GameObjects.Rectangle;
-    dim.on('wheel', (_p: Phaser.Input.Pointer, _dx: number, dy: number) => {
-      this.shopScroll = Phaser.Math.Clamp(
-        this.shopScroll + dy * 0.4,
-        0,
-        maxScroll,
-      );
-      applyScroll();
-    });
-    dim.on('pointerdown', onDragStart);
-    dim.on('pointermove', onDragMove);
-  }
-
-  private renderAchievements(): void {
-    const w = this.scale.width;
-    const contentTop = this.addFramedPanel('Rewards');
-    const a = this.ctx.state.achievements;
-    const rows: {
-      id: 'clicker' | 'helper' | 'login' | 'story';
-      title: string;
-      n: number;
-      goal: number;
-      hint: string;
-      icon: string;
-    }[] = [
-      {
-        id: 'clicker',
-        title: `Cast ${a.clickerGoal} spells`,
-        n: a.clickerCount,
-        goal: a.clickerGoal,
-        hint: '×15 influence per click',
-        icon: 'ui-reward-star',
-      },
-      {
-        id: 'helper',
-        title: `Buy ${a.helperGoal} Tomes`,
-        n: a.helperCount,
-        goal: a.helperGoal,
-        hint: '×3 influence from tomes',
-        icon: 'ui-reward-shop',
-      },
-      {
-        id: 'login',
-        title: `Log in for ${a.loginGoal} days`,
-        n: a.loginCount,
-        goal: a.loginGoal,
-        hint: '1 hour of influence',
-        icon: 'ui-reward-notepad',
-      },
-      {
-        id: 'story',
-        title: 'Finish the Story',
-        n: a.storyCount,
-        goal: a.storyGoal,
-        hint: '10 hours of influence',
-        icon: 'ui-reward-portal',
-      },
-    ];
-
-    const colW = (w - 40) / 2;
-    const cardH = 148;
-    rows.forEach((r, i) => {
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const x = 20 + col * (colW + 4) + colW / 2;
-      const y = contentTop + 16 + row * (cardH + 10) + cardH / 2;
-      const ready = r.n >= r.goal;
-
-      const box = this.add
-        .image(x, y, 'ui-achiev-box')
-        .setDisplaySize(colW - 4, cardH);
-      this.panel.add(box);
-
-      const icon = this.add
-        .image(x - colW / 2 + 28, y - 40, r.icon)
-        .setDisplaySize(28, 28);
-      this.panel.add(icon);
-
-      this.panel.add(
-        this.add
-          .text(x, y - 48, r.title, {
-            fontFamily: FONT,
-            fontSize: '7px',
-            color: '#ffffff',
-            stroke: '#1a1208',
-            strokeThickness: 3,
-            align: 'center',
-            wordWrap: { width: colW - 20 },
-          })
-          .setOrigin(0.5),
-      );
-
-      const barW = colW - 28;
-      const track = this.add
-        .rectangle(x, y - 8, barW, 10, 0x1a140c)
-        .setStrokeStyle(1, 0x5a4030);
-      const fill = this.add
-        .rectangle(
-          x - barW / 2,
-          y - 8,
-          Math.max(2, barW * Math.min(1, r.n / Math.max(1, r.goal))),
-          10,
-          0x5ecf5a,
-        )
-        .setOrigin(0, 0.5);
-      this.panel.add(track);
-      this.panel.add(fill);
-
-      this.panel.add(
-        this.add
-          .text(x, y - 8, `${r.n}/${r.goal}`, {
-            fontFamily: FONT,
-            fontSize: '7px',
-            color: '#ffffff',
-            stroke: '#1a1208',
-            strokeThickness: 3,
-          })
-          .setOrigin(0.5),
-      );
-
-      this.panel.add(
-        this.add
-          .text(x, y + 18, r.hint, {
-            fontFamily: FONT,
-            fontSize: '6px',
-            color: '#ffe6a8',
-            stroke: '#1a1208',
-            strokeThickness: 3,
-            align: 'center',
-            wordWrap: { width: colW - 16 },
-          })
-          .setOrigin(0.5),
-      );
-
-      const btn = this.add
-        .image(x, y + 48, 'ui-btn-green')
-        .setDisplaySize(colW - 36, 28)
-        .setAlpha(ready ? 1 : 0.45);
-      const btnLabel = this.add
-        .text(x, y + 48, 'Receive', {
-          fontFamily: FONT,
-          fontSize: '8px',
-          color: '#ffffff',
-          stroke: '#1a1208',
-          strokeThickness: 3,
-        })
-        .setOrigin(0.5);
-      this.panel.add(btn);
-      this.panel.add(btnLabel);
-
-      if (ready) {
-        btn.setInteractive({ useHandCursor: true });
-        btn.on('pointerdown', () => {
-          const ok =
-            r.id === 'clicker'
-              ? this.ctx.economy.claimClicker(this.ctx.state)
-              : r.id === 'helper'
-                ? this.ctx.economy.claimHelper(this.ctx.state)
-                : r.id === 'login'
-                  ? this.ctx.economy.claimLogin(this.ctx.state)
-                  : this.ctx.economy.claimStory(this.ctx.state);
-          if (ok) {
-            this.ctx.audio.playSfx('coin');
-            this.showToast('Reward received');
-            this.setTab('achievements', true);
-          }
-        });
-      }
-    });
-  }
-
-  private renderSettings(): void {
-    const w = this.scale.width;
-    const contentTop = this.addFramedPanel('Settings');
-    let y = contentTop + 28;
-
-    const section = (label: string) => {
-      this.panel.add(
-        this.add
-          .text(w / 2, y, label, {
-            fontFamily: FONT,
-            fontSize: '7px',
-            color: '#ffffff',
-            stroke: '#1a1208',
-            strokeThickness: 3,
-          })
-          .setOrigin(0.5),
-      );
-      y += 22;
-    };
-
-    const mkToggle = (initial: string, muted: boolean, onToggle: () => string) => {
-      const speaker = this.add
-        .image(w / 2 - 70, y, muted ? 'ui-speaker-off' : 'ui-speaker-on')
-        .setDisplaySize(28, 28)
-        .setInteractive({ useHandCursor: true });
-      const btn = this.add
-        .image(w / 2 + 24, y, 'ui-btn-blue')
-        .setDisplaySize(140, 36)
-        .setInteractive({ useHandCursor: true });
-      const label = this.add
-        .text(w / 2 + 24, y, initial, {
-          fontFamily: FONT,
-          fontSize: '8px',
-          color: '#ffffff',
-          stroke: '#1a1208',
-          strokeThickness: 3,
-        })
-        .setOrigin(0.5);
-      const apply = () => {
-        const text = onToggle();
-        const nowMuted = text.endsWith('Off');
-        speaker.setTexture(nowMuted ? 'ui-speaker-off' : 'ui-speaker-on');
-        label.setText(text);
-      };
-      speaker.on('pointerdown', apply);
-      btn.on('pointerdown', apply);
-      this.panel.add([speaker, btn, label]);
-      y += 48;
-    };
-
-    section('Background Music');
-    mkToggle(
-      this.ctx.audio.muteBgm ? 'Music Off' : 'Music On',
-      this.ctx.audio.muteBgm,
-      () => (this.ctx.audio.toggleMuteBgm() ? 'Music Off' : 'Music On'),
-    );
-
-    section('Sound Effects');
-    mkToggle(
-      this.ctx.audio.muteSfx ? 'SFX Off' : 'SFX On',
-      this.ctx.audio.muteSfx,
-      () => (this.ctx.audio.toggleMuteSfx() ? 'SFX Off' : 'SFX On'),
-    );
-
-    const mkImgBtn = (key: string, label: string, fn: () => void) => {
-      const btn = this.add
-        .image(w / 2, y, key)
-        .setDisplaySize(180, 40)
-        .setInteractive({ useHandCursor: true });
-      btn.on('pointerdown', fn);
-      this.panel.add(btn);
-      this.panel.add(
-        this.add
-          .text(w / 2, y, label, {
-            fontFamily: FONT,
-            fontSize: '9px',
-            color: '#ffffff',
-            stroke: '#1a1208',
-            strokeThickness: 3,
-          })
-          .setOrigin(0.5),
-      );
-      y += 52;
-    };
-
-    mkImgBtn('ui-btn-green', 'Credits', () => {
-      this.showToast("Xal's Path — web remake");
-    });
-
-    if (this.ctx.state.portalUnlocked) {
-      (['meadow', 'river', 'altar'] as RegionId[]).forEach((r) => {
-        mkImgBtn('ui-btn-blue', `Portal: ${r}`, () => {
-          if (this.ctx.state.region === r) return;
-          this.ctx.state.region = r;
-          this.ctx.economy.drainMana(this.ctx.state);
-          this.ctx.spawn.clear();
-          this.applyRegionVisual();
-          this.ctx.audio.playSfx('cast');
-          this.setTab('outlook', true);
-        });
+        showToast: (m) => this.showToast(m),
+        reload: () => this.setTab('shop', true),
       });
-    } else {
-      this.panel.add(
-        this.add
-          .text(w / 2, y, 'Portal sealed', {
-            fontFamily: FONT,
-            fontSize: '8px',
-            color: '#888',
-            stroke: '#1a1208',
-            strokeThickness: 3,
-          })
-          .setOrigin(0.5),
-      );
-      y += 40;
     }
-
-    mkImgBtn('ui-btn-orange', 'New Game', () => {
-      this.ctx.reset();
-      this.lastLevel = 1;
-      this.applyRegionVisual();
-      this.showToast('Save cleared');
-      this.setTab('scene', true);
-    });
+    if (tab === 'achievements') {
+      renderRewards({
+        scene: this,
+        panel: this.panel,
+        ctx: this.ctx,
+        showToast: (m) => this.showToast(m),
+        reload: () => this.setTab('achievements', true),
+      });
+    }
+    if (tab === 'settings') {
+      renderSettings({
+        scene: this,
+        panel: this.panel,
+        ctx: this.ctx,
+        showToast: (m) => this.showToast(m),
+        applyRegionVisual: () => this.applyRegionVisual(),
+        goOutlook: () => this.setTab('outlook', true),
+        onNewGame: () => {
+          this.lastLevel = 1;
+          this.applyRegionVisual();
+          this.setTab('scene', true);
+        },
+      });
+    }
   }
 
   private applyRegionVisual(): void {

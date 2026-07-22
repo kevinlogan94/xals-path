@@ -30,6 +30,7 @@ Saves use **localStorage** only (`xals-path-web-save-v1`).
 ## Stack
 
 - Phaser 3 scenes: Boot → Preload → Play (hub + bottom nav)
+- Hub panels: `src/scenes/play/` (see `UI_RECIPES.md` for chrome conventions)
 - Systems: Economy, Story, Save, Audio, Spawn (via `GameContext`)
 - Content: `src/data/*.json` extracted from Unity ScriptableObjects
 - Assets: under `public/assets/` (ported from Unity)
