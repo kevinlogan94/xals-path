@@ -6,7 +6,7 @@ status: 'done'
 review_loop_iteration: 1
 followup_review_recommended: false
 baseline_revision: 'dcb63fa0ae05b329eca2355fd4b8aa198cdcca10'
-final_revision: ''
+final_revision: '24134a4a3827ecd0cb97bb1f2190c40e0b0e1c05'
 context:
   - '{project-root}/AGENTS.md'
   - '{project-root}/phaser/docs/unity-phaser-ui-parity.md'
