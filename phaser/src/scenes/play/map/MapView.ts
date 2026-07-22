@@ -75,12 +75,12 @@ export class MapView {
   }
 
   hideChapterCard(): void {
-    this.chapterCard.setVisible(false);
+    this.teardownChapterCard();
   }
 
   refreshChapterCard(chapter: ChapterDef | undefined, locked: boolean, visible: boolean): void {
     if (!visible) {
-      this.chapterCard.setVisible(false);
+      this.teardownChapterCard();
       return;
     }
     renderChapterCard({
@@ -90,5 +90,11 @@ export class MapView {
       locked,
       onClick: this.onChapterButton,
     });
+  }
+
+  private teardownChapterCard(): void {
+    this.chapterCard.removeAll(true);
+    this.chapterCard.disableInteractive();
+    this.chapterCard.setVisible(false);
   }
 }

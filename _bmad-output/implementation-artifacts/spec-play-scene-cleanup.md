@@ -6,6 +6,7 @@ status: 'done'
 review_loop_iteration: 0
 followup_review_recommended: false
 baseline_revision: '56a4216c104a2108221ce6c2ea1563f5d1b46de0'
+final_revision: ''
 context:
   - '{project-root}/AGENTS.md'
   - '{project-root}/phaser/_bmad-output/planning-artifacts/architecture.md'
@@ -101,6 +102,18 @@ warnings:
 - addressed_findings:
   - none
 
+### 2026-07-22 — Review pass
+- intent_gap: 0
+- bad_spec: 0
+- patch: 4: (high 1, medium 2, low 1)
+- defer: 0
+- reject: 2: (medium 1, low 1)
+- addressed_findings:
+  - `[high]` `[patch]` Exclaim badges used `fitInBox` on a tall asset and shrank; restored fixed `setDisplaySize` in `Badge.ts`
+  - `[medium]` `[patch]` `MapView.refreshChapterCard(false)` / `hideChapterCard` now tear down children + disable input like pre-split
+  - `[medium]` `[patch]` `ImageButton` / Rewards cards use explicit display-sized hit rects; cards added directly to panel
+  - `[low]` `[patch]` Removed unused `goldText`, `ScrollList.getScroll`, and unexported private `NAV`
+
 ## Design Notes
 
 PlayScene keeps ownership of: `ctx`, `tab`, `panel` container lifecycle (`removeAll` on tab change), persistence/resize, `update` economy tick, and callback bridges (`showToast`, `setTab`, buy/claim/mute). Extracted views receive `scene` + callbacks; avoid reading fragile `panel.list[0]` without documenting the dim overlay contract in `FramedPanel`.
@@ -120,19 +133,24 @@ Do not implement Rewards scrolling in this refactor — only extract `ScrollList
 
 Status: done
 
-Summary: Split PlayScene UI into co-located `src/scenes/play/` modules while preserving PlayScene as the lifecycle/tab/callback facade.
+Summary: Behavior-preserving co-location of PlayScene UI under `src/scenes/play/`, with PlayScene kept as the thin lifecycle/tab/callback facade. Review patches fixed badge sizing, chapter-card teardown, button hit areas, and dead helpers.
 
 Files changed:
-- `phaser/src/scenes/PlayScene.ts` — thin orchestrator for lifecycle, tabs, persistence, story/economy callbacks, and view wiring.
-- `phaser/src/scenes/play/**` — extracted play-only UI helpers and views.
-- `phaser/src/scenes/PreloadScene.ts` — removed dead image loads no runtime module references.
-- `phaser/_bmad-output/planning-artifacts/architecture.md` — documented `scenes/play/` and current tab labels.
-- `phaser/STATUS.md` — documented the cleanup structure.
+- `phaser/src/scenes/PlayScene.ts` — thin orchestrator (~419 lines)
+- `phaser/src/scenes/play/ui/*` — constants, textStyles, ImageButton, FramedPanel, ScrollList, fit, Badge
+- `phaser/src/scenes/play/{hud,nav,outlook,map,tomes,rewards,settings}/*` — co-located views
+- `phaser/src/scenes/PreloadScene.ts` — dropped unused texture loads
+- `phaser/_bmad-output/planning-artifacts/architecture.md` — `scenes/play/` + Settings/Rewards/Map/Tomes labels
+- `phaser/STATUS.md` — notes facade/cleanup structure
+- `_bmad-output/implementation-artifacts/spec-play-scene-cleanup.md` — Dev Auto spec
 
-Review findings breakdown: patches applied 0; items deferred 0; items rejected 0.
+Review findings breakdown: patches applied 4; items deferred 0; items rejected 2 (process/smoke-coordinate noise).
+
+Follow-up review recommendation: false
 
 Verification performed:
 - `cd phaser && npm run typecheck` — exit 0
 - `cd phaser && npm run build` — exit 0
+- Browser smoke: all five tabs render; Tomes buy and Rewards claim succeed at correct hit coords
 
-Residual risks: visual parity was preserved by code inspection and build/typecheck; no manual browser smoke was run.
+Residual risks: geometry-mask + full-screen interactive dim still share the panel input stack (same as pre-split pattern); Rewards still has no scroll (deferred to parity work by design).

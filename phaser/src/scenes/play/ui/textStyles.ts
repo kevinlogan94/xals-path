@@ -1,5 +1,5 @@
 import type Phaser from 'phaser';
-import { DARK_STROKE, FONT, GOLD_TEXT, LIGHT_TEXT } from './constants';
+import { DARK_STROKE, FONT, LIGHT_TEXT } from './constants';
 
 export function whiteText(
   fontSize: string,
@@ -26,11 +26,4 @@ export function darkText(
     color,
     ...extra,
   };
-}
-
-export function goldText(
-  fontSize: string,
-  extra: Phaser.Types.GameObjects.Text.TextStyle = {},
-): Phaser.Types.GameObjects.Text.TextStyle {
-  return whiteText(fontSize, { color: GOLD_TEXT, ...extra });
 }

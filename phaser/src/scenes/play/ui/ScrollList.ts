@@ -23,7 +23,6 @@ export interface ScrollList {
   pointerMove: (pointer: Phaser.Input.Pointer) => void;
   wasDrag: () => boolean;
   apply: () => void;
-  getScroll: () => number;
 }
 
 export function createScrollList(config: ScrollListConfig): ScrollList {
@@ -120,6 +119,5 @@ export function createScrollList(config: ScrollListConfig): ScrollList {
     pointerMove,
     wasDrag: () => dragMoved > 10,
     apply,
-    getScroll: () => scroll,
   };
 }

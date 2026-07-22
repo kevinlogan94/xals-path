@@ -7,7 +7,7 @@ import { fitInBox } from '../ui/fit';
 import { whiteText } from '../ui/textStyles';
 
 /** Unity BottomNav: Settings · Rewards · Outlook · Map · Tomes */
-export const NAV: { id: TabId; label: string; icon: string }[] = [
+const NAV: { id: TabId; label: string; icon: string }[] = [
   { id: 'settings', label: 'Settings', icon: 'ui-gear' },
   { id: 'achievements', label: 'Rewards', icon: 'ui-trophy-nav' },
   { id: 'outlook', label: 'Outlook', icon: 'ui-flower' },

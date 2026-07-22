@@ -1,6 +1,10 @@
 import Phaser from 'phaser';
 import { whiteText } from './textStyles';
 
+/**
+ * Image + centered label with an explicit display-sized hit rect.
+ * Returns a single container so panel.add / removeAll stay simple.
+ */
 export function createImageButton(
   scene: Phaser.Scene,
   x: number,
@@ -15,9 +19,7 @@ export function createImageButton(
 ): Phaser.GameObjects.Container {
   const image = scene.add.image(0, 0, key).setDisplaySize(width, height).setAlpha(alpha);
   const text = scene.add.text(0, 0, label, whiteText(fontSize)).setOrigin(0.5);
-  const button = scene.add
-    .container(x, y, [image, text])
-    .setSize(width, height);
+  const button = scene.add.container(x, y, [image, text]).setSize(width, height);
 
   if (onClick) {
     button.setInteractive(

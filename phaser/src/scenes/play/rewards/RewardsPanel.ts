@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { GameContext } from '../../../game/GameContext';
 import { addFramedPanel } from '../ui/FramedPanel';
-import { createRewardCard, type RewardRow } from './RewardCard';
+import { addRewardCard, type RewardRow } from './RewardCard';
 
 interface RewardsPanelConfig {
   scene: Phaser.Scene;
@@ -63,7 +63,7 @@ export function renderRewardsPanel({
     const row = Math.floor(i / 2);
     const x = 20 + col * (colW + 4) + colW / 2;
     const y = contentTop + 16 + row * (cardH + 10) + cardH / 2;
-    const card = createRewardCard(scene, x, y, colW, cardH, r, () => {
+    addRewardCard(scene, panel, x, y, colW, cardH, r, () => {
       const ok =
         r.id === 'clicker'
           ? ctx.economy.claimClicker(ctx.state)
@@ -78,6 +78,5 @@ export function renderRewardsPanel({
         rerender();
       }
     });
-    panel.add(card);
   });
 }

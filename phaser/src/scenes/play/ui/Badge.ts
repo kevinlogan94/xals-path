@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { fitInBox } from './fit';
 
+/** Exclaim badge with fixed square display (asset is tall; do not aspect-fit). */
 export function createBadge(
   scene: Phaser.Scene,
   x: number,
@@ -8,7 +8,10 @@ export function createBadge(
   size: number,
   depth?: number,
 ): Phaser.GameObjects.Image {
-  const badge = fitInBox(scene, 'ui-exclaim', size, size).setPosition(x, y).setVisible(false);
+  const badge = scene.add
+    .image(x, y, 'ui-exclaim')
+    .setDisplaySize(size, size)
+    .setVisible(false);
   if (depth !== undefined) badge.setDepth(depth);
   return badge;
 }
