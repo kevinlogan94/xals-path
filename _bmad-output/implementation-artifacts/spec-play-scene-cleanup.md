@@ -6,7 +6,7 @@ status: 'done'
 review_loop_iteration: 0
 followup_review_recommended: false
 baseline_revision: '56a4216c104a2108221ce6c2ea1563f5d1b46de0'
-final_revision: ''
+final_revision: '98355995a970d2dc83aa4a778d7fb2a2520f0382'
 context:
   - '{project-root}/AGENTS.md'
   - '{project-root}/phaser/_bmad-output/planning-artifacts/architecture.md'
