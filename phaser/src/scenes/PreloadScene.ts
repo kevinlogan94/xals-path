@@ -84,10 +84,10 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-reward-portal', 'assets/ui/reward-portal.png');
     this.load.image('ui-reward-video', 'assets/ui/reward-video.png');
     this.load.image('ui-reward-trophy', 'assets/ui/reward-trophy.png');
-    // Prefer cropped nav icons when present
-    this.load.image('ui-trophy-nav', 'assets/ui/trophy-nav.png');
-    this.load.image('ui-portal-nav', 'assets/ui/portal-nav.png');
-    this.load.image('ui-tomes-nav', 'assets/ui/tomes-nav.png');
+    // Bottom nav icons — same sources as Unity Pixel/ (trophy, Portal2, Tomes)
+    this.load.image('ui-trophy-nav', 'assets/ui/trophy.png');
+    this.load.image('ui-portal-nav', 'assets/ui/Portal2.png');
+    this.load.image('ui-tomes-nav', 'assets/ui/Tomes.png');
     // Scene.png dropped — Map uses full-frame xal-* tower scenes.
 
     for (const h of helpersData.helpers as HelperDef[]) {

@@ -4,15 +4,14 @@ import type { TabId } from '../../../types';
 import { createBadge, showBadge } from '../ui/Badge';
 import { NAV_H } from '../ui/constants';
 import { fitInBox } from '../ui/fit';
-import { whiteText } from '../ui/textStyles';
 
 /** Unity BottomNav: Settings · Rewards · Outlook · Map · Tomes */
-const NAV: { id: TabId; label: string; icon: string }[] = [
-  { id: 'settings', label: 'Settings', icon: 'ui-gear' },
-  { id: 'achievements', label: 'Rewards', icon: 'ui-trophy-nav' },
-  { id: 'outlook', label: 'Outlook', icon: 'ui-flower' },
-  { id: 'scene', label: 'Map', icon: 'ui-portal-nav' },
-  { id: 'shop', label: 'Tomes', icon: 'ui-tomes-nav' },
+const NAV: { id: TabId; icon: string }[] = [
+  { id: 'settings', icon: 'ui-gear' },
+  { id: 'achievements', icon: 'ui-trophy-nav' },
+  { id: 'outlook', icon: 'ui-flower' },
+  { id: 'scene', icon: 'ui-portal-nav' },
+  { id: 'shop', icon: 'ui-tomes-nav' },
 ];
 
 export class BottomNav {
@@ -34,25 +33,22 @@ export class BottomNav {
     this.navButtons = NAV.map((item, i) => {
       const columnW = w / NAV.length;
       const x = columnW * (i + 0.5);
-      // Nav frames are 85×85 — keep near-square to avoid oval squash.
       const frame = Math.min(columnW - 4, 48);
       const bgY = -6;
       const bg = this.scene.add.image(0, bgY, 'ui-nav-default').setDisplaySize(frame, frame);
       const icon = fitInBox(
         this.scene,
         this.scene.textures.exists(item.icon) ? item.icon : 'ui-gear',
-        26,
-        26,
+        frame * 0.9,
+        frame * 1.27,
       );
-      icon.setPosition(0, -10);
-      const labelY = 22;
-      const label = this.scene.add.text(0, labelY, item.label, whiteText('6px')).setOrigin(0.5);
+      icon.setPosition(1, -8);
       const pad = 4;
       const hitTop = bgY - frame / 2 - pad;
-      const hitBottom = labelY + label.height / 2 + pad;
+      const hitBottom = icon.y + icon.displayHeight / 2 + pad;
       const hitH = hitBottom - hitTop;
       const c = this.scene.add
-        .container(x, h - NAV_H / 2, [bg, icon, label])
+        .container(x, h - NAV_H / 2, [bg, icon])
         .setDepth(41)
         .setSize(columnW, hitH)
         .setInteractive(
@@ -72,11 +68,8 @@ export class BottomNav {
 
   setActive(tab: TabId): void {
     this.navButtons.forEach((btn, i) => {
-      const active = NAV[i].id === tab;
       const img = btn.list[0] as Phaser.GameObjects.Image;
-      const label = btn.list[2] as Phaser.GameObjects.Text;
-      img.setTexture(active ? 'ui-nav-active' : 'ui-nav-default');
-      label.setColor(active ? '#ffe6a8' : '#ffffff');
+      img.setTexture(NAV[i].id === tab ? 'ui-nav-active' : 'ui-nav-default');
     });
   }
 
