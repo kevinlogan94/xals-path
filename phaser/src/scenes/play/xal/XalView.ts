@@ -6,7 +6,7 @@ import { whiteText } from '../ui/textStyles';
 import { renderChapterCard } from './ChapterCard';
 import { QuoteBox } from './QuoteBox';
 
-export class MapView {
+export class XalView {
   private tapZone!: Phaser.GameObjects.Rectangle;
   private portrait!: Phaser.GameObjects.Image;
   private quoteBox: QuoteBox;

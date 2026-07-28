@@ -4,7 +4,7 @@ import { formatNumber } from '../utils/format';
 import type { RegionId, TabId } from '../types';
 import { HudView } from './play/hud/HudView';
 import { BottomNav } from './play/nav/BottomNav';
-import { MapView } from './play/map/MapView';
+import { XalView } from './play/xal/XalView';
 import { OutlookView } from './play/outlook/OutlookView';
 import { renderRewardsPanel } from './play/rewards/RewardsPanel';
 import { showCreditsModal } from './play/settings/CreditsModal';
@@ -17,7 +17,7 @@ export class PlayScene extends Phaser.Scene {
   private tab: TabId = 'outlook';
   private hud!: HudView;
   private nav!: BottomNav;
-  private map!: MapView;
+  private map!: XalView;
   private outlook!: OutlookView;
   private panel!: Phaser.GameObjects.Container;
   private toast!: Phaser.GameObjects.Text;
@@ -52,7 +52,7 @@ export class PlayScene extends Phaser.Scene {
 
     this.outlook = new OutlookView(this, this.ctx);
     this.outlook.build();
-    this.map = new MapView(
+    this.map = new XalView(
       this,
       () => {
         this.ignoreCastUntil = this.time.now + 50;
