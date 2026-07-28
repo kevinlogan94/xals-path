@@ -32,11 +32,12 @@ export class BottomNav {
     this.scene.add.image(w / 2, h - NAV_H / 2, 'ui-stone').setDisplaySize(w, NAV_H).setDepth(40);
 
     this.navButtons = NAV.map((item, i) => {
-      const x = (w / NAV.length) * (i + 0.5);
-      const slotW = Math.min(68, w / NAV.length - 4);
+      const columnW = w / NAV.length;
+      const x = columnW * (i + 0.5);
       // Nav frames are 85×85 — keep near-square to avoid oval squash.
-      const frame = Math.min(slotW, 48);
-      const bg = this.scene.add.image(0, -6, 'ui-nav-default').setDisplaySize(frame, frame);
+      const frame = Math.min(columnW - 4, 48);
+      const bgY = -6;
+      const bg = this.scene.add.image(0, bgY, 'ui-nav-default').setDisplaySize(frame, frame);
       const icon = fitInBox(
         this.scene,
         this.scene.textures.exists(item.icon) ? item.icon : 'ui-gear',
@@ -44,13 +45,19 @@ export class BottomNav {
         26,
       );
       icon.setPosition(0, -10);
-      const label = this.scene.add.text(0, 22, item.label, whiteText('6px')).setOrigin(0.5);
+      const labelY = 22;
+      const label = this.scene.add.text(0, labelY, item.label, whiteText('6px')).setOrigin(0.5);
+      const pad = 4;
+      const hitTop = bgY - frame / 2 - pad;
+      const hitBottom = labelY + label.height / 2 + pad;
+      const hitH = hitBottom - hitTop;
       const c = this.scene.add
         .container(x, h - NAV_H / 2, [bg, icon, label])
         .setDepth(41)
-        .setSize(slotW, 56)
+        .setSize(columnW, hitH)
         .setInteractive(
-          new Phaser.Geom.Rectangle(-slotW / 2, -28, slotW, 56),
+          // Container input adds displayOrigin (width/2, height/2) before hit tests.
+          new Phaser.Geom.Rectangle(0, hitTop + hitH / 2, columnW, hitH),
           Phaser.Geom.Rectangle.Contains,
         );
       c.on('pointerdown', () => this.onSelect(item.id));
