@@ -7,6 +7,7 @@ import { renderChapterCard } from './ChapterCard';
 import { QuoteBox } from './QuoteBox';
 
 export class MapView {
+  private tapZone!: Phaser.GameObjects.Rectangle;
   private portrait!: Phaser.GameObjects.Image;
   private quoteBox: QuoteBox;
   private chapterCard!: Phaser.GameObjects.Container;
@@ -23,14 +24,19 @@ export class MapView {
 
   build(): void {
     const { width, height } = this.scene.scale;
+    const playH = height - NAV_H;
+    // Full-scene tap target behind map UI + nav (depth order resolves hits).
+    this.tapZone = this.scene.add
+      .rectangle(width / 2, playH / 2, width, playH, 0x000000, 0)
+      .setDepth(1)
+      .setInteractive({ useHandCursor: true });
+    this.tapZone.on('pointerdown', this.onPortraitTap);
     // Intentionally no Scene.png base — xal-* expressions are full tower scenes.
     this.portrait = this.scene.add
-      .image(width / 2, (height - NAV_H) / 2, 'xal-generic')
+      .image(width / 2, playH / 2, 'xal-generic')
       .setDepth(2)
-      .setInteractive({ useHandCursor: true })
       .setVisible(false);
     this.fitPortrait();
-    this.portrait.on('pointerdown', this.onPortraitTap);
     this.chapterCard = this.scene.add
       .container(width / 2, height - NAV_H - 120)
       .setDepth(22)
@@ -44,6 +50,9 @@ export class MapView {
   }
 
   setVisible(visible: boolean): void {
+    this.tapZone.setVisible(visible);
+    if (visible) this.tapZone.setInteractive({ useHandCursor: true });
+    else this.tapZone.disableInteractive();
     this.portrait.setVisible(visible);
     if (!visible) this.portalBar.setVisible(false);
   }
@@ -55,20 +64,12 @@ export class MapView {
       height: number;
     };
     if (!src.width || !src.height) return;
-    // Cover the playfield above the nav - Xal PNGs are full tower scenes.
     const playH = height - NAV_H;
     const scale = Math.max(width / src.width, playH / src.height);
     this.portrait.setScale(scale);
     this.portrait.setPosition(width / 2, playH / 2);
-    this.portrait.setInteractive(
-      new Phaser.Geom.Rectangle(
-        -width / (2 * scale),
-        -playH / (2 * scale),
-        width / scale,
-        playH / scale,
-      ),
-      Phaser.Geom.Rectangle.Contains,
-    );
+    this.tapZone.setPosition(width / 2, playH / 2);
+    this.tapZone.setSize(width, playH);
   }
 
   setPortraitExpression(expr: string): void {
