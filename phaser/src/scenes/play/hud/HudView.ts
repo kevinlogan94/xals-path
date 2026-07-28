@@ -13,6 +13,7 @@ export class HudView {
   private exclaim!: Phaser.GameObjects.Image;
   private readonly xpBarMax = 70;
   private readonly manaBarMax = 70;
+  private chapterReady = false;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -60,8 +61,13 @@ export class HudView {
     const xpTrack = this.scene.add.rectangle(-8, -6, this.xpBarMax, 8, 0x1a2a18).setOrigin(0, 0.5);
     this.xpFill = this.scene.add.rectangle(-8, -6, 4, 8, 0x5ecf5a).setOrigin(0, 0.5);
     const manaIcon = this.scene.add.image(-62, 14, 'ui-mana-icon').setDisplaySize(14, 14);
-    const manaTrack = this.scene.add.rectangle(-8, 14, this.manaBarMax, 8, 0x1a2030).setOrigin(0, 0.5);
-    this.manaFill = this.scene.add.rectangle(-8, 14, 4, 8, 0x5aa0ff).setOrigin(0, 0.5);
+    // mana-bar.png as track only — fill is a rectangle (no horizontal squash of the art).
+    const manaTrack = this.scene.add
+      .image(-8, 14, 'ui-mana-bar')
+      .setOrigin(0, 0.5)
+      .setDisplaySize(this.manaBarMax, 8)
+      .setTint(0x3a4558);
+    this.manaFill = this.scene.add.rectangle(-8, 14, 4, 6, 0x6ec8ff).setOrigin(0, 0.5);
     this.exclaim = createBadge(this.scene, 70, -28, 18);
     this.scene.add
       .container(w - 90, 52, [
@@ -78,6 +84,10 @@ export class HudView {
       .setDepth(20);
   }
 
+  setChapterReady(ready: boolean): void {
+    this.chapterReady = ready;
+  }
+
   refresh(): void {
     const s = this.ctx.state;
     this.influenceAmt.setText(formatNumber(s.influence));
@@ -87,6 +97,7 @@ export class HudView {
     this.xpFill.width = Math.max(2, this.xpBarMax * xpPct);
     const manaPct = s.buffRemaining > 0 ? 1 : Math.min(1, s.mana / Math.max(1, s.manaMax));
     this.manaFill.width = Math.max(2, this.manaBarMax * manaPct);
-    showBadge(this.exclaim, s.buffRemaining > 0 || s.mana >= s.manaMax);
+    // Unity SceneManager: ! = chapter ready (not mana/buff).
+    showBadge(this.exclaim, this.chapterReady);
   }
 }

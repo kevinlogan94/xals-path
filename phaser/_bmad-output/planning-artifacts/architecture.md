@@ -65,7 +65,9 @@ Dialogue runs on Map; economy keeps ticking everywhere.
   region, unlockedRegions, portalUnlocked,
   helpers: [{ id, amountOwned, dynamicCost, dynamicIncrement }],
   chapters: [{ id, sceneViewed }],
-  achievements: { clicker*, helper*, login*, story* },
+  achievements: {
+    clicker*, helper*, video*, achievement* (meta), login*, story*
+  },
   buffedThisLevel, buffClickProgress, buffRemaining,
   savedAt: ISO string
 }

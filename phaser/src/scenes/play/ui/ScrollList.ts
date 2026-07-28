@@ -22,6 +22,7 @@ export interface ScrollList {
   pointerDown: (pointer: Phaser.Input.Pointer) => void;
   pointerMove: (pointer: Phaser.Input.Pointer) => void;
   wasDrag: () => boolean;
+  resetDrag: () => void;
   apply: () => void;
 }
 
@@ -57,9 +58,11 @@ export function createScrollList(config: ScrollListConfig): ScrollList {
   const scrollTrack = scene.add
     .rectangle(scrollX, listMidY, 5, visibleH, 0x1a140c, 0.85)
     .setStrokeStyle(1, 0x5a4030);
+  // scrollBar.png is 200×8 horizontal — rotate 90° for a vertical thumb (no squash).
   const scrollThumb = scene.add
     .image(scrollX, listTop + 20, 'ui-scroll')
-    .setDisplaySize(7, 26);
+    .setDisplaySize(26, 7)
+    .setAngle(90);
   panel.add(scrollTrack);
   panel.add(scrollThumb);
 
@@ -118,6 +121,9 @@ export function createScrollList(config: ScrollListConfig): ScrollList {
     pointerDown,
     pointerMove,
     wasDrag: () => dragMoved > 10,
+    resetDrag: () => {
+      dragMoved = 0;
+    },
     apply,
   };
 }

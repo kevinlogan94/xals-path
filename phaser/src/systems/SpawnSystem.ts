@@ -147,9 +147,17 @@ export class SpawnSystem {
     const y =
       bounds.y + 40 + Math.random() * Math.max(40, bounds.h - 80);
 
+    // Aspect-true size (no forced 96×72 squash). Cap longest side ~96.
+    const src = this.scene.textures.get(key).getSourceImage() as {
+      width: number;
+      height: number;
+    };
+    const tw = Math.max(1, src.width);
+    const th = Math.max(1, src.height);
+    const scale = Math.min(96 / tw, 72 / th);
     const sprite = this.scene.add
       .image(startX, y, key)
-      .setDisplaySize(96, 72)
+      .setDisplaySize(Math.round(tw * scale), Math.round(th * scale))
       .setInteractive({ useHandCursor: true })
       .setDepth(5);
 

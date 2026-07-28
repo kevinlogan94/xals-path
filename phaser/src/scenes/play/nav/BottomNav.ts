@@ -18,6 +18,7 @@ const NAV: { id: TabId; label: string; icon: string }[] = [
 export class BottomNav {
   private navButtons: Phaser.GameObjects.Container[] = [];
   private rewardsBadge?: Phaser.GameObjects.Image;
+  private tomesBadge?: Phaser.GameObjects.Image;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -33,8 +34,15 @@ export class BottomNav {
     this.navButtons = NAV.map((item, i) => {
       const x = (w / NAV.length) * (i + 0.5);
       const slotW = Math.min(68, w / NAV.length - 4);
-      const bg = this.scene.add.image(0, -6, 'ui-nav-default').setDisplaySize(slotW, 44);
-      const icon = fitInBox(this.scene, this.scene.textures.exists(item.icon) ? item.icon : 'ui-gear', 26, 26);
+      // Nav frames are 85×85 — keep near-square to avoid oval squash.
+      const frame = Math.min(slotW, 48);
+      const bg = this.scene.add.image(0, -6, 'ui-nav-default').setDisplaySize(frame, frame);
+      const icon = fitInBox(
+        this.scene,
+        this.scene.textures.exists(item.icon) ? item.icon : 'ui-gear',
+        26,
+        26,
+      );
       icon.setPosition(0, -10);
       const label = this.scene.add.text(0, 22, item.label, whiteText('6px')).setOrigin(0.5);
       const c = this.scene.add
@@ -50,7 +58,9 @@ export class BottomNav {
     });
 
     const rewardsX = (w / NAV.length) * 1.5;
+    const tomesX = (w / NAV.length) * 4.5;
     this.rewardsBadge = createBadge(this.scene, rewardsX + 22, h - NAV_H / 2 - 28, 16, 42);
+    this.tomesBadge = createBadge(this.scene, tomesX + 22, h - NAV_H / 2 - 28, 16, 42);
   }
 
   setActive(tab: TabId): void {
@@ -63,7 +73,8 @@ export class BottomNav {
     });
   }
 
-  refreshRewardsBadge(): void {
+  refreshBadges(reading: boolean): void {
     showBadge(this.rewardsBadge, this.ctx.economy.anyClaimable(this.ctx.state));
+    showBadge(this.tomesBadge, this.ctx.economy.anyAffordableHelper(this.ctx.state, reading));
   }
 }

@@ -146,6 +146,7 @@ export class EconomySystem {
     a.clickerCount -= a.clickerGoal;
     a.clickerGoal *= 2;
     state.clickerIncrement *= economy.clickerIncrementMultiplier;
+    a.achievementCount += 1;
     return true;
   }
 
@@ -158,7 +159,35 @@ export class EconomySystem {
     for (const h of state.helpers) {
       h.dynamicIncrement *= economy.helperIncrementMultiplier;
     }
+    a.achievementCount += 1;
     return true;
+  }
+
+  /** Unity VideoLogic — keep cumulative watches; double goal; bump meta count. */
+  claimVideo(state: GameSave): boolean {
+    const a = state.achievements;
+    a.videoGoal = Math.max(1, a.videoGoal);
+    if (a.videoCount < a.videoGoal) return false;
+    a.videoGoal *= 2;
+    this.addInfluence(state, this.passivePerSecond(state) * 36000);
+    a.achievementCount += 1;
+    return true;
+  }
+
+  /** Unity AchievementLogic — keep cumulative claims; double goal; then ++. */
+  claimMeta(state: GameSave): boolean {
+    const a = state.achievements;
+    a.achievementGoal = Math.max(1, a.achievementGoal);
+    if (a.achievementCount < a.achievementGoal) return false;
+    a.achievementGoal *= 2;
+    this.addInfluence(state, this.passivePerSecond(state) * 3600);
+    a.achievementCount += 1;
+    return true;
+  }
+
+  /** Projections stub — no ads SDK; bumps watch progress. */
+  watchProjection(state: GameSave): void {
+    state.achievements.videoCount += 1;
   }
 
   claimLogin(state: GameSave): boolean {
@@ -168,6 +197,7 @@ export class EconomySystem {
     a.loginCount = 0;
     a.loginGoal += 1;
     this.addInfluence(state, this.passivePerSecond(state) * 3600);
+    a.achievementCount += 1;
     return true;
   }
 
@@ -178,6 +208,7 @@ export class EconomySystem {
     a.storyCount -= a.storyGoal;
     a.storyGoal *= 2;
     this.addInfluence(state, this.passivePerSecond(state) * 36000);
+    a.achievementCount += 1;
     return true;
   }
 
@@ -186,9 +217,31 @@ export class EconomySystem {
     return (
       a.clickerCount >= a.clickerGoal ||
       a.helperCount >= a.helperGoal ||
+      a.videoCount >= a.videoGoal ||
+      a.achievementCount >= a.achievementGoal ||
       a.loginCount >= a.loginGoal ||
       a.storyCount >= a.storyGoal
     );
+  }
+
+  /** Unity ShopManager.ManageExclamationPoint — affordable unlocked helper, not mid-story. */
+  anyAffordableHelper(state: GameSave, reading: boolean): boolean {
+    if (reading) return false;
+    return this.helpers.some((def) => {
+      if (state.playerLevel < def.unlockLevel) return false;
+      const h = state.helpers.find((x) => x.id === def.id);
+      return !!h && state.influence >= h.dynamicCost;
+    });
+  }
+
+  /** Unity SceneManager.ManageExclamationPoint — next chapter ready. */
+  chapterReady(
+    state: GameSave,
+    next: { levelRequirement: number } | undefined,
+    reading: boolean,
+  ): boolean {
+    if (!next || reading || state.playerLevel === 1) return false;
+    return state.playerLevel >= next.levelRequirement;
   }
 
   def(id: string): HelperDef | undefined {
