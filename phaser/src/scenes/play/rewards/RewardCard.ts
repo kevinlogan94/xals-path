@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { createImageButton } from '../ui/ImageButton';
-import { whiteText } from '../ui/textStyles';
+import { fitInBox } from '../ui/fit';
+import { darkText } from '../ui/textStyles';
 
 export type RewardId = 'helper' | 'clicker' | 'video' | 'meta' | 'login' | 'story';
 
@@ -14,7 +15,18 @@ export interface RewardRow {
   onWatch?: () => void;
 }
 
-/** Readable 2-col card; achiev-box stretches to the slot (Unity Image stretch). */
+/** Unity Achievement.prefab uses item_slot.png (260×260). */
+const SLOT = 260;
+
+function mapX(w: number, x: number): number {
+  return -w / 2 + w * (x / SLOT);
+}
+
+function mapY(h: number, y: number): number {
+  return -h / 2 + h * (y / SLOT);
+}
+
+/** 2-col reward card; square item_slot frame like Unity Achievement.prefab. */
 export function createRewardCard(
   scene: Phaser.Scene,
   colW: number,
@@ -24,70 +36,82 @@ export function createRewardCard(
 ): Phaser.GameObjects.Container {
   const ready = row.n >= row.goal;
   const cardW = colW - 4;
-  const slotH = rewardSlotHeight(colW);
-  const barW = cardW - 24;
-  const iconX = -cardW / 2 + 14;
-  const titleY = -slotH * 0.32;
+  const cardH = rewardSlotHeight(colW);
+  const x = (n: number) => mapX(cardW, n);
+  const y = (n: number) => mapY(cardH, n);
+
+  const bg = scene.add.image(0, 0, 'ui-item-slot').setDisplaySize(cardW, cardH);
+
+  // Top row: icon left, title in right two-thirds.
+  const iconX = x(52);
+  const iconY = y(62);
+  const iconMax = cardW * (76 / SLOT);
+  const titleX = x(92);
+  const titleW = cardW * (158 / SLOT);
+
+  // Progress bar spans inner parchment width.
+  const barX = x(22);
+  const barW = cardW * (216 / SLOT);
+  const barH = Math.max(10, Math.round(cardH * (22 / SLOT)));
+  const barY = y(112);
+
+  const hintY = y(168);
+  const hintW = cardW * (220 / SLOT);
+  const btnH = Math.max(14, Math.round(cardH * (28 / SLOT)));
+  const btnW = cardW * (216 / SLOT);
+  const btnY = y(224);
 
   const parts: Phaser.GameObjects.GameObject[] = [
-    scene.add.image(0, 0, 'ui-achiev-box').setDisplaySize(cardW, slotH),
-    scene.add.image(iconX, titleY, row.icon).setDisplaySize(16, 16),
+    bg,
+    fitInBox(scene, row.icon, iconMax, iconMax).setPosition(iconX, iconY),
     scene.add
-      .text(iconX + 12, titleY, row.title, whiteText('6px', { wordWrap: { width: cardW - 40 } }))
+      .text(titleX, y(38), row.title, darkText('5px', '#1a1208', { wordWrap: { width: titleW } }))
       .setOrigin(0, 0.5),
-    scene.add.rectangle(0, -slotH * 0.08, barW, 7, 0x1a140c).setStrokeStyle(1, 0x5a4030),
+    scene.add.rectangle(barX + barW / 2, barY, barW, barH, 0xb8b0a0).setStrokeStyle(1, 0x6a6058),
     scene.add
       .rectangle(
-        -barW / 2,
-        -slotH * 0.08,
+        barX,
+        barY,
         Math.max(2, barW * Math.min(1, row.n / Math.max(1, row.goal))),
-        7,
+        barH,
         0x5ecf5a,
       )
       .setOrigin(0, 0.5),
-    scene.add.text(0, -slotH * 0.08, `${row.n}/${row.goal}`, whiteText('5px')).setOrigin(0.5),
     scene.add
-      .text(
-        0,
-        slotH * 0.14,
-        row.hint,
-        whiteText('5px', {
-          color: '#ffe6a8',
-          align: 'center',
-          wordWrap: { width: cardW - 10 },
-        }),
-      )
+      .text(barX + barW / 2, barY, `${row.n}/${row.goal}`, darkText('5px', '#1a1208'))
+      .setOrigin(0.5),
+    scene.add
+      .text(x(130), hintY, row.hint, darkText('4px', '#1a1208', { align: 'center', wordWrap: { width: hintW } }))
       .setOrigin(0.5),
   ];
 
-  const btnY = slotH * 0.36;
-  const btnH = 18;
   if (row.onWatch) {
+    const halfW = btnW * 0.47;
     parts.push(
       createImageButton(
         scene,
-        -cardW * 0.22,
+        x(130) - halfW * 0.55,
         btnY,
         'ui-btn-blue',
         'Watch',
-        cardW * 0.4,
+        halfW,
         btnH,
         row.onWatch,
         1,
-        '5px',
+        '4px',
         onPressStart,
       ),
       createImageButton(
         scene,
-        cardW * 0.22,
+        x(130) + halfW * 0.55,
         btnY,
         'ui-btn-green',
         'Receive',
-        cardW * 0.4,
+        halfW,
         btnH,
         ready ? onClaim : undefined,
         ready ? 1 : 0.45,
-        '5px',
+        '4px',
         onPressStart,
       ),
     );
@@ -95,24 +119,23 @@ export function createRewardCard(
     parts.push(
       createImageButton(
         scene,
-        0,
+        x(130),
         btnY,
         'ui-btn-green',
         'Receive',
-        cardW - 28,
+        btnW,
         btnH,
         ready ? onClaim : undefined,
         ready ? 1 : 0.45,
-        '5px',
+        '4px',
         onPressStart,
       ),
     );
   }
 
-  return scene.add.container(0, 0, parts).setSize(cardW, slotH);
+  return scene.add.container(0, 0, parts).setSize(cardW, cardH);
 }
 
 export function rewardSlotHeight(colW: number): number {
-  // Tall enough for title/bar/hint/buttons; wider than pure 840×260 at 2-col width.
-  return Math.max(112, Math.round((colW - 4) * 0.62));
+  return colW - 4;
 }

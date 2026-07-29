@@ -76,6 +76,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-exclaim', 'assets/ui/exclaim.png');
     this.load.image('ui-achiev-box', 'assets/ui/achiev-box.png');
     this.load.image('ui-achiev-box-pressed', 'assets/ui/achiev-box-pressed.png');
+    this.load.image('ui-item-slot', 'assets/ui/item-slot.png');
     this.load.image('ui-stone', 'assets/ui/stone.png');
     this.load.image('ui-scroll', 'assets/ui/scrollBar.png');
     this.load.image('ui-reward-star', 'assets/ui/reward-star.png');

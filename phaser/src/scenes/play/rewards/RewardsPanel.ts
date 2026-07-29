@@ -34,7 +34,7 @@ export function renderRewardsPanel({
   const hoursHint = (hours: number, base: string) =>
     `Rewards: ${base}\n(${formatNumber(passive * hours * 3600)} influence)`;
 
-  const gap = 8;
+  const gap = 15;
   const colW = (innerW - gap) / 2;
   const slotH = rewardSlotHeight(colW);
   const rowH = slotH + gap;
