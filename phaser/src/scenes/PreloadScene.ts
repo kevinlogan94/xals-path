@@ -79,6 +79,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-item-slot', 'assets/ui/item-slot.png');
     this.load.image('ui-stone', 'assets/ui/stone.png');
     this.load.image('ui-scroll', 'assets/ui/scrollBar.png');
+    // Reward card icons — Unity Game/Achievements/ (new art; Unity SOs not updated yet)
     this.load.image('ui-reward-star', 'assets/ui/reward-star.png');
     this.load.image('ui-reward-shop', 'assets/ui/reward-shop.png');
     this.load.image('ui-reward-notepad', 'assets/ui/reward-notepad.png');
