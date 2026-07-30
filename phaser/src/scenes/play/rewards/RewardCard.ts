@@ -42,25 +42,28 @@ export function createRewardCard(
 
   const bg = scene.add.image(0, 0, 'ui-item-slot').setDisplaySize(cardW, cardH);
 
-  // Top row: icon left, title in right two-thirds. Content is inset from the
-  // frame edges (SLOT-unit margin) so nothing crowds the parchment border.
-  const iconX = x(58);
-  const iconY = y(56);
-  const iconMax = cardW * (66 / SLOT);
-  const titleX = x(98);
-  const titleW = cardW * (144 / SLOT);
+  // item-slot.png's parchment has rounded corners that curve well inward of
+  // the square frame (measured from the source art): safe content only
+  // spans the full 20-240 width once y is past ~45 or before ~215. Anything
+  // placed nearer a corner must pull back further or it lands on the dark
+  // wood border and becomes unreadable.
+  const iconX = x(68);
+  const iconY = y(62);
+  const iconMax = cardW * (58 / SLOT);
+  const titleX = x(100);
+  const titleW = cardW * (120 / SLOT);
 
-  // Progress bar spans inner parchment width, inset from both edges.
-  const barX = x(30);
-  const barW = cardW * (200 / SLOT);
-  const barH = Math.max(11, Math.round(cardH * (23 / SLOT)));
-  const barY = y(120);
+  // Progress bar sits in the safe full-width band, inset from both edges.
+  const barX = x(28);
+  const barW = cardW * (204 / SLOT);
+  const barH = Math.max(11, Math.round(cardH * (24 / SLOT)));
+  const barY = y(108);
 
-  const hintY = y(176);
-  const hintW = cardW * (196 / SLOT);
-  const btnH = Math.max(16, Math.round(cardH * (30 / SLOT)));
-  const btnW = cardW * (200 / SLOT);
-  const btnY = y(230);
+  const hintY = y(156);
+  const hintW = cardW * (224 / SLOT);
+  const btnH = Math.max(16, Math.round(cardH * (26 / SLOT)));
+  const btnW = cardW * (192 / SLOT);
+  const btnY = y(200);
 
   const parts: Phaser.GameObjects.GameObject[] = [
     bg,
@@ -68,7 +71,7 @@ export function createRewardCard(
     scene.add
       .text(
         titleX,
-        y(40),
+        y(42),
         row.title,
         darkText('5px', '#1a1208', { wordWrap: { width: titleW }, lineSpacing: 4 }),
       )
