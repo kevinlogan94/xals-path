@@ -11,8 +11,8 @@ export class HudView {
   private xpFill!: Phaser.GameObjects.Rectangle;
   private manaFill!: Phaser.GameObjects.Rectangle;
   private exclaim!: Phaser.GameObjects.Image;
-  private readonly xpBarMax = 70;
-  private readonly manaBarMax = 70;
+  private readonly xpBarMax = 100;
+  private readonly manaBarMax = 100;
   private chapterReady = false;
 
   constructor(
@@ -23,54 +23,58 @@ export class HudView {
   build(): void {
     const w = this.scene.scale.width;
 
-    const leftCloud = this.scene.add.image(0, 0, 'ui-cloud').setDisplaySize(150, 78);
-    const inflIcon = this.scene.add.image(-48, -8, 'ui-influence').setDisplaySize(22, 22);
+    const leftCloud = this.scene.add.image(0, 0, 'ui-cloud').setDisplaySize(114, 70);
+    const inflIcon = this.scene.add.image(-36, -5, 'ui-influence').setDisplaySize(24, 24);
     this.influenceAmt = this.scene.add
-      .text(-30, -14, '', {
+      .text(-18, -5, '', {
         fontFamily: FONT,
-        fontSize: '9px',
+        fontSize: '11px',
         color: '#ffffff',
         stroke: DARK_STROKE,
         strokeThickness: 4,
       })
       .setOrigin(0, 0.5);
     this.influenceRate = this.scene.add
-      .text(-30, 16, '', {
+      .text(-18, 13, '', {
         fontFamily: FONT,
-        fontSize: '7px',
+        fontSize: '8px',
         color: '#b8e0a8',
         stroke: DARK_STROKE,
         strokeThickness: 3,
       })
       .setOrigin(0, 0.5);
     this.scene.add
-      .container(78, 48, [leftCloud, inflIcon, this.influenceAmt, this.influenceRate])
+      .container(60, 46, [leftCloud, inflIcon, this.influenceAmt, this.influenceRate])
       .setDepth(20);
 
     const rightCloud = this.scene.add.image(0, 0, 'ui-level-cloud').setDisplaySize(168, 88);
     this.levelLabel = this.scene.add
-      .text(0, -28, '', {
+      .text(0, -27, '', {
         fontFamily: FONT,
-        fontSize: '8px',
+        fontSize: '10px',
         color: '#ffffff',
         stroke: DARK_STROKE,
         strokeThickness: 4,
       })
       .setOrigin(0.5);
-    const star = this.scene.add.image(-62, -6, 'ui-star').setDisplaySize(14, 14);
-    const xpTrack = this.scene.add.rectangle(-8, -6, this.xpBarMax, 8, 0x1a2a18).setOrigin(0, 0.5);
-    this.xpFill = this.scene.add.rectangle(-8, -6, 4, 8, 0x5ecf5a).setOrigin(0, 0.5);
-    const manaIcon = this.scene.add.image(-62, 14, 'ui-mana-icon').setDisplaySize(14, 14);
+    const barX = -38;
+    const star = this.scene.add.image(-58, -5, 'ui-star').setDisplaySize(16, 16);
+    const xpTrack = this.scene.add
+      .rectangle(barX, -5, this.xpBarMax, 9, 0x2c3f28)
+      .setOrigin(0, 0.5)
+      .setStrokeStyle(1, 0x14200f);
+    this.xpFill = this.scene.add.rectangle(barX, -5, 4, 7, 0x5ecf5a).setOrigin(0, 0.5);
+    const manaIcon = this.scene.add.image(-58, 15, 'ui-mana-icon').setDisplaySize(16, 16);
     // mana-bar.png as track only — fill is a rectangle (no horizontal squash of the art).
     const manaTrack = this.scene.add
-      .image(-8, 14, 'ui-mana-bar')
+      .image(barX, 15, 'ui-mana-bar')
       .setOrigin(0, 0.5)
-      .setDisplaySize(this.manaBarMax, 8)
-      .setTint(0x3a4558);
-    this.manaFill = this.scene.add.rectangle(-8, 14, 4, 6, 0x6ec8ff).setOrigin(0, 0.5);
-    this.exclaim = createBadge(this.scene, 70, -28, 18);
+      .setDisplaySize(this.manaBarMax, 9)
+      .setTint(0x4a5a72);
+    this.manaFill = this.scene.add.rectangle(barX, 15, 4, 7, 0x6ec8ff).setOrigin(0, 0.5);
+    this.exclaim = createBadge(this.scene, 58, -22, 18);
     this.scene.add
-      .container(w - 90, 52, [
+      .container(w - 90, 50, [
         rightCloud,
         this.levelLabel,
         star,
