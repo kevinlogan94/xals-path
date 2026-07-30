@@ -42,30 +42,36 @@ export function createRewardCard(
 
   const bg = scene.add.image(0, 0, 'ui-item-slot').setDisplaySize(cardW, cardH);
 
-  // Top row: icon left, title in right two-thirds.
-  const iconX = x(52);
-  const iconY = y(62);
-  const iconMax = cardW * (76 / SLOT);
-  const titleX = x(92);
-  const titleW = cardW * (158 / SLOT);
+  // Top row: icon left, title in right two-thirds. Content is inset from the
+  // frame edges (SLOT-unit margin) so nothing crowds the parchment border.
+  const iconX = x(58);
+  const iconY = y(56);
+  const iconMax = cardW * (66 / SLOT);
+  const titleX = x(98);
+  const titleW = cardW * (144 / SLOT);
 
-  // Progress bar spans inner parchment width.
-  const barX = x(22);
-  const barW = cardW * (216 / SLOT);
-  const barH = Math.max(10, Math.round(cardH * (22 / SLOT)));
-  const barY = y(112);
+  // Progress bar spans inner parchment width, inset from both edges.
+  const barX = x(30);
+  const barW = cardW * (200 / SLOT);
+  const barH = Math.max(11, Math.round(cardH * (23 / SLOT)));
+  const barY = y(120);
 
-  const hintY = y(168);
-  const hintW = cardW * (220 / SLOT);
-  const btnH = Math.max(14, Math.round(cardH * (28 / SLOT)));
-  const btnW = cardW * (216 / SLOT);
-  const btnY = y(224);
+  const hintY = y(176);
+  const hintW = cardW * (196 / SLOT);
+  const btnH = Math.max(16, Math.round(cardH * (30 / SLOT)));
+  const btnW = cardW * (200 / SLOT);
+  const btnY = y(230);
 
   const parts: Phaser.GameObjects.GameObject[] = [
     bg,
     fitInBox(scene, row.icon, iconMax, iconMax).setPosition(iconX, iconY),
     scene.add
-      .text(titleX, y(38), row.title, darkText('5px', '#1a1208', { wordWrap: { width: titleW } }))
+      .text(
+        titleX,
+        y(40),
+        row.title,
+        darkText('5px', '#1a1208', { wordWrap: { width: titleW }, lineSpacing: 4 }),
+      )
       .setOrigin(0, 0.5),
     scene.add.rectangle(barX + barW / 2, barY, barW, barH, 0xb8b0a0).setStrokeStyle(1, 0x6a6058),
     scene.add
@@ -81,7 +87,12 @@ export function createRewardCard(
       .text(barX + barW / 2, barY, `${row.n}/${row.goal}`, darkText('5px', '#1a1208'))
       .setOrigin(0.5),
     scene.add
-      .text(x(130), hintY, row.hint, darkText('4px', '#1a1208', { align: 'center', wordWrap: { width: hintW } }))
+      .text(
+        x(130),
+        hintY,
+        row.hint,
+        darkText('4px', '#1a1208', { align: 'center', wordWrap: { width: hintW }, lineSpacing: 4 }),
+      )
       .setOrigin(0.5),
   ];
 
