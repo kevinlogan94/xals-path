@@ -11,7 +11,7 @@ interface TomesPanelConfig {
   shopScroll: number;
   onScroll: (scroll: number) => void;
   showToast: (message: string) => void;
-  onCreatureUnlock?: (creatureId: string) => void;
+  onCreatureUnlock: (creatureId: string) => void;
   rerender: () => void;
 }
 
@@ -70,10 +70,7 @@ export function renderTomesPanel({
           ctx.audio.playSfx('coin');
           const owned = ctx.state.helpers.find((hh) => hh.id === def.id)!;
           rerender();
-          if (owned.amountOwned === 1) {
-            if (onCreatureUnlock) onCreatureUnlock(def.creatureId);
-            else showToast(`${def.name} tome — ${def.creatureId} unbound`);
-          }
+          if (owned.amountOwned === 1) onCreatureUnlock(def.creatureId);
         } else {
           showToast('Not enough influence');
         }

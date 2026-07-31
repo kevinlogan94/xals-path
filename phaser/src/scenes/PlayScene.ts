@@ -196,6 +196,7 @@ export class PlayScene extends Phaser.Scene {
     setMagic: () => void;
     hideCreature: () => void;
   }): void {
+    if (this.splash.isOpen()) return;
     this.ignoreCastUntil = this.time.now + 50;
     const gained = this.ctx.economy.tryCreatureTap(this.ctx.state, hit.magic);
     if (gained <= 0) {
@@ -404,8 +405,6 @@ export class PlayScene extends Phaser.Scene {
         const creature = this.ctx.spawn.creatures.find((c) => c.id === creatureId);
         if (creature) {
           this.splash.open('creature', { build: buildCreatureSplash(creature) });
-        } else {
-          this.showToast('New creature unlocked');
         }
       },
       rerender: () => this.setTab('shop', true),

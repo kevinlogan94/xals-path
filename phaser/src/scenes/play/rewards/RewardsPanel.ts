@@ -21,7 +21,7 @@ interface RewardsPanelConfig {
   rewardsScroll: number;
   onScroll: (scroll: number) => void;
   showToast: (message: string) => void;
-  onAchievementClaim?: (info: AchievementClaimInfo) => void;
+  onAchievementClaim: (info: AchievementClaimInfo) => void;
   rerender: () => void;
 }
 
@@ -197,8 +197,7 @@ export function renderRewardsPanel({
               ctx.economy.passivePerSecond(ctx.state),
             );
             rerender();
-            if (onAchievementClaim) onAchievementClaim(info);
-            else showToast('Reward received');
+            onAchievementClaim(info);
           }
         },
         () => scroll.resetDrag(),
