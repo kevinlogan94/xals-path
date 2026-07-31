@@ -11,6 +11,7 @@ interface TomesPanelConfig {
   shopScroll: number;
   onScroll: (scroll: number) => void;
   showToast: (message: string) => void;
+  onCreatureUnlock?: (creatureId: string) => void;
   rerender: () => void;
 }
 
@@ -21,6 +22,7 @@ export function renderTomesPanel({
   shopScroll,
   onScroll,
   showToast,
+  onCreatureUnlock,
   rerender,
 }: TomesPanelConfig): void {
   const { dim, listTop, listBottom, listLeft, listWidth: innerW, scrollX } = addFramedPanel(
@@ -67,10 +69,11 @@ export function renderTomesPanel({
         if (ctx.economy.buyHelper(ctx.state, def.id)) {
           ctx.audio.playSfx('coin');
           const owned = ctx.state.helpers.find((hh) => hh.id === def.id)!;
-          if (owned.amountOwned === 1) {
-            showToast(`${def.name} tome — ${def.creatureId} unbound`);
-          }
           rerender();
+          if (owned.amountOwned === 1) {
+            if (onCreatureUnlock) onCreatureUnlock(def.creatureId);
+            else showToast(`${def.name} tome — ${def.creatureId} unbound`);
+          }
         } else {
           showToast('Not enough influence');
         }

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import creaturesData from '../data/creatures.json';
 import helpersData from '../data/helpers.json';
+import { preloadCreatureSplashAssets } from './play/splash/creatureSplash';
 import type { CreatureDef, HelperDef } from '../types';
 
 export class PreloadScene extends Phaser.Scene {
@@ -57,9 +58,8 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-tome-box', 'assets/ui/tome-box.png');
     this.load.image('ui-tome-locked', 'assets/ui/tome-box-locked.png');
     this.load.image('ui-lock', 'assets/ui/lock.png');
-    this.load.image('ui-lock-sheet', 'assets/ui/lock-sheet.png');
+    preloadCreatureSplashAssets(this.load);
     // Default splash panel bg: ui-splash-lg (SplashPixlrBigger)
-    this.load.image('creature-elk-run', 'assets/creatures/elk-run.png');
     this.load.image('ui-splash', 'assets/ui/splash/SplashPixlr.png');
     this.load.image('ui-splash-lg', 'assets/ui/splash/SplashPixlrBigger.png');
     this.load.image('ui-splash-lg-white', 'assets/ui/splash/SplashPixlrBiggerWhite.png');

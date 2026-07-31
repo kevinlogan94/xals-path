@@ -9,6 +9,7 @@ import { OutlookView } from './play/outlook/OutlookView';
 import { renderRewardsPanel } from './play/rewards/RewardsPanel';
 import { showCreditsModal } from './play/settings/CreditsModal';
 import { renderSettingsPanel } from './play/settings/SettingsPanel';
+import { buildCreatureSplash } from './play/splash/creatureSplash';
 import { buildInfluenceOverTimeSplash } from './play/splash/influenceOverTimeSplash';
 import { buildNewGameSplash } from './play/splash/newGameSplash';
 import { createSplash } from './play/splash/SplashView';
@@ -378,6 +379,14 @@ export class PlayScene extends Phaser.Scene {
         this.shopScroll = scroll;
       },
       showToast: (message) => this.showToast(message),
+      onCreatureUnlock: (creatureId) => {
+        const creature = this.ctx.spawn.creatures.find((c) => c.id === creatureId);
+        if (creature) {
+          this.splash.open('creature', { build: buildCreatureSplash(creature) });
+        } else {
+          this.showToast('New creature unlocked');
+        }
+      },
       rerender: () => this.setTab('shop', true),
     });
   }
