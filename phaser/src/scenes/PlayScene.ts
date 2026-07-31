@@ -9,6 +9,7 @@ import { OutlookView } from './play/outlook/OutlookView';
 import { renderRewardsPanel } from './play/rewards/RewardsPanel';
 import { showCreditsModal } from './play/settings/CreditsModal';
 import { renderSettingsPanel } from './play/settings/SettingsPanel';
+import { buildNewGameSplash } from './play/splash/newGameSplash';
 import { createSplash } from './play/splash/SplashView';
 import { renderTomesPanel } from './play/tomes/TomesPanel';
 import { FONT } from './play/ui/constants';
@@ -408,12 +409,17 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private onNewGame(): void {
+    this.splash.open('newGame', { build: buildNewGameSplash(() => this.confirmNewGame()) });
+  }
+
+  private confirmNewGame(): void {
     this.ctx.reset();
     this.lastLevel = 1;
+    this.lastBuff = 0;
     this.shopScroll = 0;
     this.rewardsScroll = 0;
+    this.splash.dismiss();
     this.outlook.applyRegionVisual();
-    this.showToast('Save cleared');
     this.setTab('scene', true);
   }
 
