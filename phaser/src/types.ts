@@ -22,6 +22,7 @@ export interface CreatureDef {
   name: string;
   helperId: string;
   region: RegionId;
+  description: string;
 }
 
 export interface QuoteLine {

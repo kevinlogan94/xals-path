@@ -57,6 +57,12 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-tome-box', 'assets/ui/tome-box.png');
     this.load.image('ui-tome-locked', 'assets/ui/tome-box-locked.png');
     this.load.image('ui-lock', 'assets/ui/lock.png');
+    this.load.image('ui-lock-sheet', 'assets/ui/lock-sheet.png');
+    // Default splash panel bg: ui-splash-lg (SplashPixlrBigger)
+    this.load.image('creature-elk-run', 'assets/creatures/elk-run.png');
+    this.load.image('ui-splash', 'assets/ui/splash/SplashPixlr.png');
+    this.load.image('ui-splash-lg', 'assets/ui/splash/SplashPixlrBigger.png');
+    this.load.image('ui-splash-lg-white', 'assets/ui/splash/SplashPixlrBiggerWhite.png');
     this.load.image('ui-panel', 'assets/ui/panel.png');
     this.load.image('ui-cloud', 'assets/ui/clouds/cloud.png');
     this.load.image('ui-level-cloud', 'assets/ui/clouds/LevelCloud.png');
