@@ -99,6 +99,7 @@ export class EconomySystem {
   }
 
   applyOffline(state: GameSave): number {
+    if (state.pendingOffline > 0) return state.pendingOffline;
     const last = Date.parse(state.savedAt);
     if (!Number.isFinite(last)) return 0;
     const seconds = Math.min(
@@ -107,8 +108,8 @@ export class EconomySystem {
     );
     const ch1 = state.chapters.find((c) => c.id === 1);
     if (!ch1?.sceneViewed) return 0;
-    const gained = this.passivePerSecond(state) * seconds;
-    if (gained > 0) this.addInfluence(state, gained);
+    const gained = Math.floor(this.passivePerSecond(state) * seconds);
+    if (gained > 0) state.pendingOffline = gained;
     return gained;
   }
 

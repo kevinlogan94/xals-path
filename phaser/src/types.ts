@@ -85,5 +85,6 @@ export interface GameSave {
   buffRemaining: number;
   portalUnlocked: boolean;
   unlockedRegions: RegionId[];
+  pendingOffline: number;
   savedAt: string;
 }

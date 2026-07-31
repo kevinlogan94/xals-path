@@ -30,6 +30,7 @@ export class GameContext {
   reset(): void {
     this.save.clear();
     this.state = this.save.load();
+    this.offlineGained = 0;
     this.story.reset();
     this.spawn.clear();
   }

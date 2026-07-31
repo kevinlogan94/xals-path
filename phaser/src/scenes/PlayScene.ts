@@ -9,6 +9,7 @@ import { OutlookView } from './play/outlook/OutlookView';
 import { renderRewardsPanel } from './play/rewards/RewardsPanel';
 import { showCreditsModal } from './play/settings/CreditsModal';
 import { renderSettingsPanel } from './play/settings/SettingsPanel';
+import { buildInfluenceOverTimeSplash } from './play/splash/influenceOverTimeSplash';
 import { buildNewGameSplash } from './play/splash/newGameSplash';
 import { createSplash } from './play/splash/SplashView';
 import { renderTomesPanel } from './play/tomes/TomesPanel';
@@ -111,11 +112,6 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.spawn.clear();
     });
 
-    if (this.ctx.offlineGained > 0) {
-      this.showToast(`While you were away… +${formatNumber(this.ctx.offlineGained)} influence`);
-      this.ctx.offlineGained = 0;
-    }
-
     const ch1 = this.ctx.state.chapters.find((c) => c.id === 1);
     const startTab: TabId = ch1 && !ch1.sceneViewed ? 'scene' : 'outlook';
     this.setTab(startTab, true);
@@ -123,6 +119,19 @@ export class PlayScene extends Phaser.Scene {
     if (this.ctx.story.reading) {
       this.setTab('scene', true);
       this.renderQuote();
+    }
+
+    if (this.ctx.offlineGained > 0) {
+      const pending = Math.floor(this.ctx.offlineGained);
+      this.splash.open('influenceOverTime', {
+        build: buildInfluenceOverTimeSplash(pending, () => {
+          this.ctx.economy.addInfluence(this.ctx.state, pending);
+          this.ctx.state.pendingOffline = 0;
+          this.ctx.offlineGained = 0;
+          this.ctx.persist();
+          this.refreshHud();
+        }),
+      });
     }
 
     this.refreshHud();

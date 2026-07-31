@@ -47,6 +47,7 @@ function createDefaultSave(): GameSave {
     buffRemaining: 0,
     portalUnlocked: false,
     unlockedRegions: ['meadow'],
+    pendingOffline: 0,
     savedAt: new Date().toISOString(),
   };
 }
@@ -187,6 +188,7 @@ export class SaveSystem {
       unlockedRegions: (save.unlockedRegions?.length
         ? save.unlockedRegions
         : ['meadow']) as RegionId[],
+      pendingOffline: finite(save.pendingOffline, fresh.pendingOffline),
       savedAt: typeof save.savedAt === 'string' ? save.savedAt : fresh.savedAt,
     };
   }
