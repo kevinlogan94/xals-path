@@ -2,7 +2,9 @@
 title: 'Phaser early-game tutorial parity'
 type: 'feature'
 created: '2026-07-31'
-status: 'in-review'
+status: 'done'
+followup_review_recommended: false
+final_revision: '7ad0956bcf926ba022037745f884e7aa15e8375c'
 review_loop_iteration: 0
 followup_review_recommended: false
 baseline_revision: '2a36e3ccea2bc4314b1a97c649665fe7ecb1f089'
@@ -85,7 +87,39 @@ warnings: []
 
 ## Review Triage Log
 
-## Verification
+### 2026-07-31 — Review pass
+- intent_gap: 0
+- bad_spec: 0
+- patch: 1: (high 1)
+- defer: 1: (low 1)
+- reject: 2
+- addressed_findings:
+  - `[high]` `[patch]` Legacy saves with ch1 viewed but no `tutorialCompleted` field would restart tutorial — added `inferTutorialCompleted` in SaveSystem merge.
+
+## Auto Run Result
+
+**Summary:** Phaser early-game tutorial parity (Pass A+B): nav lock before/during Chapter 1, bobbing finger pointer from Unity asset, post-ch1 tutorial dialogue with Nature gift/buy flow, Outlook unlock tour, passive income pause during early tutorial.
+
+**Files changed:**
+- `phaser/public/assets/ui/pointer.png` — Unity glove pointer asset
+- `phaser/src/data/tutorial.json` — Unity tutorial dialogue lines
+- `phaser/src/systems/TutorialSystem.ts` — tutorial step machine, nav rules, pointers
+- `phaser/src/scenes/play/ui/FingerPointer.ts` — reusable bobbing pointer UI
+- `phaser/src/scenes/PreloadScene.ts` — load pointer texture
+- `phaser/src/types.ts` / `SaveSystem.ts` — `tutorialCompleted` + legacy inference
+- `phaser/src/systems/EconomySystem.ts` — pause passive tick during tutorial
+- `phaser/src/scenes/play/nav/BottomNav.ts` — tab lock + nav centers for pointers
+- `phaser/src/scenes/PlayScene.ts` — wire tutorial lifecycle and pointers
+- `phaser/src/scenes/play/xal/XalView.ts` — chapter card pointer anchor
+- `phaser/src/scenes/play/tomes/TomesPanel.ts` — Nature row hook
+- `phaser/src/game/GameContext.ts` — TutorialSystem on context
+
+**Review:** 1 high patch applied (legacy save); 1 low defer (mid-tutorial reload resume UX).
+
+**Verification:** `cd phaser && npm run build` — success.
+
+**Residual risks:** Mid-tutorial reload may require portrait tap to resume lines; nav uses dim/disabled vs Unity hide panel.
+
 
 **Commands:**
 - `cd phaser && npm run build` -- expected: TypeScript compiles without errors
