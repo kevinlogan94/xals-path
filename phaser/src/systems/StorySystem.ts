@@ -4,6 +4,7 @@ import economy from '../data/economy.json';
 
 export interface AdvanceResult {
   finished: boolean;
+  finishedChapterId?: number;
   portalJustUnlocked: boolean;
   regionChanged: boolean;
 }
@@ -69,11 +70,12 @@ export class StorySystem {
 
     this.quoteIndex += 1;
     if (this.quoteIndex >= this.activeChapter.quotes.length) {
-      const portalJustUnlocked = this.finishChapter(state, this.activeChapter.id);
+      const finishedChapterId = this.activeChapter.id;
+      const portalJustUnlocked = this.finishChapter(state, finishedChapterId);
       this.reading = false;
       this.activeChapter = null;
       this.quoteIndex = 0;
-      return { finished: true, portalJustUnlocked, regionChanged };
+      return { finished: true, finishedChapterId, portalJustUnlocked, regionChanged };
     }
     return { finished: false, portalJustUnlocked: false, regionChanged };
   }

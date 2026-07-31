@@ -9,10 +9,13 @@ import { OutlookView } from './play/outlook/OutlookView';
 import { renderRewardsPanel } from './play/rewards/RewardsPanel';
 import { showCreditsModal } from './play/settings/CreditsModal';
 import { renderSettingsPanel } from './play/settings/SettingsPanel';
+import { buildAchievementSplash } from './play/splash/achievementSplash';
 import { buildBuffSplash } from './play/splash/buffSplash';
 import { buildCreatureSplash } from './play/splash/creatureSplash';
+import { buildEndGameSplash } from './play/splash/endGameSplash';
 import { buildInfluenceOverTimeSplash } from './play/splash/influenceOverTimeSplash';
 import { buildNewGameSplash } from './play/splash/newGameSplash';
+import { buildPortalSplash } from './play/splash/portalSplash';
 import { createSplash } from './play/splash/SplashView';
 import { renderTomesPanel } from './play/tomes/TomesPanel';
 import { FONT } from './play/ui/constants';
@@ -245,8 +248,26 @@ export class PlayScene extends Phaser.Scene {
         this.map.hideQuote();
         this.map.setPortraitExpression('generic');
         this.refreshChapterCard();
-        if (result.portalJustUnlocked) {
-          this.showToast('The path closes… The portal opens.');
+        const chId = result.finishedChapterId;
+        if (chId === 7) {
+          this.splash.open('endGame', {
+            build: buildEndGameSplash(() =>
+              showCreditsModal(this, this.add.container(0, 0).setDepth(55)),
+            ),
+          });
+        } else if (chId != null && chId >= 2 && chId <= 4) {
+          const lvl = this.ctx.state.manaLevel;
+          this.splash.open('achievement', {
+            build: buildAchievementSplash({
+              title: '2x Mana Increase',
+              description: 'Your maximum mana has doubled.',
+              iconKey: 'ui-mana-icon',
+              before: `${(lvl - 1) * 100}`,
+              after: `${lvl * 100}`,
+            }),
+          });
+        } else if (result.portalJustUnlocked) {
+          this.splash.open('portal', { build: buildPortalSplash() });
         }
         this.ctx.audio.playBgm('xals-theme');
       } else {
@@ -401,6 +422,17 @@ export class PlayScene extends Phaser.Scene {
         this.rewardsScroll = scroll;
       },
       showToast: (message) => this.showToast(message),
+      onAchievementClaim: (info) => {
+        this.splash.open('achievement', {
+          build: buildAchievementSplash({
+            title: info.title,
+            description: info.description,
+            iconKey: info.iconKey,
+            before: info.before,
+            after: info.after,
+          }),
+        });
+      },
       rerender: () => this.setTab('achievements', true),
     });
   }

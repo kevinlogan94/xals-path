@@ -5,6 +5,15 @@ import { addFramedPanel } from '../ui/FramedPanel';
 import { createScrollList } from '../ui/ScrollList';
 import { createRewardCard, rewardSlotHeight, type RewardRow } from './RewardCard';
 
+export type AchievementClaimInfo = {
+  id: RewardRow['id'];
+  title: string;
+  description: string;
+  iconKey: string;
+  before: string;
+  after: string;
+};
+
 interface RewardsPanelConfig {
   scene: Phaser.Scene;
   panel: Phaser.GameObjects.Container;
@@ -12,7 +21,43 @@ interface RewardsPanelConfig {
   rewardsScroll: number;
   onScroll: (scroll: number) => void;
   showToast: (message: string) => void;
+  onAchievementClaim?: (info: AchievementClaimInfo) => void;
   rerender: () => void;
+}
+
+function achievementClaimInfo(
+  id: RewardRow['id'],
+  row: RewardRow,
+  ctx: GameContext,
+  passive: number,
+): AchievementClaimInfo {
+  const { influence, clickerIncrement } = ctx.state;
+  let before: string;
+  let after: string;
+  switch (id) {
+    case 'helper':
+      before = `${formatNumber(passive / 3)}/sec`;
+      after = `${formatNumber(passive)}/sec`;
+      break;
+    case 'clicker':
+      before = `${formatNumber(clickerIncrement / 15)}/click`;
+      after = `${formatNumber(clickerIncrement)}/click`;
+      break;
+    case 'video':
+    case 'story': {
+      const grant = passive * 36000;
+      before = formatNumber(influence - grant);
+      after = formatNumber(influence);
+      break;
+    }
+    default: {
+      const grant = passive * 3600;
+      before = formatNumber(influence - grant);
+      after = formatNumber(influence);
+      break;
+    }
+  }
+  return { id, title: row.title, description: row.hint, iconKey: row.icon, before, after };
 }
 
 export function renderRewardsPanel({
@@ -22,6 +67,7 @@ export function renderRewardsPanel({
   rewardsScroll,
   onScroll,
   showToast,
+  onAchievementClaim,
   rerender,
 }: RewardsPanelConfig): void {
   const { dim, listTop, listBottom, listLeft, listWidth: innerW, scrollX } = addFramedPanel(
@@ -144,8 +190,15 @@ export function renderRewardsPanel({
           if (scroll.wasDrag()) return;
           if (claim(row.id)) {
             ctx.audio.playSfx('coin');
-            showToast('Reward received');
+            const info = achievementClaimInfo(
+              row.id,
+              row,
+              ctx,
+              ctx.economy.passivePerSecond(ctx.state),
+            );
             rerender();
+            if (onAchievementClaim) onAchievementClaim(info);
+            else showToast('Reward received');
           }
         },
         () => scroll.resetDrag(),
