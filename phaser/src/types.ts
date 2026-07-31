@@ -82,6 +82,7 @@ export interface GameSave {
   achievements: AchievementSave;
   buffedThisLevel: boolean;
   buffClickProgress: number;
+  buffOfferPending: boolean;
   buffRemaining: number;
   portalUnlocked: boolean;
   unlockedRegions: RegionId[];

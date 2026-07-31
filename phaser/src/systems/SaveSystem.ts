@@ -44,6 +44,7 @@ function createDefaultSave(): GameSave {
     },
     buffedThisLevel: false,
     buffClickProgress: 0,
+    buffOfferPending: false,
     buffRemaining: 0,
     portalUnlocked: false,
     unlockedRegions: ['meadow'],
@@ -107,6 +108,7 @@ export class SaveSystem {
         save.buffClickProgress,
         fresh.buffClickProgress,
       ),
+      buffOfferPending: save.buffOfferPending ?? fresh.buffOfferPending,
       buffRemaining: finite(save.buffRemaining, fresh.buffRemaining),
       portalUnlocked: save.portalUnlocked ?? fresh.portalUnlocked,
       helpers: fresh.helpers.map((h) => {

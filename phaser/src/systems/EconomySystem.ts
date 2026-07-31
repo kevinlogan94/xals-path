@@ -61,10 +61,17 @@ export class EconomySystem {
       !state.buffedThisLevel &&
       state.buffClickProgress >= economy.buffClickThreshold
     ) {
-      state.buffRemaining = economy.buffDurationSeconds;
+      state.buffOfferPending = true;
       state.buffedThisLevel = true;
       state.buffClickProgress = 0;
     }
+  }
+
+  acceptBuffOffer(state: GameSave): boolean {
+    if (!state.buffOfferPending) return false;
+    state.buffOfferPending = false;
+    state.buffRemaining = economy.buffDurationSeconds;
+    return true;
   }
 
   tick(state: GameSave, dt: number): void {
@@ -132,8 +139,10 @@ export class EconomySystem {
     ) {
       state.playerLevel += 1;
       state.experienceRequired *= economy.levelXpMultiplier;
-      state.buffedThisLevel = false;
-      state.buffClickProgress = 0;
+      if (!state.buffOfferPending) {
+        state.buffedThisLevel = false;
+        state.buffClickProgress = 0;
+      }
       pendingReward += this.passivePerSecond(state) * economy.levelRewardSeconds;
     }
     if (pendingReward > 0) this.addWallet(state, pendingReward);

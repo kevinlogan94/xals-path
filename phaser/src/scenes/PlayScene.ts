@@ -9,6 +9,7 @@ import { OutlookView } from './play/outlook/OutlookView';
 import { renderRewardsPanel } from './play/rewards/RewardsPanel';
 import { showCreditsModal } from './play/settings/CreditsModal';
 import { renderSettingsPanel } from './play/settings/SettingsPanel';
+import { buildBuffSplash } from './play/splash/buffSplash';
 import { buildCreatureSplash } from './play/splash/creatureSplash';
 import { buildInfluenceOverTimeSplash } from './play/splash/influenceOverTimeSplash';
 import { buildNewGameSplash } from './play/splash/newGameSplash';
@@ -69,6 +70,7 @@ export class PlayScene extends Phaser.Scene {
     this.map.setPortalTravelHandler((region) => this.onPortalTravel(region));
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (this.splash.isOpen()) return;
       if (this.tab !== 'outlook') return;
       if (!this.outlook.canCast(pointer, this.ignoreCastUntil)) return;
       this.castAt(pointer.x, pointer.y);
@@ -140,7 +142,6 @@ export class PlayScene extends Phaser.Scene {
 
   update(_t: number, delta: number): void {
     const dt = delta / 1000;
-    const prevBuff = this.ctx.state.buffRemaining;
     this.ctx.economy.tick(this.ctx.state, dt);
 
     if (this.tab === 'outlook') {
@@ -159,9 +160,8 @@ export class PlayScene extends Phaser.Scene {
       this.refreshChapterCard();
     }
 
-    if (prevBuff <= 0 && this.ctx.state.buffRemaining > 0) {
-      this.ctx.audio.playSfx('buff');
-      this.showToast('Buff! Infinite mana');
+    if (this.ctx.state.buffOfferPending && !this.splash.isOpen()) {
+      this.openBuffSplash();
     }
     if (this.lastBuff > 0 && this.ctx.state.buffRemaining <= 0) {
       this.ctx.audio.playSfx('debuff');
@@ -424,6 +424,18 @@ export class PlayScene extends Phaser.Scene {
     this.outlook.applyRegionVisual();
     this.ctx.audio.playSfx('cast');
     this.setTab('outlook', true);
+  }
+
+  private openBuffSplash(): void {
+    this.splash.open('buff', {
+      build: buildBuffSplash(() => {
+        if (this.ctx.economy.acceptBuffOffer(this.ctx.state)) {
+          this.ctx.audio.playSfx('buff');
+          this.lastBuff = this.ctx.state.buffRemaining;
+        }
+        this.ctx.persist();
+      }),
+    });
   }
 
   private onNewGame(): void {
