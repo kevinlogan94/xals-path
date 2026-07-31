@@ -9,6 +9,7 @@ import { OutlookView } from './play/outlook/OutlookView';
 import { renderRewardsPanel } from './play/rewards/RewardsPanel';
 import { showCreditsModal } from './play/settings/CreditsModal';
 import { renderSettingsPanel } from './play/settings/SettingsPanel';
+import { createSplash } from './play/splash/SplashView';
 import { renderTomesPanel } from './play/tomes/TomesPanel';
 import { FONT } from './play/ui/constants';
 
@@ -34,6 +35,7 @@ export class PlayScene extends Phaser.Scene {
   private onResizeBound!: () => void;
   private layoutW = 0;
   private layoutH = 0;
+  private splash!: ReturnType<typeof createSplash>;
 
   constructor() {
     super('Play');
@@ -87,6 +89,9 @@ export class PlayScene extends Phaser.Scene {
     this.panel = this.add.container(0, 0).setDepth(25).setVisible(false);
     this.nav = new BottomNav(this, this.ctx, (tab) => this.setTab(tab));
     this.nav.build();
+    this.splash = createSplash(this, this.add.container(0, 0).setDepth(50), {
+      playPop: () => this.ctx.audio.playSfx('pop'),
+    });
 
     this.persistHidden = () => {
       if (document.visibilityState === 'hidden') this.ctx.persist();
@@ -100,6 +105,7 @@ export class PlayScene extends Phaser.Scene {
       document.removeEventListener('visibilitychange', this.persistHidden);
       window.removeEventListener('pagehide', this.persistPageHide);
       this.scale.off('resize', this.onResizeBound);
+      this.splash.dismiss();
       this.ctx.audio.attach(null);
       this.ctx.spawn.clear();
     });
@@ -313,6 +319,8 @@ export class PlayScene extends Phaser.Scene {
     if (!force && this.tab === tab) {
       tab = 'outlook';
     }
+
+    if (this.splash.isOpen()) this.splash.dismiss();
 
     this.clearBanterTimer();
     if (tab !== 'scene') this.map.hideQuote();
