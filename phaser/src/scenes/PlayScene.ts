@@ -10,7 +10,8 @@ import { renderRewardsPanel } from './play/rewards/RewardsPanel';
 import { showCreditsModal } from './play/settings/CreditsModal';
 import { renderSettingsPanel } from './play/settings/SettingsPanel';
 import { renderTomesPanel } from './play/tomes/TomesPanel';
-import { FONT } from './play/ui/constants';
+import { FONT, NAV_H } from './play/ui/constants';
+import { createFingerPointer } from './play/ui/FingerPointer';
 
 export class PlayScene extends Phaser.Scene {
   private ctx = getContext();
@@ -34,6 +35,8 @@ export class PlayScene extends Phaser.Scene {
   private onResizeBound!: () => void;
   private layoutW = 0;
   private layoutH = 0;
+  private finger!: Phaser.GameObjects.Image;
+  private natureRow?: Phaser.GameObjects.Container;
 
   constructor() {
     super('Play');
@@ -87,6 +90,9 @@ export class PlayScene extends Phaser.Scene {
     this.panel = this.add.container(0, 0).setDepth(25).setVisible(false);
     this.nav = new BottomNav(this, this.ctx, (tab) => this.setTab(tab));
     this.nav.build();
+    this.finger = createFingerPointer(this, 0, 0);
+    this.ctx.tutorial.bootstrap(this.ctx.state, this.ctx.economy);
+    this.applyNavLock();
 
     this.persistHidden = () => {
       if (document.visibilityState === 'hidden') this.ctx.persist();
@@ -119,14 +125,21 @@ export class PlayScene extends Phaser.Scene {
     }
 
     this.refreshHud();
+    this.refreshTutorialPointers();
   }
 
   update(_t: number, delta: number): void {
     const dt = delta / 1000;
     const prevBuff = this.ctx.state.buffRemaining;
-    this.ctx.economy.tick(this.ctx.state, dt);
+    this.ctx.economy.tick(this.ctx.state, dt, this.ctx.tutorial);
+    this.ctx.tutorial.tickEarlyPointer(
+      dt,
+      this.ctx.state,
+      this.ctx.story.reading,
+      this.tab === 'scene',
+    );
 
-    if (this.tab === 'outlook') {
+    if (this.tab === 'outlook' && !this.ctx.tutorial.shouldPausePassive(this.ctx.state)) {
       this.ctx.spawn.tick(this.ctx.state, dt, this.outlook.spawnBounds());
       this.passiveSpawnTimer += dt;
       if (this.passiveSpawnTimer >= 1) {
@@ -157,6 +170,7 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.persist();
     }
     this.refreshHud();
+    this.refreshTutorialPointers();
   }
 
   private castAt(x: number, y: number): void {
@@ -219,6 +233,7 @@ export class PlayScene extends Phaser.Scene {
     if (this.tab !== 'scene') return;
 
     if (this.ctx.story.reading) {
+      const finishingCh1 = this.ctx.story.activeChapter?.id === 1;
       const result = this.ctx.story.advance(this.ctx.state);
       if (result.regionChanged) {
         this.outlook.applyRegionVisual();
@@ -232,9 +247,31 @@ export class PlayScene extends Phaser.Scene {
           this.showToast('The path closes… The portal opens.');
         }
         this.ctx.audio.playBgm('xals-theme');
+        if (finishingCh1) {
+          this.ctx.tutorial.startAfterChapter1(this.ctx.state);
+          const line = this.ctx.tutorial.advanceLine(this.ctx.state, this.ctx.economy);
+          if (line) {
+            this.map.showQuote(line);
+            this.map.setPortraitExpression('generic');
+          }
+          this.applyNavLock();
+        }
       } else {
         this.renderQuote();
       }
+      return;
+    }
+
+    if (this.ctx.tutorial.active) {
+      const line = this.ctx.tutorial.advanceLine(this.ctx.state, this.ctx.economy);
+      if (line) {
+        this.clearBanterTimer();
+        this.map.showQuote(line);
+        this.map.setPortraitExpression('generic');
+      } else if (!this.ctx.tutorial.waitingNature) {
+        this.map.hideQuote();
+      }
+      this.applyNavLock();
       return;
     }
 
@@ -310,8 +347,19 @@ export class PlayScene extends Phaser.Scene {
 
   /** Unity SelectView: re-tapping active tab returns to Outlook. */
   private setTab(tab: TabId, force = false): void {
+    if (
+      !force &&
+      !this.ctx.tutorial.isTabAllowed(this.ctx.state, tab, this.ctx.story.reading)
+    ) {
+      return;
+    }
+
     if (!force && this.tab === tab) {
       tab = 'outlook';
+    }
+
+    if (tab === 'outlook' && this.ctx.tutorial.outlookTutorial) {
+      this.ctx.tutorial.dismissOutlookTutorial();
     }
 
     this.clearBanterTimer();
@@ -330,6 +378,8 @@ export class PlayScene extends Phaser.Scene {
       this.map.hideChapterCard();
       this.map.refreshPortalBar(false, false, this.ctx.state.region);
       this.ctx.audio.playRegion(this.ctx.state.region);
+      this.applyNavLock();
+      this.refreshTutorialPointers();
       return;
     }
 
@@ -339,6 +389,8 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.audio.playBgm('xals-theme');
       if (this.ctx.story.reading) this.renderQuote();
       else this.refreshChapterCard();
+      this.applyNavLock();
+      this.refreshTutorialPointers();
       return;
     }
 
@@ -348,9 +400,13 @@ export class PlayScene extends Phaser.Scene {
     if (tab === 'shop') this.renderShop();
     if (tab === 'achievements') this.renderAchievements();
     if (tab === 'settings') this.renderSettings();
+
+    this.applyNavLock();
+    this.refreshTutorialPointers();
   }
 
   private renderShop(): void {
+    this.natureRow = undefined;
     renderTomesPanel({
       scene: this,
       panel: this.panel,
@@ -360,8 +416,86 @@ export class PlayScene extends Phaser.Scene {
         this.shopScroll = scroll;
       },
       showToast: (message) => this.showToast(message),
-      rerender: () => this.setTab('shop', true),
+      rerender: () => {
+        this.ctx.tutorial.onNaturePurchased(this.ctx.state);
+        this.setTab('shop', true);
+      },
+      onNatureRow: (card) => {
+        this.natureRow = card;
+      },
     });
+  }
+
+  private applyNavLock(): void {
+    this.nav.setTabAllowed((tab) =>
+      this.ctx.tutorial.isTabAllowed(this.ctx.state, tab, this.ctx.story.reading),
+    );
+  }
+
+  private refreshTutorialPointers(): void {
+    const next = this.nextChapter();
+    const chapterVisible = !!next && this.tab === 'scene' && !this.ctx.story.reading;
+    const target = this.ctx.tutorial.pointerTarget(
+      this.ctx.state,
+      this.tab,
+      this.ctx.story.reading,
+      this.tab === 'shop',
+      chapterVisible,
+    );
+
+    if (target === 'none') {
+      this.finger.setVisible(false);
+      return;
+    }
+
+    let x = 0;
+    let y = 0;
+    switch (target) {
+      case 'chapter': {
+        const p = this.map.chapterCardCenter();
+        x = p.x;
+        y = p.y;
+        break;
+      }
+      case 'tomesNav': {
+        const p = this.nav.navButtonCenter('shop');
+        if (p) {
+          x = p.x;
+          y = p.y - 20;
+        }
+        break;
+      }
+      case 'natureRow': {
+        if (this.natureRow) {
+          const m = this.natureRow.getWorldTransformMatrix();
+          x = m.tx;
+          y = m.ty;
+        }
+        break;
+      }
+      case 'xal': {
+        const { width, height } = this.scale;
+        x = width / 2;
+        y = (height - NAV_H) / 2 + 40;
+        break;
+      }
+      case 'outlookNav': {
+        const p = this.nav.navButtonCenter('outlook');
+        if (p) {
+          x = p.x;
+          y = p.y - 20;
+        }
+        break;
+      }
+      case 'cast': {
+        const bounds = this.outlook.spawnBounds();
+        x = bounds.x + bounds.w / 2;
+        y = bounds.y + bounds.h / 2;
+        break;
+      }
+    }
+    this.finger.setPosition(x, y);
+    this.finger.setVisible(true);
   }
 
   private renderAchievements(): void {
@@ -406,6 +540,7 @@ export class PlayScene extends Phaser.Scene {
     this.rewardsScroll = 0;
     this.outlook.applyRegionVisual();
     this.showToast('Save cleared');
+    this.applyNavLock();
     this.setTab('scene', true);
   }
 

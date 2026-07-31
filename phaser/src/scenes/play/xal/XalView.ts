@@ -90,6 +90,11 @@ export class XalView {
     this.teardownChapterCard();
   }
 
+  chapterCardCenter(): { x: number; y: number } {
+    const m = this.chapterCard.getWorldTransformMatrix();
+    return { x: m.tx, y: m.ty };
+  }
+
   refreshChapterCard(chapter: ChapterDef | undefined, locked: boolean, visible: boolean): void {
     if (!visible) {
       this.teardownChapterCard();

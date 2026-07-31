@@ -2,6 +2,7 @@ import type { GameSave } from '../types';
 import { SaveSystem } from '../systems/SaveSystem';
 import { EconomySystem } from '../systems/EconomySystem';
 import { StorySystem } from '../systems/StorySystem';
+import { TutorialSystem } from '../systems/TutorialSystem';
 import { AudioSystem } from '../systems/AudioSystem';
 import { SpawnSystem } from '../systems/SpawnSystem';
 
@@ -12,6 +13,7 @@ export class GameContext {
   readonly story = new StorySystem();
   readonly audio = new AudioSystem();
   readonly spawn = new SpawnSystem();
+  readonly tutorial = new TutorialSystem();
   state: GameSave;
   offlineGained = 0;
 
@@ -32,6 +34,7 @@ export class GameContext {
     this.state = this.save.load();
     this.story.reset();
     this.spawn.clear();
+    this.tutorial.reset();
   }
 
   private trackLogin(): void {
