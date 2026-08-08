@@ -19,7 +19,7 @@ export function renderChapterCard({
   onClick,
 }: ChapterCardConfig): void {
   container.removeAll(true);
-  container.disableInteractive();
+  container.removeInteractive();
   if (!chapter) {
     container.setVisible(false);
     return;
@@ -74,8 +74,9 @@ export function renderChapterCard({
   container.setSize(cardW, cardH);
   container.off('pointerdown');
   if (!locked) {
+    // Hit area is top-left relative — Phaser adds displayOrigin before Contains.
     container.setInteractive(
-      new Phaser.Geom.Rectangle(-cardW / 2, -cardH / 2, cardW, cardH),
+      new Phaser.Geom.Rectangle(0, 0, cardW, cardH),
       Phaser.Geom.Rectangle.Contains,
     );
     container.on('pointerdown', onClick);

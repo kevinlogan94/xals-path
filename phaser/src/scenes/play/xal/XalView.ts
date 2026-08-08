@@ -148,7 +148,7 @@ export class XalView {
 
   private teardownChapterCard(): void {
     this.chapterCard.removeAll(true);
-    this.chapterCard.disableInteractive();
+    this.chapterCard.removeInteractive();
     this.chapterCard.setVisible(false);
   }
 }

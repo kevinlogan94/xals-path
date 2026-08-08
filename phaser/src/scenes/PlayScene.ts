@@ -11,7 +11,7 @@ import { showCreditsModal } from './play/settings/CreditsModal';
 import { renderSettingsPanel } from './play/settings/SettingsPanel';
 import { renderTomesPanel } from './play/tomes/TomesPanel';
 import { FONT, NAV_H } from './play/ui/constants';
-import { createFingerPointer } from './play/ui/FingerPointer';
+import { aimFinger, createFingerPointer } from './play/ui/FingerPointer';
 
 export class PlayScene extends Phaser.Scene {
   private ctx = getContext();
@@ -35,7 +35,7 @@ export class PlayScene extends Phaser.Scene {
   private onResizeBound!: () => void;
   private layoutW = 0;
   private layoutH = 0;
-  private finger!: Phaser.GameObjects.Image;
+  private finger!: Phaser.GameObjects.Container;
   private natureRow?: Phaser.GameObjects.Container;
 
   constructor() {
@@ -262,6 +262,13 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
 
+    // Unity TriggerChat: first interaction always starts chapter 1.
+    const ch1 = this.ctx.state.chapters.find((c) => c.id === 1);
+    if (ch1 && !ch1.sceneViewed) {
+      this.onChapterButton();
+      return;
+    }
+
     if (this.ctx.tutorial.active) {
       const line = this.ctx.tutorial.advanceLine(this.ctx.state, this.ctx.economy);
       if (line) {
@@ -274,6 +281,9 @@ export class PlayScene extends Phaser.Scene {
       this.applyNavLock();
       return;
     }
+
+    // Banter only after the tutorial tour is done.
+    if (!this.ctx.state.tutorialCompleted) return;
 
     this.clearBanterTimer();
     this.map.setPortraitExpression('angry');
@@ -448,20 +458,25 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
 
+    // Bottom-nav targets: flip upside-down and sit above so the tip points at the button.
+    const pointDown = target === 'tomesNav' || target === 'outlookNav';
+    aimFinger(this.finger, pointDown);
+
     let x = 0;
     let y = 0;
     switch (target) {
       case 'chapter': {
         const p = this.map.chapterCardCenter();
         x = p.x;
-        y = p.y;
+        // Sit under the title so the glove doesn't cover Chapter / name.
+        y = p.y + 52;
         break;
       }
       case 'tomesNav': {
         const p = this.nav.navButtonCenter('shop');
         if (p) {
           x = p.x;
-          y = p.y - 20;
+          y = p.y - 56;
         }
         break;
       }
@@ -469,7 +484,8 @@ export class PlayScene extends Phaser.Scene {
         if (this.natureRow) {
           const m = this.natureRow.getWorldTransformMatrix();
           x = m.tx;
-          y = m.ty;
+          // Sit on the lower half so the glove doesn't cover the tome name.
+          y = m.ty + 48;
         }
         break;
       }
@@ -483,7 +499,7 @@ export class PlayScene extends Phaser.Scene {
         const p = this.nav.navButtonCenter('outlook');
         if (p) {
           x = p.x;
-          y = p.y - 20;
+          y = p.y - 56;
         }
         break;
       }
