@@ -209,7 +209,7 @@ export function renderRewardsPanel({
     addSide(right, colW / 2 + gap / 4);
     pair.setSize(innerW, slotH);
     pair.setInteractive(
-      new Phaser.Geom.Rectangle(-innerW / 2, -slotH / 2, innerW, slotH),
+      new Phaser.Geom.Rectangle(0, 0, innerW, slotH),
       Phaser.Geom.Rectangle.Contains,
     );
     pair.on('pointerdown', scroll.pointerDown);

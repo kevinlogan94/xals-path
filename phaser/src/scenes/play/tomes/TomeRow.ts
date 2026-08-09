@@ -74,7 +74,7 @@ export function createTomeRow({
     .setSize(innerW, boxH);
 
   card.setInteractive(
-    new Phaser.Geom.Rectangle(-innerW / 2, -boxH / 2, innerW, boxH),
+    new Phaser.Geom.Rectangle(0, 0, innerW, boxH),
     Phaser.Geom.Rectangle.Contains,
   );
   card.on('pointerdown', onPointerDown);

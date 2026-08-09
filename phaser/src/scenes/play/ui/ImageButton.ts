@@ -24,7 +24,7 @@ export function createImageButton(
 
   if (onClick || onPressStart) {
     button.setInteractive(
-      new Phaser.Geom.Rectangle(-width / 2, -height / 2, width, height),
+      new Phaser.Geom.Rectangle(0, 0, width, height),
       Phaser.Geom.Rectangle.Contains,
     );
     button.input!.cursor = 'pointer';
