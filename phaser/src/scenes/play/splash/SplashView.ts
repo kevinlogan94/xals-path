@@ -3,7 +3,7 @@ import { NAV_H } from '../ui/constants';
 import { createImageButton } from '../ui/ImageButton';
 
 const SPLASH_NAME = 'splash-shell';
-const PANEL_KEY = 'ui-splash-lg';
+const PANEL_KEY = 'ui-panel';
 
 export type SplashType =
   | 'creature'
