@@ -1,5 +1,5 @@
 import { createImageButton } from '../ui/ImageButton';
-import { whiteText } from '../ui/textStyles';
+import { darkText } from '../ui/textStyles';
 import type { SplashContentBuilder } from './SplashView';
 
 export type AchievementSplashOpts = {
@@ -13,29 +13,19 @@ export type AchievementSplashOpts = {
 export function buildAchievementSplash(opts: AchievementSplashOpts): SplashContentBuilder {
   return (content, api) => {
     const scene = content.scene;
-    content.add(
-      scene.add.text(0, -100, opts.title, whiteText('12px', { strokeThickness: 4 })).setOrigin(0.5),
-    );
+    if (opts.iconKey && scene.textures.exists(opts.iconKey)) {
+      content.add(scene.add.image(0, -45, opts.iconKey).setDisplaySize(48, 48));
+    }
     content.add(
       scene.add
-        .text(0, -72, opts.description, whiteText('8px', { align: 'center', wordWrap: { width: 280 } }))
+        .text(0, -5, opts.description, darkText('8px', undefined, { align: 'center', wordWrap: { width: 280 } }))
         .setOrigin(0.5, 0),
     );
-    if (opts.iconKey && scene.textures.exists(opts.iconKey)) {
-      content.add(scene.add.image(0, -10, opts.iconKey).setDisplaySize(48, 48));
-    }
     if (opts.before != null && opts.after != null) {
       content.add(
-        scene.add
-          .text(0, 40, `Before: ${opts.before}`, whiteText('8px', { color: '#c8b89a' }))
-          .setOrigin(0.5),
-      );
-      content.add(
-        scene.add
-          .text(0, 58, `After: ${opts.after}`, whiteText('8px', { color: '#9ec9ff' }))
-          .setOrigin(0.5),
+        scene.add.text(0, 35, `${opts.before}  →  ${opts.after}`, darkText('8px')).setOrigin(0.5),
       );
     }
-    content.add(createImageButton(scene, 0, 110, 'ui-btn-blue', 'Back', 120, 34, api.close));
+    content.add(createImageButton(scene, 0, 85, 'ui-btn-blue', 'Back', 120, 34, api.close));
   };
 }

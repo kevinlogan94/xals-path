@@ -1,28 +1,19 @@
 import { createImageButton } from '../ui/ImageButton';
-import { whiteText } from '../ui/textStyles';
+import { darkText } from '../ui/textStyles';
 import type { SplashContentBuilder } from './SplashView';
 
 export function buildBuffSplash(onCollect: () => void): SplashContentBuilder {
   return (content, api) => {
     const scene = content.scene;
     content.add(
-      scene.add
-        .text(0, -70, 'Blessing of the Gods', whiteText('12px', { strokeThickness: 4 }))
-        .setOrigin(0.5),
+      scene.add.text(0, -45, 'Yes!! Way to go!!', darkText('10px')).setOrigin(0.5),
     );
-    content.add(
-      scene.add
-        .text(0, -30, 'Yes!! Way to go!!', whiteText('10px', { strokeThickness: 3 }))
-        .setOrigin(0.5),
-    );
-    content.add(
-      scene.add.text(0, 10, '15 Seconds', whiteText('8px', { strokeThickness: 2 })).setOrigin(0.5),
-    );
+    content.add(scene.add.text(0, -10, '15 Seconds', darkText('8px')).setOrigin(0.5));
     content.add(
       createImageButton(
         scene,
         0,
-        50,
+        35,
         'ui-btn-green',
         'Collect',
         120,

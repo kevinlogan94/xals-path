@@ -1,6 +1,6 @@
 import { formatNumber } from '../../../utils/format';
 import { createImageButton } from '../ui/ImageButton';
-import { whiteText } from '../ui/textStyles';
+import { darkText } from '../ui/textStyles';
 import type { SplashContentBuilder } from './SplashView';
 
 export function buildInfluenceOverTimeSplash(
@@ -10,28 +10,25 @@ export function buildInfluenceOverTimeSplash(
   return (content, api) => {
     const scene = content.scene;
     content.add(
-      scene.add.text(0, -70, 'Influence Earned', whiteText('12px', { strokeThickness: 4 })).setOrigin(0.5),
-    );
-    content.add(
       scene.add
         .text(
           0,
-          -30,
+          -45,
           'While you were away, the incantation from your tomes continued to collect influence.',
-          whiteText('8px', { align: 'center', wordWrap: { width: 280 } }),
+          darkText('8px', undefined, { align: 'center', wordWrap: { width: 280 } }),
         )
         .setOrigin(0.5),
     );
     content.add(
       scene.add
-        .text(0, 10, `${formatNumber(amount)} influence`, whiteText('10px', { strokeThickness: 3 }))
+        .text(0, 0, `${formatNumber(amount)} influence`, darkText('10px'))
         .setOrigin(0.5),
     );
     content.add(
       createImageButton(
         scene,
         0,
-        50,
+        45,
         'ui-btn-green',
         'Collect',
         120,

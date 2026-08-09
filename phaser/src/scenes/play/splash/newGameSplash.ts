@@ -1,20 +1,17 @@
 import { createImageButton } from '../ui/ImageButton';
-import { whiteText } from '../ui/textStyles';
+import { darkText } from '../ui/textStyles';
 import type { SplashContentBuilder } from './SplashView';
 
 export function buildNewGameSplash(onConfirm: () => void): SplashContentBuilder {
   return (content, api) => {
     const scene = content.scene;
     content.add(
-      scene.add.text(0, -70, 'New Game', whiteText('12px', { strokeThickness: 4 })).setOrigin(0.5),
-    );
-    content.add(
       scene.add
         .text(
           0,
-          -30,
+          -45,
           'Restart the game from the very beginning.',
-          whiteText('8px', { align: 'center', wordWrap: { width: 280 } }),
+          darkText('8px', undefined, { align: 'center', wordWrap: { width: 280 } }),
         )
         .setOrigin(0.5),
     );
@@ -22,7 +19,7 @@ export function buildNewGameSplash(onConfirm: () => void): SplashContentBuilder 
       createImageButton(
         scene,
         0,
-        30,
+        10,
         'ui-btn-orange',
         'Start a New Game',
         200,
@@ -32,6 +29,6 @@ export function buildNewGameSplash(onConfirm: () => void): SplashContentBuilder 
         '8px',
       ),
     );
-    content.add(createImageButton(scene, 0, 82, 'ui-btn-blue', 'Back', 120, 34, api.close));
+    content.add(createImageButton(scene, 0, 62, 'ui-btn-blue', 'Back', 120, 34, api.close));
   };
 }

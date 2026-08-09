@@ -1,9 +1,21 @@
 import Phaser from 'phaser';
 import { NAV_H } from '../ui/constants';
 import { createImageButton } from '../ui/ImageButton';
+import { whiteText } from '../ui/textStyles';
 
 const SPLASH_NAME = 'splash-shell';
 const PANEL_KEY = 'ui-panel';
+const BANNER_KEY = 'ui-splash-banner';
+
+const SPLASH_TITLES: Record<SplashType, string> = {
+  creature: 'New Creature Unlocked',
+  achievement: 'Reward Received',
+  influenceOverTime: 'Influence Earned',
+  buff: 'Blessing of the Gods',
+  endGame: 'Congratulations',
+  newGame: 'New Game',
+  portal: 'Portal',
+};
 
 export type SplashType =
   | 'creature'
@@ -14,7 +26,12 @@ export type SplashType =
   | 'newGame'
   | 'portal';
 
-export type SplashContentApi = { close: () => void };
+export type SplashContentApi = {
+  close: () => void;
+  /** Reveal panel + banner (used after lock unlock). No-op when chrome was not deferred. */
+  showChrome: () => void;
+  bodyWidth: number;
+};
 
 export type SplashContentBuilder = (
   content: Phaser.GameObjects.Container,
@@ -24,9 +41,12 @@ export type SplashContentBuilder = (
 export type SplashOpenOpts = {
   build?: SplashContentBuilder;
   data?: unknown;
+  title?: string;
+  /** Dim only until content calls showChrome (creature lock beat). */
+  deferChrome?: boolean;
 };
 
-/** Shared splash shell: dim + panel bg + content host. Single instance; pop on close. */
+/** Shared splash shell: dim + panel + green banner + content host. Single instance; pop on close. */
 export function createSplash(
   scene: Phaser.Scene,
   parent: Phaser.GameObjects.Container,
@@ -64,13 +84,52 @@ export function createSplash(
     let displayH = 0;
     if (frame?.width) {
       displayH = Math.min(frame.height * (displayW / frame.width), playH);
-      overlay.add(scene.add.image(cx, cy, PANEL_KEY).setDisplaySize(displayW, displayH));
+    }
+    const deferChrome = opts?.deferChrome === true;
+    const inset = Math.max(14, Math.round(displayW * 0.045));
+    // Unity TopPanel: wider/taller, anchored to panel top with ~half overlapping above.
+    const bannerW = displayW * 0.88;
+    const bannerH = Math.round(bannerW / 3.1);
+    const panelTop = cy - displayH / 2;
+    const bannerY = panelTop + bannerH * 0.15;
+    const contentY = cy + bannerH * 0.12;
+    const bodyWidth = displayW - inset * 2;
+
+    let panelImg: Phaser.GameObjects.Image | null = null;
+    let bannerImg: Phaser.GameObjects.Image | null = null;
+    let titleText: Phaser.GameObjects.Text | null = null;
+
+    if (displayH > 0) {
+      panelImg = scene.add.image(cx, cy, PANEL_KEY).setDisplaySize(displayW, displayH);
+      panelImg.setVisible(!deferChrome);
+      overlay.add(panelImg);
     }
 
-    const content = scene.add.container(cx, cy).setName('splash-content');
+    const title = opts?.title ?? SPLASH_TITLES[type];
+    if (scene.textures.exists(BANNER_KEY)) {
+      bannerImg = scene.add.image(cx, bannerY, BANNER_KEY).setDisplaySize(bannerW, bannerH);
+      bannerImg.setVisible(!deferChrome);
+      overlay.add(bannerImg);
+      titleText = scene.add
+        .text(cx, bannerY, title, whiteText('11px', { strokeThickness: 4 }))
+        .setOrigin(0.5)
+        .setVisible(!deferChrome);
+      overlay.add(titleText);
+    }
+
+    const content = scene.add
+      .container(cx, deferChrome ? cy : contentY)
+      .setName('splash-content');
     overlay.add(content);
 
-    const api: SplashContentApi = { close };
+    const showChrome = () => {
+      panelImg?.setVisible(true);
+      bannerImg?.setVisible(true);
+      titleText?.setVisible(true);
+      content.setPosition(cx, contentY);
+    };
+
+    const api: SplashContentApi = { close, showChrome, bodyWidth };
     try {
       if (opts?.build) opts.build(content, api);
       else {

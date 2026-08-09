@@ -471,7 +471,7 @@ export class PlayScene extends Phaser.Scene {
       onCreatureUnlock: (creatureId) => {
         const creature = this.ctx.spawn.creatures.find((c) => c.id === creatureId);
         if (creature) {
-          this.splash.open('creature', { build: buildCreatureSplash(creature) });
+          this.splash.open('creature', { build: buildCreatureSplash(creature), deferChrome: true });
         }
       },
       rerender: () => {
