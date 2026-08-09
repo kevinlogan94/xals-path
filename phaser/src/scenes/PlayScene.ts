@@ -18,7 +18,8 @@ import { buildNewGameSplash } from './play/splash/newGameSplash';
 import { buildPortalSplash } from './play/splash/portalSplash';
 import { createSplash } from './play/splash/SplashView';
 import { renderTomesPanel } from './play/tomes/TomesPanel';
-import { FONT } from './play/ui/constants';
+import { FONT, NAV_H } from './play/ui/constants';
+import { aimFinger, createFingerPointer } from './play/ui/FingerPointer';
 
 export class PlayScene extends Phaser.Scene {
   private ctx = getContext();
@@ -43,6 +44,8 @@ export class PlayScene extends Phaser.Scene {
   private layoutW = 0;
   private layoutH = 0;
   private splash!: ReturnType<typeof createSplash>;
+  private finger!: Phaser.GameObjects.Container;
+  private natureRow?: Phaser.GameObjects.Container;
 
   constructor() {
     super('Play');
@@ -100,6 +103,9 @@ export class PlayScene extends Phaser.Scene {
     this.splash = createSplash(this, this.add.container(0, 0).setDepth(50), {
       playPop: () => this.ctx.audio.playSfx('pop'),
     });
+    this.finger = createFingerPointer(this, 0, 0);
+    this.ctx.tutorial.bootstrap(this.ctx.state, this.ctx.economy);
+    this.applyNavLock();
 
     this.persistHidden = () => {
       if (document.visibilityState === 'hidden') this.ctx.persist();
@@ -141,13 +147,20 @@ export class PlayScene extends Phaser.Scene {
     }
 
     this.refreshHud();
+    this.refreshTutorialPointers();
   }
 
   update(_t: number, delta: number): void {
     const dt = delta / 1000;
-    this.ctx.economy.tick(this.ctx.state, dt);
+    this.ctx.economy.tick(this.ctx.state, dt, this.ctx.tutorial);
+    this.ctx.tutorial.tickEarlyPointer(
+      dt,
+      this.ctx.state,
+      this.ctx.story.reading,
+      this.tab === 'scene',
+    );
 
-    if (this.tab === 'outlook') {
+    if (this.tab === 'outlook' && !this.ctx.tutorial.shouldPausePassive(this.ctx.state)) {
       this.ctx.spawn.tick(this.ctx.state, dt, this.outlook.spawnBounds());
       this.passiveSpawnTimer += dt;
       if (this.passiveSpawnTimer >= 1) {
@@ -177,6 +190,7 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.persist();
     }
     this.refreshHud();
+    this.refreshTutorialPointers();
   }
 
   private castAt(x: number, y: number): void {
@@ -240,6 +254,7 @@ export class PlayScene extends Phaser.Scene {
     if (this.tab !== 'scene') return;
 
     if (this.ctx.story.reading) {
+      const finishingCh1 = this.ctx.story.activeChapter?.id === 1;
       const result = this.ctx.story.advance(this.ctx.state);
       if (result.regionChanged) {
         this.outlook.applyRegionVisual();
@@ -271,11 +286,45 @@ export class PlayScene extends Phaser.Scene {
           this.splash.open('portal', { build: buildPortalSplash() });
         }
         this.ctx.audio.playBgm('xals-theme');
+        if (finishingCh1) {
+          this.ctx.tutorial.startAfterChapter1(this.ctx.state);
+          const line = this.ctx.tutorial.advanceLine(this.ctx.state, this.ctx.economy);
+          if (line) {
+            this.map.showQuote(line);
+            this.map.setPortraitExpression('generic');
+          }
+          this.applyNavLock();
+          this.refreshTutorialPointers();
+        }
       } else {
         this.renderQuote();
       }
       return;
     }
+
+    // Unity TriggerChat: first interaction always starts chapter 1.
+    const ch1 = this.ctx.state.chapters.find((c) => c.id === 1);
+    if (ch1 && !ch1.sceneViewed) {
+      this.onChapterButton();
+      return;
+    }
+
+    if (this.ctx.tutorial.active) {
+      const line = this.ctx.tutorial.advanceLine(this.ctx.state, this.ctx.economy);
+      if (line) {
+        this.clearBanterTimer();
+        this.map.showQuote(line);
+        this.map.setPortraitExpression('generic');
+      } else if (!this.ctx.tutorial.waitingNature) {
+        this.map.hideQuote();
+      }
+      this.applyNavLock();
+      this.refreshTutorialPointers();
+      return;
+    }
+
+    // Banter only after the tutorial tour is done.
+    if (!this.ctx.state.tutorialCompleted) return;
 
     this.clearBanterTimer();
     this.map.setPortraitExpression('angry');
@@ -349,11 +398,21 @@ export class PlayScene extends Phaser.Scene {
 
   /** Unity SelectView: re-tapping active tab returns to Outlook. */
   private setTab(tab: TabId, force = false): void {
+    if (
+      !force &&
+      !this.ctx.tutorial.isTabAllowed(this.ctx.state, tab, this.ctx.story.reading)
+    ) {
+      return;
+    }
+
     if (!force && this.tab === tab) {
       tab = 'outlook';
     }
 
     if (this.splash.isOpen()) this.splash.dismiss();
+    if (tab === 'outlook' && this.ctx.tutorial.outlookTutorial) {
+      this.ctx.tutorial.dismissOutlookTutorial();
+    }
 
     this.clearBanterTimer();
     if (tab !== 'scene') this.map.hideQuote();
@@ -371,6 +430,8 @@ export class PlayScene extends Phaser.Scene {
       this.map.hideChapterCard();
       this.map.refreshPortalBar(false, false, this.ctx.state.region);
       this.ctx.audio.playRegion(this.ctx.state.region);
+      this.applyNavLock();
+      this.refreshTutorialPointers();
       return;
     }
 
@@ -380,6 +441,8 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.audio.playBgm('xals-theme');
       if (this.ctx.story.reading) this.renderQuote();
       else this.refreshChapterCard();
+      this.applyNavLock();
+      this.refreshTutorialPointers();
       return;
     }
 
@@ -389,9 +452,13 @@ export class PlayScene extends Phaser.Scene {
     if (tab === 'shop') this.renderShop();
     if (tab === 'achievements') this.renderAchievements();
     if (tab === 'settings') this.renderSettings();
+
+    this.applyNavLock();
+    this.refreshTutorialPointers();
   }
 
   private renderShop(): void {
+    this.natureRow = undefined;
     renderTomesPanel({
       scene: this,
       panel: this.panel,
@@ -407,8 +474,98 @@ export class PlayScene extends Phaser.Scene {
           this.splash.open('creature', { build: buildCreatureSplash(creature) });
         }
       },
-      rerender: () => this.setTab('shop', true),
+      rerender: () => {
+        this.ctx.tutorial.onNaturePurchased(this.ctx.state);
+        this.setTab('shop', true);
+      },
+      onNatureRow: (card) => {
+        this.natureRow = card;
+      },
     });
+  }
+
+  private applyNavLock(): void {
+    this.nav.setTabAllowed((tab) =>
+      this.ctx.tutorial.isTabAllowed(this.ctx.state, tab, this.ctx.story.reading),
+    );
+  }
+
+  private refreshTutorialPointers(): void {
+    const next = this.nextChapter();
+    const chapterVisible = !!next && this.tab === 'scene' && !this.ctx.story.reading;
+    const target = this.ctx.tutorial.pointerTarget(
+      this.ctx.state,
+      this.tab,
+      this.ctx.story.reading,
+      this.tab === 'shop',
+      chapterVisible,
+    );
+    if (target === 'xal' && this.map.quoteVisible()) {
+      this.finger.setVisible(false);
+      return;
+    }
+
+    if (target === 'none') {
+      this.finger.setVisible(false);
+      return;
+    }
+
+    // Flip upside-down so the tip points at the target (nav buttons, Xal portrait).
+    const pointDown = target === 'tomesNav' || target === 'outlookNav' || target === 'xal';
+    aimFinger(this.finger, pointDown);
+
+    let x = 0;
+    let y = 0;
+    switch (target) {
+      case 'chapter': {
+        const p = this.map.chapterCardCenter();
+        x = p.x;
+        // Sit under the title so the glove doesn't cover Chapter / name.
+        y = p.y + 52;
+        break;
+      }
+      case 'tomesNav': {
+        const p = this.nav.navButtonCenter('shop');
+        if (p) {
+          x = p.x;
+          y = p.y - 56;
+        }
+        break;
+      }
+      case 'natureRow': {
+        if (this.natureRow) {
+          const m = this.natureRow.getWorldTransformMatrix();
+          x = m.tx;
+          // Sit on the lower half so the glove doesn't cover the tome name.
+          y = m.ty + 48;
+        }
+        break;
+      }
+      case 'xal': {
+        const { width, height } = this.scale;
+        const playMid = (height - NAV_H) / 2;
+        x = width / 2;
+        // Sit above the portrait so the flipped glove points down at Xal, not over his face.
+        y = playMid - 56;
+        break;
+      }
+      case 'outlookNav': {
+        const p = this.nav.navButtonCenter('outlook');
+        if (p) {
+          x = p.x;
+          y = p.y - 56;
+        }
+        break;
+      }
+      case 'cast': {
+        const bounds = this.outlook.spawnBounds();
+        x = bounds.x + bounds.w / 2;
+        y = bounds.y + bounds.h / 2;
+        break;
+      }
+    }
+    this.finger.setPosition(x, y);
+    this.finger.setVisible(true);
   }
 
   private renderAchievements(): void {
@@ -481,6 +638,7 @@ export class PlayScene extends Phaser.Scene {
     this.rewardsScroll = 0;
     this.splash.dismiss();
     this.outlook.applyRegionVisual();
+    this.applyNavLock();
     this.setTab('scene', true);
   }
 

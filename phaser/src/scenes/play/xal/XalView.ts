@@ -13,6 +13,7 @@ export class XalView {
   private chapterCard!: Phaser.GameObjects.Container;
   private portalBar!: Phaser.GameObjects.Container;
   private onPortalTravel?: (region: RegionId) => void;
+  private quoteOpen = false;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -79,15 +80,26 @@ export class XalView {
   }
 
   showQuote(text: string): void {
+    this.quoteOpen = true;
     this.quoteBox.show(text);
   }
 
   hideQuote(): void {
+    this.quoteOpen = false;
     this.quoteBox.hide();
+  }
+
+  quoteVisible(): boolean {
+    return this.quoteOpen;
   }
 
   hideChapterCard(): void {
     this.teardownChapterCard();
+  }
+
+  chapterCardCenter(): { x: number; y: number } {
+    const m = this.chapterCard.getWorldTransformMatrix();
+    return { x: m.tx, y: m.ty };
   }
 
   refreshChapterCard(chapter: ChapterDef | undefined, locked: boolean, visible: boolean): void {
@@ -143,7 +155,7 @@ export class XalView {
 
   private teardownChapterCard(): void {
     this.chapterCard.removeAll(true);
-    this.chapterCard.disableInteractive();
+    this.chapterCard.removeInteractive();
     this.chapterCard.setVisible(false);
   }
 }

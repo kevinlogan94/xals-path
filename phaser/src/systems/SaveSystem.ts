@@ -49,12 +49,24 @@ function createDefaultSave(): GameSave {
     portalUnlocked: false,
     unlockedRegions: ['meadow'],
     pendingOffline: 0,
+    tutorialCompleted: false,
     savedAt: new Date().toISOString(),
   };
 }
 
 function finite(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+}
+
+/** Saves before tutorial flag: skip tour if player already progressed past it. */
+function inferTutorialCompleted(save: Partial<GameSave>, fresh: GameSave): boolean {
+  if (save.tutorialCompleted) return true;
+  const ch1 = save.chapters?.find((c) => c.id === 1);
+  if (!ch1?.sceneViewed) return false;
+  const nature = save.helpers?.find((h) => h.id === 'nature');
+  if ((nature?.amountOwned ?? 0) > 0) return true;
+  if (finite(save.playerLevel, 1) > 1) return true;
+  return save.tutorialCompleted ?? fresh.tutorialCompleted;
 }
 
 export class SaveSystem {
@@ -191,6 +203,7 @@ export class SaveSystem {
         ? save.unlockedRegions
         : ['meadow']) as RegionId[],
       pendingOffline: finite(save.pendingOffline, fresh.pendingOffline),
+      tutorialCompleted: inferTutorialCompleted(save, fresh),
       savedAt: typeof save.savedAt === 'string' ? save.savedAt : fresh.savedAt,
     };
   }

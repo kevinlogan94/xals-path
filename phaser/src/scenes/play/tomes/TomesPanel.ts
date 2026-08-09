@@ -13,6 +13,7 @@ interface TomesPanelConfig {
   showToast: (message: string) => void;
   onCreatureUnlock: (creatureId: string) => void;
   rerender: () => void;
+  onNatureRow?: (card: Phaser.GameObjects.Container) => void;
 }
 
 export function renderTomesPanel({
@@ -24,6 +25,7 @@ export function renderTomesPanel({
   showToast,
   onCreatureUnlock,
   rerender,
+  onNatureRow,
 }: TomesPanelConfig): void {
   const { dim, listTop, listBottom, listLeft, listWidth: innerW, scrollX } = addFramedPanel(
     scene,
@@ -78,6 +80,7 @@ export function renderTomesPanel({
     });
     card.setX(listMidX);
     scroll.addCard(card);
+    if (def.id === 'nature') onNatureRow?.(card);
   });
   scroll.apply();
 }

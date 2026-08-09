@@ -18,6 +18,7 @@ export class BottomNav {
   private navButtons: Phaser.GameObjects.Container[] = [];
   private rewardsBadge?: Phaser.GameObjects.Image;
   private tomesBadge?: Phaser.GameObjects.Image;
+  private tabAllowed: (tab: TabId) => boolean = () => true;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -56,7 +57,10 @@ export class BottomNav {
           new Phaser.Geom.Rectangle(0, hitTop + hitH / 2, columnW, hitH),
           Phaser.Geom.Rectangle.Contains,
         );
-      c.on('pointerdown', () => this.onSelect(item.id));
+      c.on('pointerdown', () => {
+        if (!this.tabAllowed(item.id)) return;
+        this.onSelect(item.id);
+      });
       return c;
     });
 
@@ -64,6 +68,30 @@ export class BottomNav {
     const tomesX = (w / NAV.length) * 4.5;
     this.rewardsBadge = createBadge(this.scene, rewardsX + 22, h - NAV_H / 2 - 28, 16, 42);
     this.tomesBadge = createBadge(this.scene, tomesX + 22, h - NAV_H / 2 - 28, 16, 42);
+  }
+
+  setTabAllowed(fn: (tab: TabId) => boolean): void {
+    this.tabAllowed = fn;
+    this.applyTabVisibility();
+  }
+
+  /** Nav button centers for finger pointers (outlook = index 2, tomes = index 4). */
+  navButtonCenter(tab: TabId): { x: number; y: number } | null {
+    const idx = NAV.findIndex((n) => n.id === tab);
+    if (idx < 0) return null;
+    const w = this.scene.scale.width;
+    const h = this.scene.scale.height;
+    const columnW = w / NAV.length;
+    return { x: columnW * (idx + 0.5), y: h - NAV_H / 2 };
+  }
+
+  private applyTabVisibility(): void {
+    this.navButtons.forEach((btn, i) => {
+      const allowed = this.tabAllowed(NAV[i].id);
+      btn.setAlpha(allowed ? 1 : 0.25);
+      if (allowed) btn.setInteractive();
+      else btn.disableInteractive();
+    });
   }
 
   setActive(tab: TabId): void {

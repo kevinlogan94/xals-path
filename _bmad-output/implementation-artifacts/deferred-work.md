@@ -15,3 +15,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-unity-ui-parity.md`
   summary: Replace chapter card rect with Unity ChapterButton / achiev_box art
   evidence: Known shortcut vs Unity Scene chapter card prefab
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-phaser-early-tutorial.md`
+  summary: Mid-tutorial reload may require portrait tap to resume dialogue lines
+  evidence: Tutorial step index is session-only; bootstrap resumes state but does not auto-show current line

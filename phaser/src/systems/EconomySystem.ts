@@ -1,6 +1,7 @@
 import type { GameSave, HelperDef } from '../types';
 import helpersData from '../data/helpers.json';
 import economy from '../data/economy.json';
+import type { TutorialSystem } from './TutorialSystem';
 
 export class EconomySystem {
   readonly helpers: HelperDef[] = helpersData.helpers as HelperDef[];
@@ -74,7 +75,7 @@ export class EconomySystem {
     return true;
   }
 
-  tick(state: GameSave, dt: number): void {
+  tick(state: GameSave, dt: number, tutorial?: TutorialSystem): void {
     if (state.buffRemaining <= 0 && state.mana < state.manaMax) {
       const divisor = state.manaLevel > 1 ? state.manaLevel * 1.25 : 1;
       state.mana = Math.min(
@@ -83,8 +84,11 @@ export class EconomySystem {
       );
     }
 
-    const passive = this.passivePerSecond(state) * dt;
-    if (passive > 0) this.addInfluence(state, passive);
+    const pausePassive = tutorial?.shouldPausePassive(state) ?? false;
+    if (!pausePassive) {
+      const passive = this.passivePerSecond(state) * dt;
+      if (passive > 0) this.addInfluence(state, passive);
+    }
 
     if (state.buffRemaining > 0) {
       state.buffRemaining = Math.max(0, state.buffRemaining - dt);
