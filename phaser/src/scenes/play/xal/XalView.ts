@@ -13,6 +13,7 @@ export class XalView {
   private chapterCard!: Phaser.GameObjects.Container;
   private portalBar!: Phaser.GameObjects.Container;
   private onPortalTravel?: (region: RegionId) => void;
+  private quoteOpen = false;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -79,11 +80,17 @@ export class XalView {
   }
 
   showQuote(text: string): void {
+    this.quoteOpen = true;
     this.quoteBox.show(text);
   }
 
   hideQuote(): void {
+    this.quoteOpen = false;
     this.quoteBox.hide();
+  }
+
+  quoteVisible(): boolean {
+    return this.quoteOpen;
   }
 
   hideChapterCard(): void {

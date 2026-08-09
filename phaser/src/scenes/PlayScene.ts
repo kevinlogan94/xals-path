@@ -255,6 +255,7 @@ export class PlayScene extends Phaser.Scene {
             this.map.setPortraitExpression('generic');
           }
           this.applyNavLock();
+          this.refreshTutorialPointers();
         }
       } else {
         this.renderQuote();
@@ -279,6 +280,7 @@ export class PlayScene extends Phaser.Scene {
         this.map.hideQuote();
       }
       this.applyNavLock();
+      this.refreshTutorialPointers();
       return;
     }
 
@@ -452,14 +454,18 @@ export class PlayScene extends Phaser.Scene {
       this.tab === 'shop',
       chapterVisible,
     );
+    if (target === 'xal' && this.map.quoteVisible()) {
+      this.finger.setVisible(false);
+      return;
+    }
 
     if (target === 'none') {
       this.finger.setVisible(false);
       return;
     }
 
-    // Bottom-nav targets: flip upside-down and sit above so the tip points at the button.
-    const pointDown = target === 'tomesNav' || target === 'outlookNav';
+    // Flip upside-down so the tip points at the target (nav buttons, Xal portrait).
+    const pointDown = target === 'tomesNav' || target === 'outlookNav' || target === 'xal';
     aimFinger(this.finger, pointDown);
 
     let x = 0;
@@ -491,8 +497,10 @@ export class PlayScene extends Phaser.Scene {
       }
       case 'xal': {
         const { width, height } = this.scale;
+        const playMid = (height - NAV_H) / 2;
         x = width / 2;
-        y = (height - NAV_H) / 2 + 40;
+        // Sit above the portrait so the flipped glove points down at Xal, not over his face.
+        y = playMid - 56;
         break;
       }
       case 'outlookNav': {
