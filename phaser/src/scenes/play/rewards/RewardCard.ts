@@ -73,7 +73,7 @@ export function createRewardCard(
         titleX,
         y(42),
         row.title,
-        darkText('5px', '#1a1208', { wordWrap: { width: titleW }, lineSpacing: 4 }),
+        darkText('5px', '#1a1208', { wordWrap: { width: titleW } }),
       )
       .setOrigin(0, 0.5),
     scene.add.rectangle(barX + barW / 2, barY, barW, barH, 0xb8b0a0).setStrokeStyle(1, 0x6a6058),
@@ -94,7 +94,7 @@ export function createRewardCard(
         x(130),
         hintY,
         row.hint,
-        darkText('4px', '#1a1208', { align: 'center', wordWrap: { width: hintW }, lineSpacing: 4 }),
+        darkText('4px', '#1a1208', { align: 'center', wordWrap: { width: hintW } }),
       )
       .setOrigin(0.5),
   ];

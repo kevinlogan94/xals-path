@@ -238,7 +238,6 @@ function showCreaturePanel(
       darkText('12px', undefined, {
         align: 'center',
         wordWrap: { width: wrap },
-        lineSpacing: 6,
       }),
     )
     .setOrigin(0.5, 0);

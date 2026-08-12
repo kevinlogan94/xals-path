@@ -16,16 +16,16 @@ export function buildAchievementSplash(opts: AchievementSplashOpts): SplashConte
     if (opts.iconKey && scene.textures.exists(opts.iconKey)) {
       content.add(scene.add.image(0, -45, opts.iconKey).setDisplaySize(48, 48));
     }
+    const body =
+      opts.before != null && opts.after != null
+        ? `${opts.description}\n${opts.before}  →  ${opts.after}`
+        : opts.description;
+    const desc = scene.add
+      .text(0, -5, body, darkText('13px', undefined, { align: 'center', wordWrap: { width: 280 } }))
+      .setOrigin(0.5, 0);
+    content.add(desc);
     content.add(
-      scene.add
-        .text(0, -5, opts.description, darkText('13px', undefined, { align: 'center', wordWrap: { width: 280 } }))
-        .setOrigin(0.5, 0),
+      createImageButton(scene, 0, Math.max(85, desc.y + desc.height + 28), 'ui-btn-blue', 'Back', 120, 34, api.close),
     );
-    if (opts.before != null && opts.after != null) {
-      content.add(
-        scene.add.text(0, 35, `${opts.before}  →  ${opts.after}`, darkText('13px')).setOrigin(0.5),
-      );
-    }
-    content.add(createImageButton(scene, 0, 85, 'ui-btn-blue', 'Back', 120, 34, api.close));
   };
 }

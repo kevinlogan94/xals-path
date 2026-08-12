@@ -11,7 +11,7 @@ export function buildEndGameSplash(onCredits: () => void): SplashContentBuilder 
           0,
           -50,
           "You have reached the end of Xal's Path.\n\nThank you for playing.",
-          darkText('13px', undefined, { align: 'center', wordWrap: { width: 280 }, lineSpacing: 4 }),
+          darkText('13px', undefined, { align: 'center', wordWrap: { width: 280 } }),
         )
         .setOrigin(0.5),
     );

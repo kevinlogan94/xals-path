@@ -37,7 +37,6 @@ export class QuoteBox {
         '',
         darkText('10px', undefined, {
           align: 'center',
-          lineSpacing: 8,
           wordWrap: { width: textWrap },
         }),
       )

@@ -62,12 +62,12 @@ export function showCreditsModal(scene: Phaser.Scene, parent: Phaser.GameObjects
     },
     [[], []],
   );
-  const style = darkText('7px', undefined, { lineSpacing: 6 });
+  const style = darkText('7px');
   const title = scene.add.image(0, 0, 'ui-xal-title');
   const tw = Math.min(listWidth - 24, 240);
   title.setDisplaySize(tw, tw * (57 / 280));
   const created = scene.add
-    .text(0, 0, 'Created By\nKevin Logan', darkText('8px', undefined, { align: 'center', lineSpacing: 8 }))
+    .text(0, 0, 'Created By\nKevin Logan', darkText('8px', undefined, { align: 'center' }))
     .setOrigin(0.5, 0);
   const roles = scene.add.text(0, 0, roleSrc.join('\n'), { ...style, align: 'right' }).setOrigin(1, 0);
   const names = scene.add.text(0, 0, nameSrc.join('\n'), { ...style, align: 'left' }).setOrigin(0, 0);
