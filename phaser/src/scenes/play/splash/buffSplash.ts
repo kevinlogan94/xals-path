@@ -6,9 +6,9 @@ export function buildBuffSplash(onCollect: () => void): SplashContentBuilder {
   return (content, api) => {
     const scene = content.scene;
     content.add(
-      scene.add.text(0, -45, 'Yes!! Way to go!!', darkText('10px')).setOrigin(0.5),
+      scene.add.text(0, -45, 'Yes!! Way to go!!', darkText('14px')).setOrigin(0.5),
     );
-    content.add(scene.add.text(0, -10, '15 Seconds', darkText('8px')).setOrigin(0.5));
+    content.add(scene.add.text(0, -10, '15 Seconds', darkText('13px')).setOrigin(0.5));
     content.add(
       createImageButton(
         scene,
@@ -23,7 +23,7 @@ export function buildBuffSplash(onCollect: () => void): SplashContentBuilder {
           api.close();
         },
         1,
-        '8px',
+        '11px',
       ),
     );
   };

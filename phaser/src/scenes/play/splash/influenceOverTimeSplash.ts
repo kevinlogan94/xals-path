@@ -15,13 +15,13 @@ export function buildInfluenceOverTimeSplash(
           0,
           -45,
           'While you were away, the incantation from your tomes continued to collect influence.',
-          darkText('8px', undefined, { align: 'center', wordWrap: { width: 280 } }),
+          darkText('13px', undefined, { align: 'center', wordWrap: { width: 280 } }),
         )
         .setOrigin(0.5),
     );
     content.add(
       scene.add
-        .text(0, 0, `${formatNumber(amount)} influence`, darkText('10px'))
+        .text(0, 0, `${formatNumber(amount)} influence`, darkText('14px'))
         .setOrigin(0.5),
     );
     content.add(
@@ -38,7 +38,7 @@ export function buildInfluenceOverTimeSplash(
           api.close();
         },
         1,
-        '8px',
+        '11px',
       ),
     );
   };

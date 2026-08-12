@@ -11,7 +11,7 @@ export function buildPortalSplash(): SplashContentBuilder {
           0,
           -30,
           'The path closes… The portal opens.',
-          darkText('8px', undefined, { align: 'center', wordWrap: { width: 280 } }),
+          darkText('13px', undefined, { align: 'center', wordWrap: { width: 280 } }),
         )
         .setOrigin(0.5),
     );

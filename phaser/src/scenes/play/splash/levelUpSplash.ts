@@ -11,11 +11,11 @@ export function buildLevelUpSplash(
     const scene = content.scene;
     content.add(
       scene.add
-        .text(0, -40, `${formatNumber(reward)} influence`, darkText('10px'))
+        .text(0, -40, `${formatNumber(reward)} influence`, darkText('14px'))
         .setOrigin(0.5),
     );
     content.add(
-      createImageButton(scene, 0, 10, 'ui-btn-green', 'Projection', 140, 40, undefined, 0.4, '8px'),
+      createImageButton(scene, 0, 10, 'ui-btn-green', 'Projection', 140, 40, undefined, 0.4, '11px'),
     );
     content.add(
       createImageButton(
@@ -31,7 +31,7 @@ export function buildLevelUpSplash(
           api.close();
         },
         1,
-        '8px',
+        '11px',
       ),
     );
   };

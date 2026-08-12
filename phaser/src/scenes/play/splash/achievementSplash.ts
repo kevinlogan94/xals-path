@@ -18,12 +18,12 @@ export function buildAchievementSplash(opts: AchievementSplashOpts): SplashConte
     }
     content.add(
       scene.add
-        .text(0, -5, opts.description, darkText('8px', undefined, { align: 'center', wordWrap: { width: 280 } }))
+        .text(0, -5, opts.description, darkText('13px', undefined, { align: 'center', wordWrap: { width: 280 } }))
         .setOrigin(0.5, 0),
     );
     if (opts.before != null && opts.after != null) {
       content.add(
-        scene.add.text(0, 35, `${opts.before}  →  ${opts.after}`, darkText('8px')).setOrigin(0.5),
+        scene.add.text(0, 35, `${opts.before}  →  ${opts.after}`, darkText('13px')).setOrigin(0.5),
       );
     }
     content.add(createImageButton(scene, 0, 85, 'ui-btn-blue', 'Back', 120, 34, api.close));

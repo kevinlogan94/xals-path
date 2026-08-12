@@ -231,13 +231,13 @@ function showCreaturePanel(
     content.add(sprite);
   }
 
-  content.add(scene.add.text(0, -22, creature.name, darkText('10px')).setOrigin(0.5));
+  content.add(scene.add.text(0, -22, creature.name, darkText('14px')).setOrigin(0.5));
   const desc = scene.add
     .text(
       0,
       -8,
       creature.description,
-      darkText('7px', undefined, {
+      darkText('12px', undefined, {
         align: 'center',
         wordWrap: { width: wrap },
         lineSpacing: 6,

@@ -11,7 +11,7 @@ export function buildNewGameSplash(onConfirm: () => void): SplashContentBuilder 
           0,
           -45,
           'Restart the game from the very beginning.',
-          darkText('8px', undefined, { align: 'center', wordWrap: { width: 280 } }),
+          darkText('13px', undefined, { align: 'center', wordWrap: { width: 280 } }),
         )
         .setOrigin(0.5),
     );
@@ -26,7 +26,7 @@ export function buildNewGameSplash(onConfirm: () => void): SplashContentBuilder 
         40,
         onConfirm,
         1,
-        '8px',
+        '11px',
       ),
     );
     content.add(createImageButton(scene, 0, 62, 'ui-btn-blue', 'Back', 120, 34, api.close));
