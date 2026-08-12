@@ -31,6 +31,11 @@ export function renderChapterCard({
   const iconX = -93;
   const iconY = -4;
   const textX = -52;
+  // Locked stacks 4 lines; keep them inside the rounded box (stroke adds height).
+  const chapterY = locked ? -22 : -16;
+  const nameY = locked ? -4 : 6;
+  const lvlY = 14;
+  const manaY = locked ? 30 : 26;
   const bg = scene.add
     .image(0, 0, locked ? 'ui-achiev-box-pressed' : 'ui-achiev-box')
     .setDisplaySize(cardW, cardH);
@@ -39,13 +44,13 @@ export function renderChapterCard({
     bg,
     icon,
     scene.add
-      .text(textX, -16, `Chapter ${chapter.id}`, whiteText('8px', { color: '#c8b89a' }))
+      .text(textX, chapterY, `Chapter ${chapter.id}`, whiteText('8px', { color: '#c8b89a' }))
       .setOrigin(0, 0.5),
     scene.add
       .text(
         textX,
-        6,
-        chapter.name, 
+        nameY,
+        chapter.name,
         whiteText('9px', {
           color: locked ? '#888' : '#ffffff',
           wordWrap: { width: 152 },
@@ -58,14 +63,14 @@ export function renderChapterCard({
   if (locked) {
     parts.push(
       scene.add
-        .text(textX, 28, `Lvl ${chapter.levelRequirement}`, whiteText('8px', { color: '#e08080' }))
+        .text(textX, lvlY, `Lvl ${chapter.levelRequirement}`, whiteText('8px', { color: '#e08080' }))
         .setOrigin(0, 0.5),
     );
   }
   if (chapter.id >= 2 && chapter.id <= 4) {
     parts.push(
       scene.add
-        .text(textX, locked ? 46 : 26, '2x Mana Increase', whiteText('7px', { color: '#9ec9ff' }))
+        .text(textX, manaY, '2x Mana Increase', whiteText('7px', { color: '#9ec9ff', strokeThickness: 2 }))
         .setOrigin(0, 0.5),
     );
   }
