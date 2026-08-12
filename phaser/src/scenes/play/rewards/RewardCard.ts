@@ -12,7 +12,7 @@ export interface RewardRow {
   goal: number;
   hint: string;
   icon: string;
-  onWatch?: () => void;
+  onWatch?: boolean;
 }
 
 /** Unity Achievement.prefab uses item_slot.png (260×260). */
@@ -110,8 +110,8 @@ export function createRewardCard(
         'Watch',
         halfW,
         btnH,
-        row.onWatch,
-        1,
+        undefined,
+        0.4,
         '4px',
         onPressStart,
       ),

@@ -20,7 +20,6 @@ interface RewardsPanelConfig {
   ctx: GameContext;
   rewardsScroll: number;
   onScroll: (scroll: number) => void;
-  showToast: (message: string) => void;
   onAchievementClaim: (info: AchievementClaimInfo) => void;
   rerender: () => void;
 }
@@ -66,7 +65,6 @@ export function renderRewardsPanel({
   ctx,
   rewardsScroll,
   onScroll,
-  showToast,
   onAchievementClaim,
   rerender,
 }: RewardsPanelConfig): void {
@@ -126,12 +124,7 @@ export function renderRewardsPanel({
       goal: a.videoGoal,
       hint: hoursHint(10, '10 hours worth of influence'),
       icon: 'ui-reward-video',
-      onWatch: () => {
-        if (scroll.wasDrag()) return;
-        ctx.economy.watchProjection(ctx.state);
-        showToast('Projection watched');
-        rerender();
-      },
+      onWatch: true,
     },
     {
       id: 'meta',

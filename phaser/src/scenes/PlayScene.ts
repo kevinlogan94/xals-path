@@ -589,7 +589,6 @@ export class PlayScene extends Phaser.Scene {
       onScroll: (scroll) => {
         this.rewardsScroll = scroll;
       },
-      showToast: (message) => this.showToast(message),
       onAchievementClaim: (info) => {
         this.splash.open('achievement', {
           build: buildAchievementSplash({
