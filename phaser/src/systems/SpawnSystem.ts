@@ -176,7 +176,7 @@ export class SpawnSystem {
 
     const magicSprite = makeMagicSprite(this.scene);
     if (magicSprite) {
-      const size = Math.max(sprite.displayWidth, sprite.displayHeight);
+      const size = Math.max(sprite.displayWidth, sprite.displayHeight) * 1.4;
       magicSprite.setDisplaySize(size, size);
     }
 
