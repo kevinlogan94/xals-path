@@ -30,7 +30,9 @@ export class PlayScene extends Phaser.Scene {
   private map!: XalView;
   private outlook!: OutlookView;
   private panel!: Phaser.GameObjects.Container;
-  private toast!: Phaser.GameObjects.Text;
+  private toast!: Phaser.GameObjects.Container;
+  private toastBg!: Phaser.GameObjects.Graphics;
+  private toastText!: Phaser.GameObjects.Text;
   private lastBuff = 0;
   private levelJinglePlayed = false;
   private saveTimer = 0;
@@ -84,17 +86,16 @@ export class PlayScene extends Phaser.Scene {
 
     this.hud = new HudView(this, this.ctx, () => this.openLevelUpSplash());
     this.hud.build();
+    this.toastText = this.add.text(0, 0, '', {
+      fontFamily: FONT,
+      fontSize: '12px',
+      color: '#ffe6a8',
+      align: 'center',
+      wordWrap: { width: width - 56 },
+    }).setOrigin(0.5);
+    this.toastBg = this.add.graphics();
     this.toast = this.add
-      .text(width / 2, 118, '', {
-        fontFamily: FONT,
-        fontSize: '12px',
-        color: '#ffe6a8',
-        stroke: '#1a1208',
-        strokeThickness: 3,
-        align: 'center',
-        wordWrap: { width: width - 40 },
-      })
-      .setOrigin(0.5)
+      .container(width / 2, 118, [this.toastBg, this.toastText])
       .setDepth(30)
       .setAlpha(0);
     this.panel = this.add.container(0, 0).setDepth(25).setVisible(false);
@@ -663,7 +664,14 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private showToast(msg: string): void {
-    this.toast.setText(msg);
+    this.toastText.setText(msg);
+    const padX = 10;
+    const padY = 6;
+    const w = this.toastText.width + padX * 2;
+    const h = this.toastText.height + padY * 2;
+    this.toastBg.clear();
+    this.toastBg.fillStyle(0x000000, 0.85);
+    this.toastBg.fillRoundedRect(-w / 2, -h / 2, w, h, 8);
     this.tweens.killTweensOf(this.toast);
     this.toast.setAlpha(1);
     this.tweens.add({
