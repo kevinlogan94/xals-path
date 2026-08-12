@@ -163,8 +163,6 @@ export function preloadCreatureSplashAssets(load: Phaser.Loader.LoaderPlugin): v
   }
 }
 
-const LOCK_ANIM = 'ui-lock-unlock';
-
 function ensureLockFrames(scene: Phaser.Scene): boolean {
   if (!scene.textures.exists(LOCK_SHEET_KEY)) return false;
   const tex = scene.textures.get(LOCK_SHEET_KEY);
@@ -174,16 +172,16 @@ function ensureLockFrames(scene: Phaser.Scene): boolean {
   return tex.has('lock-0');
 }
 
-function ensureLockAnim(scene: Phaser.Scene): boolean {
-  if (!ensureLockFrames(scene)) return false;
-  if (scene.anims.exists(LOCK_ANIM)) return true;
-  scene.anims.create({
-    key: LOCK_ANIM,
-    frames: LOCK_FRAME_X.map((_, i) => ({ key: LOCK_SHEET_KEY, frame: `lock-${i}` })),
-    duration: 1000,
-    repeat: 0,
-  });
-  return true;
+/** Unity `Unlock.anim`: hold closed 2s, ±5° shakes, snap open 2.00–2.15s, panel at 3.167s. */
+function playLockUnlock(lock: Phaser.GameObjects.Sprite, onDone: () => void): void {
+  const t = lock.scene.time;
+  const at = (ms: number, fn: () => void) => t.delayedCall(ms, () => { if (lock.active) fn(); });
+  [2000, 2050, 2100, 2150].forEach((ms, i) => at(ms, () => lock.setFrame(`lock-${i + 1}`)));
+  const z = [0, -5, 5, -5, 5, 0, 0, -5, 5, -5, 5, 0];
+  [1000, 1050, 1100, 1150, 1200, 1267, 1400, 1450, 1500, 1550, 1600, 1667].forEach((ms, i) =>
+    at(ms, () => lock.setAngle(z[i])),
+  );
+  at(3167, onDone);
 }
 
 export function ensureRunAnim(scene: Phaser.Scene, creatureId: string): string | null {
@@ -252,19 +250,14 @@ function showCreaturePanel(
 export function buildCreatureSplash(creature: CreatureDef): SplashContentBuilder {
   return (content, api) => {
     const scene = content.scene;
-    if (!ensureLockAnim(scene)) {
+    if (!ensureLockFrames(scene)) {
       showCreaturePanel(content, creature, api);
       return;
     }
 
     const lock = scene.add.sprite(0, 0, LOCK_SHEET_KEY, 'lock-0').setOrigin(0.5);
-    const lockScale = Math.min(120 / lock.width, 200 / lock.height);
-    lock.setScale(lockScale);
+    lock.setScale((scene.scale.height * 0.35) / lock.height);
     content.add(lock);
-
-    lock.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      showCreaturePanel(content, creature, api);
-    });
-    lock.play(LOCK_ANIM);
+    playLockUnlock(lock, () => showCreaturePanel(content, creature, api));
   };
 }
