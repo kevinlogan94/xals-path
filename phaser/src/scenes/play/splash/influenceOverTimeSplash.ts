@@ -11,6 +11,7 @@ export function buildInfluenceOverTimeSplash(
     const scene = content.scene;
     const wrap = api.bodyWidth * 0.86;
     const items = [
+      scene.add.image(0, 0, 'ui-influence').setDisplaySize(80, 108),
       scene.add
         .text(
           0,
