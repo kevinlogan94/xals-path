@@ -8,7 +8,6 @@ interface SettingsPanelConfig {
   scene: Phaser.Scene;
   panel: Phaser.GameObjects.Container;
   ctx: GameContext;
-  onAchievements: () => void;
   onCredits: () => void;
   onNewGame: () => void;
 }
@@ -17,7 +16,6 @@ export function renderSettingsPanel({
   scene,
   panel,
   ctx,
-  onAchievements,
   onCredits,
   onNewGame,
 }: SettingsPanelConfig): void {
@@ -64,7 +62,6 @@ export function renderSettingsPanel({
   section('Sound Effects');
   mkMuteRow(ctx.audio.muteSfx, () => ctx.audio.toggleMuteSfx());
 
-  mkImgBtn('ui-btn-green', 'Achievements', onAchievements);
   mkImgBtn('ui-btn-blue', 'Credits', onCredits);
   mkImgBtn('ui-btn-orange', 'New Game', onNewGame);
 }

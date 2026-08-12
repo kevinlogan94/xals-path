@@ -594,7 +594,6 @@ export class PlayScene extends Phaser.Scene {
       scene: this,
       panel: this.panel,
       ctx: this.ctx,
-      onAchievements: () => this.setTab('achievements', true),
       onCredits: () => showCreditsModal(this, this.panel),
       onNewGame: () => this.onNewGame(),
     });
