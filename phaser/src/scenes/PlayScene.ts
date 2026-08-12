@@ -43,6 +43,8 @@ export class PlayScene extends Phaser.Scene {
   private banterTimer?: Phaser.Time.TimerEvent;
   private persistHidden!: () => void;
   private persistPageHide!: () => void;
+  private onFrozenResume!: () => void;
+  private onPageShow!: (e: PageTransitionEvent) => void;
   private onResizeBound!: () => void;
   private layoutW = 0;
   private layoutH = 0;
@@ -112,13 +114,27 @@ export class PlayScene extends Phaser.Scene {
       if (document.visibilityState === 'hidden') this.ctx.persist();
     };
     this.persistPageHide = () => this.ctx.persist();
+    this.onFrozenResume = () => {
+      this.ctx.offlineGained = this.ctx.economy.applyOffline(this.ctx.state);
+      if (this.ctx.offlineGained > 0) this.ctx.persist();
+      this.openOfflineSplash();
+    };
+    this.onPageShow = (e) => {
+      if (e.persisted) this.onFrozenResume();
+    };
     document.addEventListener('visibilitychange', this.persistHidden);
     window.addEventListener('pagehide', this.persistPageHide);
+    document.addEventListener('freeze', this.persistPageHide);
+    document.addEventListener('resume', this.onFrozenResume);
+    window.addEventListener('pageshow', this.onPageShow);
     this.onResizeBound = () => this.onResize();
     this.scale.on('resize', this.onResizeBound);
     this.events.once('shutdown', () => {
       document.removeEventListener('visibilitychange', this.persistHidden);
       window.removeEventListener('pagehide', this.persistPageHide);
+      document.removeEventListener('freeze', this.persistPageHide);
+      document.removeEventListener('resume', this.onFrozenResume);
+      window.removeEventListener('pageshow', this.onPageShow);
       this.scale.off('resize', this.onResizeBound);
       this.splash.dismiss();
       this.ctx.audio.attach(null);
@@ -135,21 +151,24 @@ export class PlayScene extends Phaser.Scene {
       this.renderQuote();
     }
 
-    if (this.ctx.offlineGained > 0) {
-      const pending = Math.floor(this.ctx.offlineGained);
-      this.splash.open('influenceOverTime', {
-        build: buildInfluenceOverTimeSplash(pending, () => {
-          this.ctx.economy.addInfluence(this.ctx.state, pending);
-          this.ctx.state.pendingOffline = 0;
-          this.ctx.offlineGained = 0;
-          this.ctx.persist();
-          this.refreshHud();
-        }),
-      });
-    }
+    this.openOfflineSplash();
 
     this.refreshHud();
     this.refreshTutorialPointers();
+  }
+
+  private openOfflineSplash(): void {
+    const pending = Math.floor(this.ctx.offlineGained);
+    if (pending <= 0) return;
+    this.splash.open('influenceOverTime', {
+      build: buildInfluenceOverTimeSplash(pending, () => {
+        this.ctx.economy.addInfluence(this.ctx.state, pending);
+        this.ctx.state.pendingOffline = 0;
+        this.ctx.offlineGained = 0;
+        this.ctx.persist();
+        this.refreshHud();
+      }),
+    });
   }
 
   update(_t: number, delta: number): void {
