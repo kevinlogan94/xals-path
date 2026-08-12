@@ -117,6 +117,10 @@ export function createScrollList(config: ScrollListConfig): ScrollList {
       cards.push(card);
       card.setMask(mask);
       panel.add(card);
+      card.on('wheel', (_p: Phaser.Input.Pointer, _dx: number, dy: number) => {
+        setScroll(scroll + dy * 0.4);
+        apply();
+      });
     },
     pointerDown,
     pointerMove,

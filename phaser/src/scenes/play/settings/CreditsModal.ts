@@ -94,7 +94,16 @@ export function showCreditsModal(scene: Phaser.Scene, parent: Phaser.GameObjects
     scroll: 0,
     onScroll: () => undefined,
   });
-  scroll.addCard(scene.add.container(0, 0, [title, created, roles, names]));
+  const card = scene.add
+    .container(listLeft + listWidth / 2, 0, [title, created, roles, names])
+    .setSize(listWidth, contentH);
+  card.setInteractive(
+    new Phaser.Geom.Rectangle(0, 0, listWidth, contentH),
+    Phaser.Geom.Rectangle.Contains,
+  );
+  card.on('pointerdown', scroll.pointerDown);
+  card.on('pointermove', scroll.pointerMove);
+  scroll.addCard(card);
   scroll.apply();
   overlay.add(
     createImageButton(scene, scene.scale.width / 2, closeY, 'ui-btn-blue', 'Close', 120, 34, close),
