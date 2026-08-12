@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import helpersData from '../data/helpers.json';
+import { preloadCreatureMagic } from './play/outlook/creatureMagic';
 import { preloadCreatureSplashAssets } from './play/splash/creatureSplash';
 import type { HelperDef } from '../types';
 
@@ -54,6 +55,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-tome-locked', 'assets/ui/tome-box-locked.png');
     this.load.image('ui-lock', 'assets/ui/lock.png');
     preloadCreatureSplashAssets(this.load);
+    preloadCreatureMagic(this.load);
     this.load.image('ui-panel', 'assets/ui/panel.png');
     this.load.image('ui-cloud', 'assets/ui/clouds/cloud.png');
     this.load.image('ui-level-cloud', 'assets/ui/clouds/LevelCloud.png');

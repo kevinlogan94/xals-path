@@ -221,7 +221,7 @@ export class PlayScene extends Phaser.Scene {
     this.ctx.audio.playSfx('cast', 0.4);
     if (!hit.magic) {
       hit.setMagic();
-      this.time.delayedCall(400, () => hit.hideCreature());
+      this.time.delayedCall(500, () => hit.hideCreature());
     }
     const mult = Math.round(gained / Math.max(1, this.ctx.state.clickerIncrement));
     this.floatText(

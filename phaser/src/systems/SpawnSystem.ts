@@ -1,10 +1,16 @@
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import type { CreatureDef, GameSave, RegionId } from '../types';
 import creaturesData from '../data/creatures.json';
+import {
+  MAGIC_EFFECT,
+  MAGIC_IDLE,
+  makeMagicSprite,
+} from '../scenes/play/outlook/creatureMagic';
 import { ensureRunAnim, texKey } from '../scenes/play/splash/creatureSplash';
 
 interface Spawned {
-  sprite: Phaser.GameObjects.Image;
+  sprite: Phaser.GameObjects.Sprite;
+  magicSprite: Phaser.GameObjects.Sprite | null;
   creatureId: string;
   magic: boolean;
   /** Cross-screen lifetime (~2.5s Unity MoveAcrossScreen). */
@@ -33,7 +39,7 @@ export class SpawnSystem {
   private scene: Phaser.Scene | null = null;
   private onTap:
     | ((entry: {
-        sprite: Phaser.GameObjects.Image;
+        sprite: Phaser.GameObjects.Sprite;
         magic: boolean;
         setMagic: () => void;
         hideCreature: () => void;
@@ -51,13 +57,20 @@ export class SpawnSystem {
   }
 
   clear(): void {
-    for (const s of this.spawned) s.sprite.destroy();
+    for (const s of this.spawned) {
+      s.sprite.destroy();
+      s.magicSprite?.destroy();
+    }
     this.spawned = [];
     this.pending = [];
   }
 
   hits(x: number, y: number): boolean {
-    return this.spawned.some((s) => s.sprite.getBounds().contains(x, y));
+    return this.spawned.some(
+      (s) =>
+        s.sprite.getBounds().contains(x, y) ||
+        (s.magicSprite?.visible && s.magicSprite.getBounds().contains(x, y)),
+    );
   }
 
   eligible(state: GameSave, region: RegionId): CreatureDef[] {
@@ -111,11 +124,16 @@ export class SpawnSystem {
       const t = Math.min(1, s.age / s.duration);
       s.sprite.x = s.startX + (s.endX - s.startX) * t;
       s.sprite.y = s.y + Math.sin(s.age * 3) * 4;
+      if (s.magicSprite) {
+        s.magicSprite.x = s.sprite.x;
+        s.magicSprite.y = s.sprite.y;
+      }
     }
 
     this.spawned = this.spawned.filter((s) => {
       if (s.age >= s.duration) {
         s.sprite.destroy();
+        s.magicSprite?.destroy();
         return false;
       }
       return true;
@@ -156,8 +174,15 @@ export class SpawnSystem {
     sprite.setScale(Math.min(96 / sprite.width, 72 / sprite.height));
     sprite.play(runKey);
 
+    const magicSprite = makeMagicSprite(this.scene);
+    if (magicSprite) {
+      const size = Math.max(sprite.displayWidth, sprite.displayHeight);
+      magicSprite.setDisplaySize(size, size);
+    }
+
     const entry: Spawned = {
       sprite,
+      magicSprite,
       creatureId: pick.id,
       magic: false,
       age: 0,
@@ -167,18 +192,25 @@ export class SpawnSystem {
       y,
     };
 
-    sprite.on('pointerdown', () => {
+    const tap = () => {
       this.onTap?.({
         sprite,
         magic: entry.magic,
         setMagic: () => {
           entry.magic = true;
+          if (!magicSprite) return;
+          magicSprite.setVisible(true).play(MAGIC_EFFECT);
+          magicSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+            magicSprite.setScale(magicSprite.scale * 0.5).play(MAGIC_IDLE);
+          });
         },
         hideCreature: () => {
           sprite.setVisible(false);
         },
       });
-    });
+    };
+    sprite.on('pointerdown', tap);
+    magicSprite?.setInteractive({ useHandCursor: true }).on('pointerdown', tap);
 
     this.spawned.push(entry);
   }
