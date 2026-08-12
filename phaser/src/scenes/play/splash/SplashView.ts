@@ -33,7 +33,33 @@ export type SplashContentApi = {
   /** Reveal panel + banner (used after lock unlock). No-op when chrome was not deferred. */
   showChrome: () => void;
   bodyWidth: number;
+  /** Content-local Y range below the banner, inside the panel. */
+  bodyTop: number;
+  bodyBottom: number;
 };
+
+const SPLASH_GAP = 22;
+
+function splashItemH(obj: Phaser.GameObjects.GameObject): number {
+  if (obj instanceof Phaser.GameObjects.Text) return obj.height;
+  const sized = obj as Phaser.GameObjects.Image;
+  return sized.displayHeight || sized.height || 0;
+}
+
+/** Center a column in the splash body with even gaps. */
+export function stackSplash(
+  items: Phaser.GameObjects.GameObject[],
+  api: SplashContentApi,
+  gap = SPLASH_GAP,
+): void {
+  const hs = items.map(splashItemH);
+  const total = hs.reduce((a, b) => a + b, 0) + gap * Math.max(0, items.length - 1);
+  let y = api.bodyTop + Math.max(0, (api.bodyBottom - api.bodyTop - total) / 2);
+  items.forEach((item, i) => {
+    (item as Phaser.GameObjects.Image).setY(y + hs[i] / 2);
+    y += hs[i] + gap;
+  });
+}
 
 export type SplashContentBuilder = (
   content: Phaser.GameObjects.Container,
@@ -96,6 +122,9 @@ export function createSplash(
     const bannerY = panelTop + bannerH * 0.15;
     const contentY = cy + bannerH * 0.12;
     const bodyWidth = displayW - inset * 2;
+    const pad = Math.max(22, Math.round((displayH || playH) * 0.045));
+    const bodyTop = bannerY + bannerH * 0.5 + 8 - contentY;
+    const bodyBottom = cy + (displayH || playH) / 2 - pad - contentY;
 
     let panelImg: Phaser.GameObjects.Image | null = null;
     let bannerImg: Phaser.GameObjects.Image | null = null;
@@ -131,7 +160,7 @@ export function createSplash(
       content.setPosition(cx, contentY);
     };
 
-    const api: SplashContentApi = { close, showChrome, bodyWidth };
+    const api: SplashContentApi = { close, showChrome, bodyWidth, bodyTop, bodyBottom };
     try {
       if (opts?.build) opts.build(content, api);
       else {

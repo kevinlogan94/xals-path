@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { CreatureDef } from '../../../types';
 import { createImageButton } from '../ui/ImageButton';
 import { darkText } from '../ui/textStyles';
-import type { SplashContentApi, SplashContentBuilder } from './SplashView';
+import { stackSplash, type SplashContentApi, type SplashContentBuilder } from './SplashView';
 
 /** Unity sprite rects (x, bottom-left y, w, h). Tiny auto-slice junk omitted. */
 const CREATURE_RUN: Record<
@@ -216,34 +216,35 @@ function showCreaturePanel(
   api.showChrome();
   content.removeAll(true);
 
-  const wrap = Math.max(160, Math.round(api.bodyWidth * 0.88));
+  const wrap = Math.max(160, Math.round(api.bodyWidth * 0.86));
   const slot = 90;
-  content.add(scene.add.image(0, -80, 'ui-item-slot').setDisplaySize(slot, slot));
+  const portrait = scene.add.container(0, 0);
+  portrait.add(scene.add.image(0, 0, 'ui-item-slot').setDisplaySize(slot, slot));
 
   const runKey = ensureRunAnim(scene, creature.id);
   if (runKey) {
-    const sprite = scene.add.sprite(0, -80, texKey(creature.id), `${creature.id}-0`).setOrigin(0.5, 0.5);
+    const sprite = scene.add.sprite(0, 0, texKey(creature.id), `${creature.id}-0`).setOrigin(0.5, 0.5);
     const scale = (slot * 0.72) / Math.max(sprite.width, sprite.height);
     sprite.setScale(scale);
     sprite.play(runKey);
-    content.add(sprite);
+    portrait.add(sprite);
   }
+  portrait.setSize(slot, slot);
 
-  content.add(scene.add.text(0, -22, creature.name, darkText('14px')).setOrigin(0.5));
-  const desc = scene.add
-    .text(
-      0,
-      -8,
-      creature.description,
-      darkText('12px', undefined, {
-        align: 'center',
-        wordWrap: { width: wrap },
-      }),
-    )
-    .setOrigin(0.5, 0);
-  content.add(desc);
-  const backY = Math.max(95, desc.y + desc.height + 28);
-  content.add(createImageButton(scene, 0, backY, 'ui-btn-blue', 'Back', 120, 34, api.close));
+  const name = scene.add.text(0, 0, creature.name, darkText('14px')).setOrigin(0.5);
+  const desc = scene.add.text(0, 0, creature.description, darkText('10px')).setOrigin(0.5);
+  const back = createImageButton(scene, 0, 0, 'ui-btn-blue', 'Back', 120, 34, api.close);
+  const items = [portrait, name, desc, back];
+  content.add(items);
+
+  const gap = 22;
+  const chrome = slot + name.height + back.height + gap * 3;
+  const maxDesc = Math.max(48, api.bodyBottom - api.bodyTop - chrome);
+  for (let px = 10; px >= 7; px--) {
+    desc.setStyle(darkText(`${px}px`, undefined, { align: 'center', wordWrap: { width: wrap } }));
+    if (desc.height <= maxDesc) break;
+  }
+  stackSplash(items, api, gap);
 }
 
 export function buildCreatureSplash(creature: CreatureDef): SplashContentBuilder {
