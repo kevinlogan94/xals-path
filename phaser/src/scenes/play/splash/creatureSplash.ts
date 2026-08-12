@@ -4,51 +4,162 @@ import { createImageButton } from '../ui/ImageButton';
 import { darkText } from '../ui/textStyles';
 import type { SplashContentApi, SplashContentBuilder } from './SplashView';
 
-/** id → run spritesheet meta (splash only; Outlook keeps `creature-{id}` image). */
-export const CREATURE_RUN_SHEETS: Record<
+/** Unity sprite rects (x, bottom-left y, w, h). Tiny auto-slice junk omitted. */
+const CREATURE_RUN: Record<
   string,
-  { key: string; frameWidth: number; frameHeight: number; frameCount?: number }
+  { src: string; h: number; fps?: number; frames: [number, number, number, number][] }
 > = {
-  elk: { key: 'creature-elk-run', frameWidth: 130, frameHeight: 123, frameCount: 11 },
-  hippocampus: { key: 'creature-hippocampus-run', frameWidth: 227, frameHeight: 182, frameCount: 3 },
-  abraxas: { key: 'creature-abraxas-run', frameWidth: 186, frameHeight: 117, frameCount: 5 },
-  raiju: { key: 'creature-raiju-run', frameWidth: 191, frameHeight: 163, frameCount: 4 },
-  wraith: { key: 'creature-wraith-run', frameWidth: 125, frameHeight: 125, frameCount: 16 },
-  bluecap: { key: 'creature-bluecap-run', frameWidth: 238, frameHeight: 262, frameCount: 4 },
-  griffin: { key: 'creature-griffin-run', frameWidth: 138, frameHeight: 144, frameCount: 11 },
-  basilisk: { key: 'creature-basilisk-run', frameWidth: 107, frameHeight: 291, frameCount: 8 },
-  phoenix: { key: 'creature-phoenix-run', frameWidth: 140, frameHeight: 141, frameCount: 12 },
-  voidSpawn: { key: 'creature-voidSpawn-run', frameWidth: 300, frameHeight: 300, frameCount: 4 },
+  elk: {
+    src: 'elk-run.png',
+    h: 465,
+    fps: 20,
+    frames: [
+      [0, 316, 130, 123],
+      [135, 316, 130, 123],
+      [270, 316, 130, 123],
+      [407, 316, 129, 123],
+      [5, 159, 130, 123],
+      [135, 163, 130, 123],
+      [271, 164, 130, 123],
+      [405, 164, 130, 123],
+      [5, 7, 130, 123],
+      [137, 7, 130, 120],
+      [271, 7, 130, 123],
+    ],
+  },
+  hippocampus: {
+    src: 'hippocampus.png',
+    h: 365,
+    frames: [
+      [0, 183, 227, 182],
+      [227, 183, 227, 182],
+      [454, 183, 227, 182],
+      [0, 1, 227, 182],
+      [227, 1, 227, 182],
+    ],
+  },
+  abraxas: {
+    src: 'abraxas.png',
+    h: 379,
+    frames: [
+      [21, 209, 186, 117],
+      [238, 209, 186, 117],
+      [459, 207, 186, 117],
+      [23, 18, 186, 117],
+      [242, 18, 186, 117],
+    ],
+  },
+  raiju: {
+    src: 'raiju.png',
+    h: 326,
+    frames: [
+      [0, 163, 191, 163],
+      [191, 163, 191, 163],
+      [382, 163, 191, 163],
+      [573, 163, 191, 163],
+      [0, 0, 191, 163],
+    ],
+  },
+  wraith: {
+    src: 'wraith.png',
+    h: 500,
+    frames: [
+      [0, 375, 125, 125],
+      [125, 375, 125, 125],
+      [250, 375, 125, 125],
+      [375, 375, 125, 125],
+      [0, 250, 125, 125],
+      [125, 250, 125, 125],
+      [250, 250, 125, 125],
+      [375, 250, 125, 125],
+      [0, 125, 125, 125],
+      [125, 125, 125, 125],
+      [250, 125, 125, 125],
+      [375, 125, 125, 125],
+      [0, 0, 125, 125],
+    ],
+  },
+  bluecap: {
+    src: 'bluecap.png',
+    h: 262,
+    frames: [
+      [0, 0, 238, 262],
+      [238, 0, 238, 262],
+      [476, 0, 238, 262],
+      [714, 0, 238, 262],
+    ],
+  },
+  griffin: {
+    src: 'griffin.png',
+    h: 578,
+    frames: [
+      [0, 467, 138, 76],
+      [144, 469, 139, 78],
+      [288, 467, 139, 82],
+      [0, 321, 138, 82],
+      [144, 321, 139, 75],
+      [288, 316, 139, 80],
+      [0, 147, 138, 131],
+      [144, 163, 139, 115],
+      [290, 158, 133, 120],
+      [2, 18, 133, 104],
+    ],
+  },
+  basilisk: {
+    src: 'basilisk.png',
+    h: 291,
+    frames: [
+      [0, 197, 284, 94],
+      [291, 197, 284, 94],
+      [572, 198, 285, 93],
+      [15, 98, 284, 94],
+      [300, 95, 284, 94],
+      [575, 98, 282, 94],
+      [14, 7, 284, 94],
+      [291, 8, 284, 94],
+    ],
+  },
+  phoenix: {
+    src: 'phoenix.png',
+    h: 141,
+    frames: [
+      [11, 1, 140, 140],
+      [161, 1, 140, 140],
+      [309, 1, 140, 140],
+      [450, 1, 140, 140],
+      [601, 1, 140, 140],
+      [744, 1, 140, 140],
+      [891, 1, 140, 140],
+      [1033, 1, 140, 140],
+      [1179, 1, 140, 140],
+      [1322, 1, 140, 140],
+      [1469, 0, 140, 140],
+      [1617, 0, 140, 140],
+    ],
+  },
+  voidSpawn: {
+    src: 'voidSpawn.png',
+    h: 300,
+    frames: [
+      [0, 0, 300, 300],
+      [300, 0, 300, 300],
+      [600, 0, 300, 300],
+      [900, 0, 300, 300],
+    ],
+  },
 };
 
 const LOCK_SHEET_KEY = 'ui-lock-sheet';
 const LOCK_FRAME_X = [12, 362, 712, 1062, 1412];
 
-/** Unity dark-elk-animation rects (bottom-left y) → manual atlas frames. */
-const ELK_TEX_H = 465;
-const ELK_RUN_FRAMES: [number, number, number, number][] = [
-  [0, 316, 130, 123],
-  [135, 316, 130, 123],
-  [270, 316, 130, 123],
-  [407, 316, 129, 123],
-  [5, 159, 130, 123],
-  [135, 163, 130, 123],
-  [271, 164, 130, 123],
-  [405, 164, 130, 123],
-  [5, 7, 130, 123],
-  [137, 7, 130, 120],
-  [271, 7, 130, 123],
-];
+function texKey(id: string): string {
+  return `creature-${id}-run`;
+}
 
 export function preloadCreatureSplashAssets(load: Phaser.Loader.LoaderPlugin): void {
   load.image(LOCK_SHEET_KEY, 'assets/ui/lock-sheet.png');
-  load.image('creature-elk-run', 'assets/creatures/elk-run.png');
-  for (const [id, sheet] of Object.entries(CREATURE_RUN_SHEETS)) {
-    if (id === 'elk') continue;
-    load.spritesheet(sheet.key, `assets/creatures/${id}.png`, {
-      frameWidth: sheet.frameWidth,
-      frameHeight: sheet.frameHeight,
-    });
+  for (const [id, sheet] of Object.entries(CREATURE_RUN)) {
+    load.image(texKey(id), `assets/creatures/${sheet.src}`);
   }
 }
 
@@ -75,40 +186,24 @@ function ensureLockAnim(scene: Phaser.Scene): boolean {
   return true;
 }
 
-function ensureElkRunFrames(scene: Phaser.Scene): boolean {
-  const key = 'creature-elk-run';
-  if (!scene.textures.exists(key)) return false;
-  const tex = scene.textures.get(key);
-  if (tex.has('elk-0')) return true;
-  ELK_RUN_FRAMES.forEach(([x, uy, w, h], i) => tex.add(`elk-${i}`, 0, x, ELK_TEX_H - uy - h, w, h));
-  return tex.has('elk-0');
-}
-
 function ensureRunAnim(scene: Phaser.Scene, creatureId: string): string | null {
-  const sheet = CREATURE_RUN_SHEETS[creatureId];
+  const sheet = CREATURE_RUN[creatureId];
   if (!sheet) return null;
   const key = `creature-run-${creatureId}`;
   if (scene.anims.exists(key)) return key;
 
-  if (creatureId === 'elk') {
-    if (!ensureElkRunFrames(scene)) return null;
-    scene.anims.create({
-      key,
-      frames: ELK_RUN_FRAMES.map((_, i) => ({ key: 'creature-elk-run', frame: `elk-${i}` })),
-      frameRate: 20,
-      repeat: -1,
-    });
-    return key;
+  const textureKey = texKey(creatureId);
+  if (!scene.textures.exists(textureKey)) return null;
+  const tex = scene.textures.get(textureKey);
+  if (!tex.has(`${creatureId}-0`)) {
+    sheet.frames.forEach(([x, uy, w, h], i) => tex.add(`${creatureId}-${i}`, 0, x, sheet.h - uy - h, w, h));
   }
+  if (!tex.has(`${creatureId}-0`)) return null;
 
-  if (!scene.textures.exists(sheet.key)) return null;
-  const tex = scene.textures.get(sheet.key);
-  const end = sheet.frameCount != null ? Math.min(sheet.frameCount - 1, tex.frameTotal - 1) : tex.frameTotal - 1;
-  if (end < 0) return null;
   scene.anims.create({
     key,
-    frames: scene.anims.generateFrameNumbers(sheet.key, { start: 0, end }),
-    frameRate: 10,
+    frames: sheet.frames.map((_, i) => ({ key: textureKey, frame: `${creatureId}-${i}` })),
+    frameRate: sheet.fps ?? 10,
     repeat: -1,
   });
   return key;
@@ -129,9 +224,7 @@ function showCreaturePanel(
 
   const runKey = ensureRunAnim(scene, creature.id);
   if (runKey) {
-    const sheetKey = CREATURE_RUN_SHEETS[creature.id].key;
-    const frame = creature.id === 'elk' ? 'elk-0' : 0;
-    const sprite = scene.add.sprite(0, -80, sheetKey, frame).setOrigin(0.5, 0.5);
+    const sprite = scene.add.sprite(0, -80, texKey(creature.id), `${creature.id}-0`).setOrigin(0.5, 0.5);
     const scale = (slot * 0.72) / Math.max(sprite.width, sprite.height);
     sprite.setScale(scale);
     sprite.play(runKey);
