@@ -15,6 +15,7 @@ const SPLASH_TITLES: Record<SplashType, string> = {
   endGame: 'Congratulations',
   newGame: 'New Game',
   portal: 'Portal',
+  levelUp: 'Level Up Rewards',
 };
 
 export type SplashType =
@@ -24,7 +25,8 @@ export type SplashType =
   | 'buff'
   | 'endGame'
   | 'newGame'
-  | 'portal';
+  | 'portal'
+  | 'levelUp';
 
 export type SplashContentApi = {
   close: () => void;

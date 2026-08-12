@@ -127,7 +127,6 @@ export class EconomySystem {
   addInfluence(state: GameSave, amount: number): void {
     state.influence += amount;
     state.totalInfluenceEarned += amount;
-    this.checkLevelUp(state);
   }
 
   /** Wallet-only influence (does not advance XP / level). */
@@ -135,21 +134,28 @@ export class EconomySystem {
     state.influence += amount;
   }
 
-  private checkLevelUp(state: GameSave): void {
-    let pendingReward = 0;
-    while (
+  /** Unity ReadyToLevelUp — XP full, player must tap the level cloud. */
+  readyToLevelUp(state: GameSave): boolean {
+    return (
       state.playerLevel < economy.maxLevel &&
       state.totalInfluenceEarned >= state.experienceRequired
-    ) {
-      state.playerLevel += 1;
-      state.experienceRequired *= economy.levelXpMultiplier;
-      if (!state.buffOfferPending) {
-        state.buffedThisLevel = false;
-        state.buffClickProgress = 0;
-      }
-      pendingReward += this.passivePerSecond(state) * economy.levelRewardSeconds;
-    }
-    if (pendingReward > 0) this.addWallet(state, pendingReward);
+    );
+  }
+
+  levelReward(state: GameSave): number {
+    return this.passivePerSecond(state) * economy.levelRewardSeconds;
+  }
+
+  /** Unity LevelUpPlayer(skip ad) — 1x reward, then bump level and reset XP. */
+  levelUp(state: GameSave): boolean {
+    if (!this.readyToLevelUp(state)) return false;
+    this.addWallet(state, this.levelReward(state));
+    state.experienceRequired *= economy.levelXpMultiplier;
+    state.totalInfluenceEarned = 0;
+    state.playerLevel += 1;
+    state.buffedThisLevel = false;
+    state.buffClickProgress = 0;
+    return true;
   }
 
   /** Unity Receive — claim when progress meets goal. */
@@ -246,16 +252,6 @@ export class EconomySystem {
       const h = state.helpers.find((x) => x.id === def.id);
       return !!h && state.influence >= h.dynamicCost;
     });
-  }
-
-  /** Unity SceneManager.ManageExclamationPoint — next chapter ready. */
-  chapterReady(
-    state: GameSave,
-    next: { levelRequirement: number } | undefined,
-    reading: boolean,
-  ): boolean {
-    if (!next || reading || state.playerLevel === 1) return false;
-    return state.playerLevel >= next.levelRequirement;
   }
 
   def(id: string): HelperDef | undefined {

@@ -13,11 +13,12 @@ export class HudView {
   private exclaim!: Phaser.GameObjects.Image;
   private readonly xpBarMax = 100;
   private readonly manaBarMax = 100;
-  private chapterReady = false;
+  private levelReady = false;
 
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly ctx: GameContext,
+    private readonly onLevelCloud: () => void,
   ) {}
 
   build(): void {
@@ -73,7 +74,7 @@ export class HudView {
       .setTint(0x4a5a72);
     this.manaFill = this.scene.add.rectangle(barX, 15, 4, 7, 0x6ec8ff).setOrigin(0, 0.5);
     this.exclaim = createBadge(this.scene, 58, -22, 18);
-    this.scene.add
+    const cloud = this.scene.add
       .container(w - 90, 50, [
         rightCloud,
         this.levelLabel,
@@ -85,11 +86,17 @@ export class HudView {
         this.manaFill,
         this.exclaim,
       ])
-      .setDepth(20);
+      .setDepth(20)
+      .setSize(168, 88)
+      .setInteractive(
+        new Phaser.Geom.Rectangle(0, 0, 168, 88),
+        Phaser.Geom.Rectangle.Contains,
+      );
+    cloud.on('pointerup', () => this.onLevelCloud());
   }
 
-  setChapterReady(ready: boolean): void {
-    this.chapterReady = ready;
+  setLevelReady(ready: boolean): void {
+    this.levelReady = ready;
   }
 
   refresh(): void {
@@ -101,7 +108,6 @@ export class HudView {
     this.xpFill.width = Math.max(2, this.xpBarMax * xpPct);
     const manaPct = s.buffRemaining > 0 ? 1 : Math.min(1, s.mana / Math.max(1, s.manaMax));
     this.manaFill.width = Math.max(2, this.manaBarMax * manaPct);
-    // Unity SceneManager: ! = chapter ready (not mana/buff).
-    showBadge(this.exclaim, this.chapterReady);
+    showBadge(this.exclaim, this.levelReady);
   }
 }

@@ -14,6 +14,7 @@ import { buildBuffSplash } from './play/splash/buffSplash';
 import { buildCreatureSplash } from './play/splash/creatureSplash';
 import { buildEndGameSplash } from './play/splash/endGameSplash';
 import { buildInfluenceOverTimeSplash } from './play/splash/influenceOverTimeSplash';
+import { buildLevelUpSplash } from './play/splash/levelUpSplash';
 import { buildNewGameSplash } from './play/splash/newGameSplash';
 import { buildPortalSplash } from './play/splash/portalSplash';
 import { createSplash } from './play/splash/SplashView';
@@ -30,8 +31,8 @@ export class PlayScene extends Phaser.Scene {
   private outlook!: OutlookView;
   private panel!: Phaser.GameObjects.Container;
   private toast!: Phaser.GameObjects.Text;
-  private lastLevel = 1;
   private lastBuff = 0;
+  private levelJinglePlayed = false;
   private saveTimer = 0;
   private passiveSpawnTimer = 0;
   private ignoreCastUntil = 0;
@@ -59,7 +60,6 @@ export class PlayScene extends Phaser.Scene {
     this.ctx.audio.attach(this);
     this.ctx.spawn.attach(this);
     this.ctx.spawn.setTapHandler((hit) => this.onCreatureTap(hit));
-    this.lastLevel = this.ctx.state.playerLevel;
     this.lastBuff = this.ctx.state.buffRemaining;
 
     this.outlook = new OutlookView(this, this.ctx);
@@ -82,7 +82,7 @@ export class PlayScene extends Phaser.Scene {
       this.castAt(pointer.x, pointer.y);
     });
 
-    this.hud = new HudView(this, this.ctx);
+    this.hud = new HudView(this, this.ctx, () => this.openLevelUpSplash());
     this.hud.build();
     this.toast = this.add
       .text(width / 2, 118, '', {
@@ -170,12 +170,12 @@ export class PlayScene extends Phaser.Scene {
       }
     }
 
-    if (this.ctx.state.playerLevel > this.lastLevel) {
+    const ready = this.ctx.economy.readyToLevelUp(this.ctx.state);
+    if (ready && !this.ctx.story.reading && !this.levelJinglePlayed) {
       this.ctx.audio.playSfx('levelup');
-      this.showToast(`Level ${this.ctx.state.playerLevel}`);
-      this.lastLevel = this.ctx.state.playerLevel;
-      this.refreshChapterCard();
+      this.levelJinglePlayed = true;
     }
+    if (!ready) this.levelJinglePlayed = false;
 
     if (this.ctx.state.buffOfferPending && !this.splash.isOpen()) {
       this.openBuffSplash();
@@ -629,8 +629,8 @@ export class PlayScene extends Phaser.Scene {
 
   private confirmNewGame(): void {
     this.ctx.reset();
-    this.lastLevel = 1;
     this.lastBuff = 0;
+    this.levelJinglePlayed = false;
     this.shopScroll = 0;
     this.rewardsScroll = 0;
     this.splash.dismiss();
@@ -640,10 +640,24 @@ export class PlayScene extends Phaser.Scene {
     this.ctx.audio.playRegion(this.ctx.state.region);
   }
 
+  private openLevelUpSplash(): void {
+    if (this.splash.isOpen()) return;
+    if (!this.ctx.economy.readyToLevelUp(this.ctx.state) || this.ctx.story.reading) return;
+    this.ctx.audio.playSfx('levelup');
+    const reward = this.ctx.economy.levelReward(this.ctx.state);
+    this.splash.open('levelUp', {
+      build: buildLevelUpSplash(reward, () => {
+        if (this.ctx.economy.levelUp(this.ctx.state)) {
+          this.refreshChapterCard();
+          this.ctx.persist();
+        }
+      }),
+    });
+  }
+
   private refreshHud(): void {
-    const next = this.nextChapter();
-    this.hud.setChapterReady(
-      this.ctx.economy.chapterReady(this.ctx.state, next, this.ctx.story.reading),
+    this.hud.setLevelReady(
+      this.ctx.economy.readyToLevelUp(this.ctx.state) && !this.ctx.story.reading,
     );
     this.hud.refresh();
     this.nav.refreshBadges(this.ctx.story.reading);
