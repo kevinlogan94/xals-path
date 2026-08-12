@@ -6,6 +6,7 @@ import type { TutorialSystem } from './TutorialSystem';
 export class EconomySystem {
   readonly helpers: HelperDef[] = helpersData.helpers as HelperDef[];
   readonly costMultiplier = helpersData.costMultiplier;
+  private passiveAcc = 0;
 
   passivePerSecond(state: GameSave): number {
     return state.helpers.reduce((sum, h) => {
@@ -86,8 +87,13 @@ export class EconomySystem {
 
     const pausePassive = tutorial?.shouldPausePassive(state) ?? false;
     if (!pausePassive) {
-      const passive = this.passivePerSecond(state) * dt;
-      if (passive > 0) this.addInfluence(state, passive);
+      this.passiveAcc += dt;
+      if (this.passiveAcc >= 1) {
+        const secs = Math.floor(this.passiveAcc);
+        this.passiveAcc -= secs;
+        const passive = this.passivePerSecond(state) * secs;
+        if (passive > 0) this.addInfluence(state, passive);
+      }
     }
 
     if (state.buffRemaining > 0) {
