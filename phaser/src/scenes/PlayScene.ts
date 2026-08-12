@@ -144,7 +144,6 @@ export class PlayScene extends Phaser.Scene {
     const ch1 = this.ctx.state.chapters.find((c) => c.id === 1);
     const startTab: TabId = ch1 && !ch1.sceneViewed ? 'scene' : 'outlook';
     this.setTab(startTab, true);
-    this.ctx.audio.playRegion(this.ctx.state.region);
 
     if (this.ctx.story.reading) {
       this.setTab('scene', true);
@@ -280,7 +279,6 @@ export class PlayScene extends Phaser.Scene {
       if (result.regionChanged) {
         this.outlook.applyRegionVisual();
         this.ctx.spawn.clear();
-        this.ctx.audio.playRegion(this.ctx.state.region);
       }
       if (result.finished) {
         this.map.hideQuote();
@@ -423,6 +421,7 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
 
+    const requested = tab;
     if (!force && this.tab === tab) {
       tab = 'outlook';
     }
@@ -447,6 +446,7 @@ export class PlayScene extends Phaser.Scene {
     if (tab === 'outlook') {
       this.map.hideChapterCard();
       this.map.refreshPortalBar(false, false, this.ctx.state.region);
+      if (requested === tab) this.ctx.audio.playRegion(this.ctx.state.region);
       this.applyNavLock();
       this.refreshTutorialPointers();
       return;
@@ -455,6 +455,7 @@ export class PlayScene extends Phaser.Scene {
     if (tab === 'scene') {
       this.map.fitPortrait();
       this.ctx.spawn.clear();
+      this.ctx.audio.playBgm('xals-theme');
       if (this.ctx.story.reading) this.renderQuote();
       else this.refreshChapterCard();
       this.applyNavLock();
@@ -626,7 +627,6 @@ export class PlayScene extends Phaser.Scene {
     this.ctx.spawn.clear();
     this.outlook.applyRegionVisual();
     this.ctx.audio.playSfx('cast');
-    this.ctx.audio.playRegion(region);
     this.setTab('outlook', true);
   }
 
@@ -656,7 +656,6 @@ export class PlayScene extends Phaser.Scene {
     this.outlook.applyRegionVisual();
     this.applyNavLock();
     this.setTab('scene', true);
-    this.ctx.audio.playRegion(this.ctx.state.region);
   }
 
   private openLevelUpSplash(): void {
