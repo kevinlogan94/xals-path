@@ -54,13 +54,13 @@ export class TutorialSystem {
     }
   }
 
-  isEarlyMapLock(state: GameSave, reading: boolean): boolean {
+  isEarlyMapLock(state: GameSave): boolean {
     const ch1 = state.chapters.find((c) => c.id === 1);
-    return !ch1?.sceneViewed || reading;
+    return !ch1?.sceneViewed;
   }
 
-  isTabAllowed(state: GameSave, tab: TabId, reading: boolean): boolean {
-    if (this.isEarlyMapLock(state, reading)) return tab === 'scene';
+  isTabAllowed(state: GameSave, tab: TabId): boolean {
+    if (this.isEarlyMapLock(state)) return tab === 'scene';
     if (state.tutorialCompleted) return true;
     if (this.active) {
       if (tab === 'outlook') return false;
@@ -74,7 +74,7 @@ export class TutorialSystem {
 
   shouldPausePassive(state: GameSave): boolean {
     if (state.tutorialCompleted) return false;
-    return this.active || this.isEarlyMapLock(state, false);
+    return this.active || this.isEarlyMapLock(state);
   }
 
   tickEarlyPointer(dt: number, state: GameSave, reading: boolean, onScene: boolean): void {

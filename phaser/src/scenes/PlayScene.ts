@@ -411,7 +411,7 @@ export class PlayScene extends Phaser.Scene {
   private setTab(tab: TabId, force = false): void {
     if (
       !force &&
-      !this.ctx.tutorial.isTabAllowed(this.ctx.state, tab, this.ctx.story.reading)
+      !this.ctx.tutorial.isTabAllowed(this.ctx.state, tab)
     ) {
       return;
     }
@@ -498,7 +498,7 @@ export class PlayScene extends Phaser.Scene {
 
   private applyNavLock(): void {
     this.nav.setTabAllowed((tab) =>
-      this.ctx.tutorial.isTabAllowed(this.ctx.state, tab, this.ctx.story.reading),
+      this.ctx.tutorial.isTabAllowed(this.ctx.state, tab),
     );
   }
 
