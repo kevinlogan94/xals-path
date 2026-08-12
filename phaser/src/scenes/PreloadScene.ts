@@ -65,6 +65,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-gear', 'assets/ui/Gear.png');
     this.load.image('ui-flower', 'assets/ui/OutlookFlower.png');
     this.load.image('ui-banner', 'assets/ui/PanelBanner.png');
+    this.load.image('ui-xal-title', 'assets/ui/XalTitle.png');
     this.load.image('ui-splash-banner', 'assets/ui/splash-banner.png');
     this.load.image('ui-quote-box', 'assets/ui/QuoteBox.png');
     this.load.image('ui-mana-icon', 'assets/ui/manaIcon.png');
