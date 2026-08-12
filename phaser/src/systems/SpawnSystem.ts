@@ -1,6 +1,7 @@
 import type Phaser from 'phaser';
 import type { CreatureDef, GameSave, RegionId } from '../types';
 import creaturesData from '../data/creatures.json';
+import { ensureRunAnim, texKey } from '../scenes/play/splash/creatureSplash';
 
 interface Spawned {
   sprite: Phaser.GameObjects.Image;
@@ -139,27 +140,21 @@ export class SpawnSystem {
       pick = pool[Math.floor(Math.random() * pool.length)];
     }
 
-    const key = `creature-${pick.id}`;
-    if (!this.scene.textures.exists(key)) return;
+    const runKey = ensureRunAnim(this.scene, pick.id);
+    if (!runKey) return;
 
     const startX = bounds.x - 40;
     const endX = bounds.x + bounds.w + 40;
     const y =
       bounds.y + 40 + Math.random() * Math.max(40, bounds.h - 80);
 
-    // Aspect-true size (no forced 96×72 squash). Cap longest side ~96.
-    const src = this.scene.textures.get(key).getSourceImage() as {
-      width: number;
-      height: number;
-    };
-    const tw = Math.max(1, src.width);
-    const th = Math.max(1, src.height);
-    const scale = Math.min(96 / tw, 72 / th);
     const sprite = this.scene.add
-      .image(startX, y, key)
-      .setDisplaySize(Math.round(tw * scale), Math.round(th * scale))
+      .sprite(startX, y, texKey(pick.id), `${pick.id}-0`)
+      .setOrigin(0.5, 0.5)
       .setInteractive({ useHandCursor: true })
       .setDepth(5);
+    sprite.setScale(Math.min(96 / sprite.width, 72 / sprite.height));
+    sprite.play(runKey);
 
     const entry: Spawned = {
       sprite,

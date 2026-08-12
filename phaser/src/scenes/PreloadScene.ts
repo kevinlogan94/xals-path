@@ -1,8 +1,7 @@
 import Phaser from 'phaser';
-import creaturesData from '../data/creatures.json';
 import helpersData from '../data/helpers.json';
 import { preloadCreatureSplashAssets } from './play/splash/creatureSplash';
-import type { CreatureDef, HelperDef } from '../types';
+import type { HelperDef } from '../types';
 
 export class PreloadScene extends Phaser.Scene {
   constructor() {
@@ -46,10 +45,6 @@ export class PreloadScene extends Phaser.Scene {
     };
     for (const [key, file] of Object.entries(exprs)) {
       this.load.image(`xal-${key}`, `assets/xal/${file}`);
-    }
-
-    for (const c of creaturesData.creatures as CreatureDef[]) {
-      this.load.image(`creature-${c.id}`, `assets/creatures/${c.id}.png`);
     }
 
     // UI chrome from Unity remaster

@@ -152,7 +152,7 @@ const CREATURE_RUN: Record<
 const LOCK_SHEET_KEY = 'ui-lock-sheet';
 const LOCK_FRAME_X = [12, 362, 712, 1062, 1412];
 
-function texKey(id: string): string {
+export function texKey(id: string): string {
   return `creature-${id}-run`;
 }
 
@@ -186,7 +186,7 @@ function ensureLockAnim(scene: Phaser.Scene): boolean {
   return true;
 }
 
-function ensureRunAnim(scene: Phaser.Scene, creatureId: string): string | null {
+export function ensureRunAnim(scene: Phaser.Scene, creatureId: string): string | null {
   const sheet = CREATURE_RUN[creatureId];
   if (!sheet) return null;
   const key = `creature-run-${creatureId}`;
