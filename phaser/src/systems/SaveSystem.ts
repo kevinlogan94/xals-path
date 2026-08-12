@@ -50,6 +50,7 @@ function createDefaultSave(): GameSave {
     unlockedRegions: ['meadow'],
     pendingOffline: 0,
     tutorialCompleted: false,
+    newsShown: [],
     savedAt: new Date().toISOString(),
   };
 }
@@ -204,6 +205,7 @@ export class SaveSystem {
         : ['meadow']) as RegionId[],
       pendingOffline: finite(save.pendingOffline, fresh.pendingOffline),
       tutorialCompleted: inferTutorialCompleted(save, fresh),
+      newsShown: Array.isArray(save.newsShown) ? save.newsShown : [],
       savedAt: typeof save.savedAt === 'string' ? save.savedAt : fresh.savedAt,
     };
   }

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { NAV_H } from './constants';
 import { whiteText } from './textStyles';
 
 /**
@@ -33,4 +34,34 @@ export function createImageButton(
   }
 
   return button;
+}
+
+export function showButton(btn: Phaser.GameObjects.Container, on: boolean): void {
+  btn.setVisible(on);
+  if (on) btn.setInteractive();
+  else btn.disableInteractive();
+}
+
+/** Lower-left story Back — Unity BackStoryButton. */
+export function createStoryBack(
+  scene: Phaser.Scene,
+  onBack: () => void,
+  depth: number,
+): Phaser.GameObjects.Container {
+  const w = 80;
+  const h = 28;
+  const btn = createImageButton(
+    scene,
+    12 + w / 2,
+    scene.scale.height - NAV_H - 8 - h / 2,
+    'ui-btn-blue',
+    'Back',
+    w,
+    h,
+    onBack,
+  )
+    .setDepth(depth)
+    .setVisible(false);
+  btn.disableInteractive();
+  return btn;
 }

@@ -47,6 +47,10 @@ export class PreloadScene extends Phaser.Scene {
     for (const [key, file] of Object.entries(exprs)) {
       this.load.image(`xal-${key}`, `assets/xal/${file}`);
     }
+    this.load.spritesheet('barlog', 'assets/characters/barlog.png', {
+      frameWidth: 266,
+      frameHeight: 300,
+    });
 
     // UI chrome from Unity remaster
     this.load.image('ui-nav-default', 'assets/ui/nav-default.png');

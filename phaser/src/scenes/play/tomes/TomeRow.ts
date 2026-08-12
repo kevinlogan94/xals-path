@@ -55,22 +55,23 @@ export function createTomeRow({
   const costIcon = fitInBox(scene, 'ui-influence', 16, 14);
   costIcon.setPosition(textLeft + costIcon.displayWidth / 2, boxH * 0.2);
 
+  const nameText = scene.add
+    .text(textLeft, -boxH * 0.22, def.name, darkText('12px', titleColor))
+    .setOrigin(0, 0.5);
+  const costText = scene.add
+    .text(textLeft + costIcon.displayWidth + 4, boxH * 0.2, formatNumber(save.dynamicCost), darkText('10px', metaColor))
+    .setOrigin(0, 0.5);
+  const ownedText = scene.add
+    .text(textRight, -boxH * 0.2, locked ? `Lvl ${def.unlockLevel}` : String(save.amountOwned), darkText(locked ? '11px' : '16px', titleColor))
+    .setOrigin(1, 0.5);
+  const rateText = scene.add
+    .text(textRight, boxH * 0.22, `${formatNumber(save.dynamicIncrement)}/sec`, darkText('9px', metaColor))
+    .setOrigin(1, 0.5);
+  shrinkToGap(nameText, ownedText);
+  shrinkToGap(costText, rateText, true);
+
   const card = scene.add
-    .container(0, 0, [
-      box,
-      avatar,
-      scene.add.text(textLeft, -boxH * 0.22, def.name, darkText('12px', titleColor)).setOrigin(0, 0.5),
-      costIcon,
-      scene.add
-        .text(textLeft + costIcon.displayWidth + 4, boxH * 0.2, formatNumber(save.dynamicCost), darkText('10px', metaColor))
-        .setOrigin(0, 0.5),
-      scene.add
-        .text(textRight, -boxH * 0.2, locked ? `Lvl ${def.unlockLevel}` : String(save.amountOwned), darkText(locked ? '11px' : '16px', titleColor))
-        .setOrigin(1, 0.5),
-      scene.add
-        .text(textRight, boxH * 0.22, `${formatNumber(save.dynamicIncrement)}/sec`, darkText('9px', metaColor))
-        .setOrigin(1, 0.5),
-    ])
+    .container(0, 0, [box, avatar, nameText, costIcon, costText, ownedText, rateText])
     .setSize(innerW, boxH);
 
   card.setInteractive(
@@ -81,4 +82,14 @@ export function createTomeRow({
   card.on('pointermove', onPointerMove);
   if (!locked) card.on('pointerup', onBuy);
   return card;
+}
+
+function shrinkToGap(left: Phaser.GameObjects.Text, right: Phaser.GameObjects.Text, shrinkLeft = false) {
+  const px = (t: Phaser.GameObjects.Text) => Number.parseInt(String(t.style.fontSize), 10);
+  for (let i = 0; i < 12; i++) {
+    if (left.x + left.width + 8 <= right.x - right.width) return;
+    if (px(right) > 6) right.setFontSize(px(right) - 1);
+    else if (shrinkLeft && px(left) > 6) left.setFontSize(px(left) - 1);
+    else return;
+  }
 }

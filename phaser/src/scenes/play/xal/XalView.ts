@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import type { ChapterDef, RegionId } from '../../../types';
+import { createBadge, showBadge } from '../ui/Badge';
 import { NAV_H } from '../ui/constants';
-import { createImageButton } from '../ui/ImageButton';
+import { createImageButton, createStoryBack, showButton } from '../ui/ImageButton';
 import { whiteText } from '../ui/textStyles';
 import { renderChapterCard } from './ChapterCard';
 import { QuoteBox } from './QuoteBox';
@@ -12,6 +13,8 @@ export class XalView {
   private quoteBox: QuoteBox;
   private chapterCard!: Phaser.GameObjects.Container;
   private portalBar!: Phaser.GameObjects.Container;
+  private chapterReady!: Phaser.GameObjects.Image;
+  private backBtn!: Phaser.GameObjects.Container;
   private onPortalTravel?: (region: RegionId) => void;
   private quoteOpen = false;
 
@@ -19,6 +22,7 @@ export class XalView {
     private readonly scene: Phaser.Scene,
     private readonly onPortraitTap: () => void,
     private readonly onChapterButton: () => void,
+    private readonly onStoryBack: () => void,
   ) {
     this.quoteBox = new QuoteBox(scene);
   }
@@ -43,6 +47,9 @@ export class XalView {
       .setDepth(22)
       .setVisible(false);
     this.portalBar = this.scene.add.container(width / 2, height - NAV_H - 36).setDepth(23).setVisible(false);
+    // Unity ExclamationPointXal — hover near Xal, below HUD clouds.
+    this.chapterReady = createBadge(this.scene, width - 52, 128, 18, 24);
+    this.backBtn = createStoryBack(this.scene, this.onStoryBack, 24);
     this.quoteBox.build();
   }
 
@@ -55,7 +62,15 @@ export class XalView {
     if (visible) this.tapZone.setInteractive({ useHandCursor: true });
     else this.tapZone.disableInteractive();
     this.portrait.setVisible(visible);
-    if (!visible) this.portalBar.setVisible(false);
+    if (!visible) {
+      this.portalBar.setVisible(false);
+      showBadge(this.chapterReady, false);
+      this.setBackVisible(false);
+    }
+  }
+
+  setChapterReady(ready: boolean): void {
+    showBadge(this.chapterReady, ready);
   }
 
   fitPortrait(): void {
@@ -87,6 +102,11 @@ export class XalView {
   hideQuote(): void {
     this.quoteOpen = false;
     this.quoteBox.hide();
+    this.setBackVisible(false);
+  }
+
+  setBackVisible(visible: boolean): void {
+    showButton(this.backBtn, visible);
   }
 
   quoteVisible(): boolean {

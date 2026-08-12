@@ -88,5 +88,6 @@ export interface GameSave {
   unlockedRegions: RegionId[];
   pendingOffline: number;
   tutorialCompleted: boolean;
+  newsShown: string[];
   savedAt: string;
 }

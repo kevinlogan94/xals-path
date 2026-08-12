@@ -52,6 +52,13 @@ export class StorySystem {
     };
   }
 
+  /** Step to the previous line while reading. Does not un-finish chapters. */
+  retreat(): boolean {
+    if (!this.reading || this.quoteIndex <= 0) return false;
+    this.quoteIndex -= 1;
+    return true;
+  }
+
   /** Advance dialogue. Returns finished + first-unlock portal flag. */
   advance(state: GameSave): AdvanceResult {
     if (!this.activeChapter) {

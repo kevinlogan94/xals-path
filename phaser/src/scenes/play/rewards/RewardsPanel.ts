@@ -182,7 +182,7 @@ export function renderRewardsPanel({
         () => {
           if (scroll.wasDrag()) return;
           if (claim(row.id)) {
-            ctx.audio.playSfx('coin');
+            ctx.audio.playSfx('levelup');
             const info = achievementClaimInfo(
               row.id,
               row,

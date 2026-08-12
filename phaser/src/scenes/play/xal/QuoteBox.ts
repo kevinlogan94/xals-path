@@ -15,7 +15,7 @@ export class QuoteBox {
 
   constructor(private readonly scene: Phaser.Scene) {}
 
-  build(): void {
+  build(depth = 22): void {
     const w = this.scene.scale.width;
     const h = this.scene.scale.height;
     const playH = h - NAV_H;
@@ -43,7 +43,7 @@ export class QuoteBox {
       .setOrigin(0.5);
     this.container = this.scene.add
       .container(0, 0, [bg, this.text])
-      .setDepth(22)
+      .setDepth(depth)
       .setVisible(false);
   }
 
