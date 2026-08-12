@@ -242,12 +242,7 @@ export class PlayScene extends Phaser.Scene {
       hit.setMagic();
       this.time.delayedCall(500, () => hit.hideCreature());
     }
-    const mult = Math.round(gained / Math.max(1, this.ctx.state.clickerIncrement));
-    this.floatText(
-      hit.sprite.x,
-      hit.sprite.y - 20,
-      `+${formatNumber(gained)}${mult > 1 ? ` ×${mult}` : ''}`,
-    );
+    this.floatText(hit.sprite.x, hit.sprite.y - 20, `+${formatNumber(gained)}`);
   }
 
   private floatText(x: number, y: number, msg: string): void {
