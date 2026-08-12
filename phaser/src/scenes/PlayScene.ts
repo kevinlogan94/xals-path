@@ -127,6 +127,7 @@ export class PlayScene extends Phaser.Scene {
     const ch1 = this.ctx.state.chapters.find((c) => c.id === 1);
     const startTab: TabId = ch1 && !ch1.sceneViewed ? 'scene' : 'outlook';
     this.setTab(startTab, true);
+    this.ctx.audio.playRegion(this.ctx.state.region);
 
     if (this.ctx.story.reading) {
       this.setTab('scene', true);
@@ -259,6 +260,7 @@ export class PlayScene extends Phaser.Scene {
       if (result.regionChanged) {
         this.outlook.applyRegionVisual();
         this.ctx.spawn.clear();
+        this.ctx.audio.playRegion(this.ctx.state.region);
       }
       if (result.finished) {
         this.map.hideQuote();
@@ -285,7 +287,6 @@ export class PlayScene extends Phaser.Scene {
         } else if (result.portalJustUnlocked) {
           this.splash.open('portal', { build: buildPortalSplash() });
         }
-        this.ctx.audio.playBgm('xals-theme');
         if (finishingCh1) {
           this.ctx.tutorial.startAfterChapter1(this.ctx.state);
           const line = this.ctx.tutorial.advanceLine(this.ctx.state, this.ctx.economy);
@@ -388,10 +389,7 @@ export class PlayScene extends Phaser.Scene {
     this.map.showQuote(line.text);
     this.map.hideChapterCard();
     this.map.refreshPortalBar(false, false, this.ctx.state.region);
-    if (line.speaker === 'barlog') {
-      // Barlog uses a separate overlay in Unity; keep Xal tower scene underneath for now.
-      this.ctx.audio.playBgm('barlogs-theme');
-    } else {
+    if (line.speaker !== 'barlog') {
       this.map.setPortraitExpression(line.expression);
     }
   }
@@ -429,7 +427,6 @@ export class PlayScene extends Phaser.Scene {
     if (tab === 'outlook') {
       this.map.hideChapterCard();
       this.map.refreshPortalBar(false, false, this.ctx.state.region);
-      this.ctx.audio.playRegion(this.ctx.state.region);
       this.applyNavLock();
       this.refreshTutorialPointers();
       return;
@@ -438,7 +435,6 @@ export class PlayScene extends Phaser.Scene {
     if (tab === 'scene') {
       this.map.fitPortrait();
       this.ctx.spawn.clear();
-      this.ctx.audio.playBgm('xals-theme');
       if (this.ctx.story.reading) this.renderQuote();
       else this.refreshChapterCard();
       this.applyNavLock();
@@ -611,6 +607,7 @@ export class PlayScene extends Phaser.Scene {
     this.ctx.spawn.clear();
     this.outlook.applyRegionVisual();
     this.ctx.audio.playSfx('cast');
+    this.ctx.audio.playRegion(region);
     this.setTab('outlook', true);
   }
 
@@ -640,6 +637,7 @@ export class PlayScene extends Phaser.Scene {
     this.outlook.applyRegionVisual();
     this.applyNavLock();
     this.setTab('scene', true);
+    this.ctx.audio.playRegion(this.ctx.state.region);
   }
 
   private refreshHud(): void {

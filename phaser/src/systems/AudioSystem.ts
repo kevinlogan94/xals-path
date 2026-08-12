@@ -31,6 +31,7 @@ export class AudioSystem {
   }
 
   playBgm(key: Track, loop = true): void {
+    if (this.desiredBgm === key && this.currentBgm?.isPlaying) return;
     this.desiredBgm = key;
     if (!this.scene) return;
     if (this.currentBgm) {
