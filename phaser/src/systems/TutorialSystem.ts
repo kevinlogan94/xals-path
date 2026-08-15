@@ -62,13 +62,12 @@ export class TutorialSystem {
   isTabAllowed(state: GameSave, tab: TabId): boolean {
     if (this.isEarlyMapLock(state)) return tab === 'scene';
     if (state.tutorialCompleted) return true;
+    if (this.outlookTutorial) return tab === 'outlook' || tab === 'scene';
     if (this.active) {
-      if (tab === 'outlook') return false;
       if (tab === 'shop') return this.shopNavUnlocked;
       if (tab === 'scene') return true;
       return false;
     }
-    if (this.outlookTutorial && tab === 'outlook') return true;
     return true;
   }
 
@@ -116,7 +115,11 @@ export class TutorialSystem {
     }
 
     const line = LINES[this.stepIndex];
-    if (!line) return this.complete(state);
+    if (!line) {
+      this.active = false;
+      this.outlookTutorial = true;
+      return null;
+    }
 
     this.stepIndex += 1;
 
@@ -125,7 +128,10 @@ export class TutorialSystem {
       return line;
     }
 
-    if (this.stepIndex >= LINES.length) return this.complete(state);
+    if (this.stepIndex >= LINES.length) {
+      this.active = false;
+      this.outlookTutorial = true;
+    }
     return line;
   }
 
@@ -166,21 +172,15 @@ export class TutorialSystem {
     return 'none';
   }
 
-  dismissOutlookTutorial(): void {
+  /** Outlook after the closer — tour is done, first save can write. */
+  dismissOutlookTutorial(state: GameSave): void {
     this.outlookTutorial = false;
+    state.tutorialCompleted = true;
   }
 
   private giftForNature(state: GameSave, economy: EconomySystem): void {
     const nature = state.helpers.find((h) => h.id === 'nature');
     const cost = nature?.dynamicCost ?? economy.def('nature')?.cost ?? 10;
     if (state.influence < cost) state.influence = cost;
-  }
-
-  private complete(state: GameSave): null {
-    this.active = false;
-    this.waitingNature = false;
-    this.outlookTutorial = true;
-    state.tutorialCompleted = true;
-    return null;
   }
 }

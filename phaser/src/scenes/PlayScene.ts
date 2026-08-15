@@ -470,7 +470,8 @@ export class PlayScene extends Phaser.Scene {
 
     if (this.splash.isOpen()) this.splash.dismiss();
     if (tab === 'outlook' && this.ctx.tutorial.outlookTutorial) {
-      this.ctx.tutorial.dismissOutlookTutorial();
+      this.ctx.tutorial.dismissOutlookTutorial(this.ctx.state);
+      this.ctx.persist();
     }
 
     this.clearBanterTimer();

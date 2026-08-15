@@ -77,13 +77,19 @@ export class SaveSystem {
       if (!raw) return createDefaultSave();
       const parsed = JSON.parse(raw) as Partial<GameSave>;
       if (parsed.version !== 1) return createDefaultSave();
-      return this.mergeDefaults(parsed);
+      const merged = this.mergeDefaults(parsed);
+      if (!merged.tutorialCompleted) {
+        this.clear();
+        return createDefaultSave();
+      }
+      return merged;
     } catch {
       return createDefaultSave();
     }
   }
 
   save(state: GameSave): void {
+    if (!state.tutorialCompleted) return;
     state.savedAt = new Date().toISOString();
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(state));
