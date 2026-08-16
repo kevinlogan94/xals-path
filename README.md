@@ -19,8 +19,8 @@ A story-driven idle/clicker game by Kevin Logan. Originally shipped on iOS & And
 
 ```bash
 cd phaser
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Open the URL Vite prints (default `http://localhost:5173`).

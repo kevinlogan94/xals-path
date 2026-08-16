@@ -22,6 +22,10 @@ Do not preserve backwards compatibility unless the user asks for it. Prefer the 
 
 When interacting with files, prefer terminal commands over editing files directly when possible (saves tokens). Example: use `mv` instead of writing the file in the new location and removing the old one.
 
+## Package manager
+
+Use pnpm in `phaser/` (not npm or yarn).
+
 ## Scene colocation
 
 Active remake lives in `phaser/`. Keep scene-specific UI and helpers next to the scene that uses them under `phaser/src/scenes/`. Shared systems live in `phaser/src/systems/`, shared data in `phaser/src/data/`. Move code to the closest shared parent only when multiple scenes use it. Treat `unity/` as reference only — do not import Unity managers, CloudOnce, ads, or analytics into `phaser/src/`.

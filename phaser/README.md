@@ -13,16 +13,16 @@ Lives in the [`xals-path`](../) monorepo next to the original Unity project.
 ## Run locally
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Open the URL Vite prints (default `http://localhost:5173`).
 
 ```bash
-npm run build    # production build → dist/
-npm run preview  # serve dist/
-npm run typecheck
+pnpm build      # production build → dist/
+pnpm preview    # serve dist/
+pnpm typecheck
 ```
 
 Saves use **localStorage** only (`xals-path-web-save-v1`).

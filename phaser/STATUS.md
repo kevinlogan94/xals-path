@@ -17,7 +17,7 @@ The playable game is in Phaser. What is left is a short list of Unity UX details
 | Ads, CloudOnce, Game Center, analytics, social | Out of scope (`DROP`) |
 | Web ship (PWA) | Thin leftover |
 
-Run: `cd phaser && npm install && npm run dev`
+Run: `cd phaser && pnpm install && pnpm dev`
 
 ---
 
