@@ -1,33 +1,10 @@
 # Xal's Path
 
 <p align="center">
-  <img src="unity/Assets/Resources/xal_idle.gif" alt="Story Animation">
+  <img src="public/xal_idle.gif" alt="Story Animation">
 </p>
 
-A story-driven idle/clicker game by Kevin Logan. Originally shipped on iOS & Android in Unity; actively remaking for the web on Phaser.
-
-## Repository layout
-
-| Path | What |
-|------|------|
-| [`phaser/`](phaser/) | **Active remake** — Phaser 3 + Vite + TypeScript |
-| [`unity/`](unity/) | Original Unity project (reference while converting) |
-| [`docs/`](docs/) | Shared docs |
-| [`_bmad/`](_bmad/) | BMAD / Game Dev Studio tooling |
-
-## Run the Phaser remake
-
-```bash
-cd phaser
-pnpm install
-pnpm dev
-```
-
-Open the URL Vite prints (default `http://localhost:5173`).
-
-## Open the Unity reference
-
-In Unity Hub → **Open** → select the `unity/` folder (Unity 2021.3 LTS). See [`unity/MIGRATION_GUIDE.md`](unity/MIGRATION_GUIDE.md) if upgrading editors.
+A story-driven idle/clicker game by Kevin Logan. Originally shipped on iOS & Android; now a web game on Phaser.
 
 ## About the Game
 

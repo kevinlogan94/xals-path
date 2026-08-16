@@ -24,8 +24,8 @@ When interacting with files, prefer terminal commands over editing files directl
 
 ## Package manager
 
-Use pnpm in `phaser/` (not npm or yarn).
+Use pnpm at the repo root (not npm or yarn).
 
 ## Scene colocation
 
-Active remake lives in `phaser/`. Keep scene-specific UI and helpers next to the scene that uses them under `phaser/src/scenes/`. Shared systems live in `phaser/src/systems/`, shared data in `phaser/src/data/`. Move code to the closest shared parent only when multiple scenes use it. Treat `unity/` as reference only — do not import Unity managers, CloudOnce, ads, or analytics into `phaser/src/`.
+Keep scene-specific UI and helpers next to the scene that uses them under `src/scenes/`. Shared systems live in `src/systems/`, shared data in `src/data/`. Move code to the closest shared parent only when multiple scenes use it. Do not import CloudOnce, ads, or analytics into `src/`.
