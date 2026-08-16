@@ -120,7 +120,10 @@ export class HudView {
 
   refresh(): void {
     const s = this.ctx.state;
-    this.influenceAmt.setText(formatNumber(s.influence));
+    this.influenceAmt.setText(formatNumber(s.influence)).setFontSize(11);
+    for (let px = 11; this.influenceAmt.width > 58 && px > 5; px--) {
+      this.influenceAmt.setFontSize(px - 1);
+    }
     this.influenceRate.setText(`${formatNumber(this.ctx.economy.passivePerSecond(s))}/sec`);
     this.levelLabel.setText(`Lvl ${s.playerLevel}`);
     const xpPct = Math.min(1, s.totalInfluenceEarned / Math.max(1, s.experienceRequired));

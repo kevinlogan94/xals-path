@@ -7,9 +7,57 @@ import { whiteText } from '../ui/textStyles';
 import { renderChapterCard } from './ChapterCard';
 import { QuoteBox } from './QuoteBox';
 
+const IDLE_SHEET = 'xal-idle-sheet';
+const BOOK_SHEET = 'xal-book-sheet';
+const IDLE_ANIM = 'xal-idle';
+const BOOK_TURN = 'xal-book-turn';
+const SCENE_W = 1344;
+const SCENE_H = 3072;
+// Overlay origins in the remaster 1344×3072 scene (template-matched).
+const IDLE_X = 304;
+const IDLE_Y = 1520;
+const IDLE_W = 730;
+const IDLE_H = 677;
+const BOOK_X = 425;
+const BOOK_Y = 1880;
+const BOOK_W = 750;
+const BOOK_H = 500;
+const BOOK_SX = 0.66;
+// Same 12-beat loop as the eyes: scan, then turn the page.
+const BOOK_IDLE_FRAMES = [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
+
+function ensureXalAnims(scene: Phaser.Scene): void {
+  const idleTex = scene.textures.get(IDLE_SHEET);
+  if (!idleTex.has('idle-0')) {
+    for (let i = 0; i < 12; i++) idleTex.add(`idle-${i}`, 0, 90 + i * 920, 24, IDLE_W, IDLE_H);
+  }
+  const bookTex = scene.textures.get(BOOK_SHEET);
+  if (!bookTex.has('book-0')) {
+    for (let i = 0; i < 7; i++) bookTex.add(`book-${i}`, 0, i * BOOK_W, 0, BOOK_W, BOOK_H);
+  }
+  if (!scene.anims.exists(IDLE_ANIM)) {
+    scene.anims.create({
+      key: IDLE_ANIM,
+      frames: Array.from({ length: 12 }, (_, i) => ({ key: IDLE_SHEET, frame: `idle-${i}` })),
+      frameRate: 6,
+      repeat: -1,
+    });
+  }
+  if (!scene.anims.exists(BOOK_TURN)) {
+    scene.anims.create({
+      key: BOOK_TURN,
+      frames: BOOK_IDLE_FRAMES.map((i) => ({ key: BOOK_SHEET, frame: `book-${i}` })),
+      frameRate: 6,
+      repeat: -1,
+    });
+  }
+}
+
 export class XalView {
   private tapZone!: Phaser.GameObjects.Rectangle;
   private portrait!: Phaser.GameObjects.Image;
+  private idle!: Phaser.GameObjects.Sprite;
+  private book!: Phaser.GameObjects.Sprite;
   private quoteBox: QuoteBox;
   private chapterCard!: Phaser.GameObjects.Container;
   private portalBar!: Phaser.GameObjects.Container;
@@ -41,6 +89,18 @@ export class XalView {
       .image(width / 2, playH / 2, 'xal-generic')
       .setDepth(2)
       .setVisible(false);
+    ensureXalAnims(this.scene);
+    this.book = this.scene.add
+      .sprite(width / 2, playH / 2, BOOK_SHEET, 'book-0')
+      // Flip rises into the idle torso; book has to paint over that overlay.
+      .setDepth(5)
+      .setOrigin(0)
+      .setVisible(false);
+    this.idle = this.scene.add
+      .sprite(width / 2, playH / 2, IDLE_SHEET, 'idle-0')
+      .setDepth(4)
+      .setOrigin(0)
+      .setVisible(false);
     this.fitPortrait();
     this.chapterCard = this.scene.add
       .container(width / 2, height - NAV_H - 120)
@@ -63,9 +123,13 @@ export class XalView {
     else this.tapZone.disableInteractive();
     this.portrait.setVisible(visible);
     if (!visible) {
+      this.stopIdle();
+      this.book.setVisible(false);
       this.portalBar.setVisible(false);
       showBadge(this.chapterReady, false);
       this.setBackVisible(false);
+    } else if (!this.quoteOpen) {
+      this.playIdle();
     }
   }
 
@@ -84,14 +148,26 @@ export class XalView {
     const scale = Math.max(width / src.width, playH / src.height);
     this.portrait.setScale(scale);
     this.portrait.setPosition(width / 2, playH / 2);
+    const left = width / 2 - (SCENE_W * scale) / 2;
+    const top = playH / 2 - (SCENE_H * scale) / 2;
+    this.idle.setScale(scale).setPosition(left + IDLE_X * scale, top + IDLE_Y * scale);
+    this.book
+      .setScale(scale * BOOK_SX, scale)
+      .setPosition(left + BOOK_X * scale, top + BOOK_Y * scale);
     this.tapZone.setPosition(width / 2, playH / 2);
     this.tapZone.setSize(width, playH);
   }
 
   setPortraitExpression(expr: string): void {
+    if (!this.quoteOpen && (expr === 'generic' || expr === 'genericDown')) {
+      this.playIdle();
+      return;
+    }
+    this.stopIdle();
     const key = `xal-${expr}`;
     this.portrait.setTexture(this.scene.textures.exists(key) ? key : 'xal-generic');
     this.fitPortrait();
+    this.sitBook();
   }
 
   showQuote(text: string): void {
@@ -103,6 +179,26 @@ export class XalView {
     this.quoteOpen = false;
     this.quoteBox.hide();
     this.setBackVisible(false);
+    if (this.portrait.visible) this.playIdle();
+  }
+
+  private playIdle(): void {
+    if (!this.scene.textures.exists(IDLE_SHEET) || !this.scene.textures.exists(BOOK_SHEET)) return;
+    this.portrait.setTexture('xal-genericDown');
+    this.fitPortrait();
+    this.idle.setVisible(true).play(IDLE_ANIM, true);
+    this.book.setVisible(true).play(BOOK_TURN, true);
+  }
+
+  private stopIdle(): void {
+    this.idle.stop();
+    this.idle.setVisible(false);
+    this.book.stop();
+  }
+
+  private sitBook(): void {
+    if (!this.portrait.visible) return;
+    this.book.setVisible(true).stop().setFrame('book-0');
   }
 
   setBackVisible(visible: boolean): void {

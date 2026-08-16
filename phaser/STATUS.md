@@ -74,7 +74,6 @@ Game code in Unity lives under `unity/Assets/Scripts/` (managers, shop, splash, 
 - Rewards **Receive** pressed/disabled art (today: alpha 0.45)
 - Tomes huge-number glyph collision at high ownership
 - HUD cloud nine-slice vs stretch
-- Idle book page-turn on Map (`SceneManager` `BookTurn`)
 - Persist BGM/SFX mute across reloads (Unity save also does **not** store mute)
 
 ### Stale vs this file
