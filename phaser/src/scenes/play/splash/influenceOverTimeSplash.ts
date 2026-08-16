@@ -17,10 +17,17 @@ export function buildInfluenceOverTimeSplash(
           0,
           0,
           'While you were away, the incantation from your tomes continued to collect influence.',
-          darkText('13px', undefined, { align: 'center', wordWrap: { width: wrap } }),
+          darkText('11px', undefined, { align: 'center', wordWrap: { width: wrap } }),
         )
         .setOrigin(0.5),
-      scene.add.text(0, 0, `${formatNumber(amount)} influence`, darkText('14px')).setOrigin(0.5),
+      scene.add
+        .text(
+          0,
+          0,
+          `${formatNumber(amount)} influence`,
+          darkText('12px', undefined, { align: 'center', wordWrap: { width: wrap } }),
+        )
+        .setOrigin(0.5),
       createImageButton(scene, 0, 0, 'ui-btn-green', 'Collect', 120, 40, () => {
         onCollect();
         api.close();
