@@ -11,6 +11,8 @@ export class HudView {
   private xpFill!: Phaser.GameObjects.Rectangle;
   private manaFill!: Phaser.GameObjects.Rectangle;
   private exclaim!: Phaser.GameObjects.Image;
+  private buffCount!: Phaser.GameObjects.Text;
+  private buffPanel!: Phaser.GameObjects.Container;
   private readonly xpBarMax = 100;
   private readonly manaBarMax = 100;
   private levelReady = false;
@@ -93,6 +95,23 @@ export class HudView {
         Phaser.Geom.Rectangle.Contains,
       );
     cloud.on('pointerup', () => this.onLevelCloud());
+
+    this.buffCount = this.scene.add
+      .text(0, 2, '', {
+        fontFamily: FONT,
+        fontSize: '22px',
+        color: DARK_STROKE,
+        stroke: '#f4ead8',
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5);
+    this.buffPanel = this.scene.add
+      .container(w - 48, 148, [
+        this.scene.add.image(0, 0, 'ui-square-cloud').setDisplaySize(80, 80),
+        this.buffCount,
+      ])
+      .setDepth(20)
+      .setVisible(false);
   }
 
   setLevelReady(ready: boolean): void {
@@ -109,5 +128,11 @@ export class HudView {
     const manaPct = s.buffRemaining > 0 ? 1 : Math.min(1, s.mana / Math.max(1, s.manaMax));
     this.manaFill.width = Math.max(2, this.manaBarMax * manaPct);
     showBadge(this.exclaim, this.levelReady);
+    if (s.buffRemaining > 0) {
+      this.buffPanel.setVisible(true);
+      this.buffCount.setText(String(Math.ceil(s.buffRemaining)));
+    } else {
+      this.buffPanel.setVisible(false);
+    }
   }
 }

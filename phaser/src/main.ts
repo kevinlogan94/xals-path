@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
+import { TitleScene } from './scenes/TitleScene';
 import { PlayScene } from './scenes/PlayScene';
 
 const parent = document.getElementById('game');
@@ -15,7 +16,7 @@ new Phaser.Game({
     height: 844,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, PreloadScene, PlayScene],
+  scene: [BootScene, PreloadScene, TitleScene, PlayScene],
   audio: {
     disableWebAudio: false,
   },

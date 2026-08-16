@@ -15,7 +15,7 @@ The playable game is in Phaser. What is left is a short list of Unity UX details
 | Outlook / Map / Tomes / Rewards / Settings | Done |
 | Splashes, tutorial pointers, news, Barlog ch.6 | Done |
 | Ads, CloudOnce, Game Center, analytics, social | Out of scope (`DROP`) |
-| Web ship (PWA / title tap) | Thin leftovers |
+| Web ship (PWA) | Thin leftover |
 
 Run: `cd phaser && npm install && npm run dev`
 
@@ -35,7 +35,8 @@ Game code in Unity lives under `unity/Assets/Scripts/` (managers, shop, splash, 
 | `AchievementManager` + core logics | `RewardsPanel` + `EconomySystem` claims | Helper, Clicker, Video (Watch disabled), Earn Rewards, Login, Story |
 | `NewsManager` | `NewsBanner` + `news.json` | Outlook prompts |
 | `fingerPointer` + tutorial in `SceneManager` / `AchievementManager` | `TutorialSystem` + `FingerPointer` | Early Map lock, Nature gift, Outlook cast cue |
-| `BuffManager` | `EconomySystem` buff + `buffSplash` | 200 clicks → 15s infinite mana |
+| `TitleScreen` | `TitleScene` | Fade logo 3.5s, then tap-to-start (unlocks Web Audio) |
+| `BuffManager` | `EconomySystem` buff + `buffSplash` + HudView countdown | 200 clicks → 15s infinite mana + seconds on squareCloud |
 | `CanvasBackgroundController` | `OutlookView` + region BGM | Meadow / river / altar |
 | `CreatureRegion` / creature sheets | `SpawnSystem` + `creatureSplash` run slices + `creatureMagic` | Walk cycles + tap magic |
 | `AudioManager` | `AudioSystem` | Theme / Barlog / regions / SFX; separate BGM & SFX mute |
@@ -63,8 +64,8 @@ Game code in Unity lives under `unity/Assets/Scripts/` (managers, shop, splash, 
 
 ### Worth doing before calling it shipped
 
-1. **Title / tap-to-start** — Unity `TitleScreen` after boot. Phaser jumps Preload → Play. A tap-to-start also unlocks browser audio (autoplay policy).
-2. **Buff countdown number** — Unity `BuffCountDown` shows remaining seconds. Phaser fills the mana bar for 15s but has no countdown label.
+1. **Title / tap-to-start** — Done. `TitleScene` after Preload; tap unlocks Web Audio then starts Play.
+2. **Buff countdown number** — Done. HudView shows `ceil(buffRemaining)` on squareCloud while buffed.
 3. **PWA** — `manifest.webmanifest` is linked; no service worker, icon is a raw Xal PNG. Seed phase 5 (ship web / PWA).
 
 ### Optional polish (not blocking play)
@@ -84,4 +85,4 @@ Game code in Unity lives under `unity/Assets/Scripts/` (managers, shop, splash, 
 
 ## Already in Phaser (do not rebuild)
 
-Portrait **390×844** FIT + letterbox; Press Start 2P; cloud HUD; stone nav; framed Settings / Rewards / Tomes; Map full-frame `xal-*`; Outlook BAM; creature unlock lock timing; offline IOT splash; New Game confirm; portal after `"It is done."`; login day bump; localStorage persist only after the tutorial closer and the first Outlook tap (reload mid-tour starts over).
+Portrait **390×844** FIT + letterbox; Press Start 2P; title tap-to-start; cloud HUD + buff seconds; stone nav; framed Settings / Rewards / Tomes; Map full-frame `xal-*`; Outlook BAM; creature unlock lock timing; offline IOT splash; New Game confirm; portal after `"It is done."`; login day bump; localStorage persist only after the tutorial closer and the first Outlook tap (reload mid-tour starts over).

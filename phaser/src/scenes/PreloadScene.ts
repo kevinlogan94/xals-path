@@ -63,10 +63,12 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-panel', 'assets/ui/panel.png');
     this.load.image('ui-cloud', 'assets/ui/clouds/cloud.png');
     this.load.image('ui-level-cloud', 'assets/ui/clouds/LevelCloud.png');
+    this.load.image('ui-square-cloud', 'assets/ui/clouds/squareCloud.png');
     this.load.image('ui-gear', 'assets/ui/Gear.png');
     this.load.image('ui-flower', 'assets/ui/OutlookFlower.png');
     this.load.image('ui-banner', 'assets/ui/PanelBanner.png');
     this.load.image('ui-xal-title', 'assets/ui/XalTitle.png');
+    this.load.image('ui-title-bg', 'assets/ui/titleScreenBigGradient.png');
     this.load.image('ui-splash-banner', 'assets/ui/splash-banner.png');
     this.load.image('ui-quote-box', 'assets/ui/QuoteBox.png');
     this.load.image('ui-mana-icon', 'assets/ui/manaIcon.png');
@@ -118,6 +120,6 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.scene.start('Play');
+    this.scene.start('Title');
   }
 }
