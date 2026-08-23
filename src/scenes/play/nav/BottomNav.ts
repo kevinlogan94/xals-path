@@ -32,15 +32,17 @@ export class BottomNav {
     this.scene.add.image(w / 2, h - NAV_H / 2, 'ui-stone').setDisplaySize(w, NAV_H).setDepth(40);
 
     const columnW = w / NAV.length;
-    const frame = Math.min(columnW - 4, NAV_H - 8);
+    const inset = 10;
+    const frame = Math.min(columnW - 8, NAV_H - inset * 2);
+    const iconBox = frame - 16;
     this.navButtons = NAV.map((item, i) => {
       const x = columnW * (i + 0.5);
       const bg = this.scene.add.image(0, 0, 'ui-nav-default').setDisplaySize(frame, frame);
       const icon = fitInBox(
         this.scene,
         this.scene.textures.exists(item.icon) ? item.icon : 'ui-gear',
-        frame * 1.2,
-        frame * 1.2,
+        iconBox,
+        iconBox,
       );
       const c = this.scene.add
         .container(x, h - NAV_H / 2, [bg, icon])
