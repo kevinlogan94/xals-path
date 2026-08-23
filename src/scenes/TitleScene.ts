@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { version } from '../../package.json';
+import { getContext } from '../game/GameContext';
 import { darkText, whiteText } from './play/ui/textStyles';
 
 export class TitleScene extends Phaser.Scene {
@@ -24,20 +25,13 @@ export class TitleScene extends Phaser.Scene {
       onComplete: () => this.showDetails(),
     });
 
-    this.playTitleTheme();
+    const audio = getContext().audio;
+    audio.attach(this);
+    audio.playBgm('xals-theme');
     this.input.on('pointerup', () => {
-      this.playTitleTheme();
+      audio.playBgm('xals-theme');
       this.closeTitle();
     });
-  }
-
-  /** Unity AudioManager.Start — Xals Theme while the title is up. */
-  private playTitleTheme(): void {
-    this.sound.unlock();
-    const ctx = (this.sound as Phaser.Sound.WebAudioSoundManager).context;
-    if (ctx?.state === 'suspended') void ctx.resume();
-    if (this.sound.get('xals-theme')?.isPlaying) return;
-    this.sound.play('xals-theme', { loop: true, volume: 0.45 });
   }
 
   private showDetails(): void {

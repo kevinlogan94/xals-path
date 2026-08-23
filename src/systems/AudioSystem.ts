@@ -22,7 +22,7 @@ export class AudioSystem {
   muteSfx = false;
 
   attach(scene: Phaser.Scene | null): void {
-    if (this.currentBgm) {
+    if (!scene && this.currentBgm) {
       this.currentBgm.stop();
       this.currentBgm.destroy();
       this.currentBgm = null;
@@ -31,9 +31,12 @@ export class AudioSystem {
   }
 
   playBgm(key: Track, loop = true): void {
+    if (!this.scene) return;
+    this.scene.sound.unlock();
+    const ctx = (this.scene.sound as Phaser.Sound.WebAudioSoundManager).context;
+    if (ctx?.state === 'suspended') void ctx.resume();
     if (this.desiredBgm === key && this.currentBgm?.isPlaying) return;
     this.desiredBgm = key;
-    if (!this.scene) return;
     if (this.currentBgm) {
       this.currentBgm.stop();
       this.currentBgm.destroy();
