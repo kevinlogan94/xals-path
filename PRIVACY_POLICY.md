@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** April 4, 2026
+**Last updated:** August 22, 2026
 
 ## Who we are
 
@@ -20,7 +20,7 @@ This policy is written for **U.S. distribution**. We are **not** marketing or ta
 | Game progress stored by us on our servers | **No** — progress is stored **locally on your device** (save file). |
 | Payment card data | **No** — we do not process purchases inside the App in the current build configuration. |
 | Analytics we send | **Yes, optionally** — limited **event-based** analytics through **Unity Gaming Services** (see below). |
-| Ads | **Yes, if you choose** — **optional rewarded video ads** through **Unity Ads** when you tap to watch an ad. |
+| Ads | **No** — this game does not show advertisements. |
 | Achievements / platform sign-in | **Yes, when you use it** — **Apple Game Center** (iOS) or **Google Play Games** (Android) via **CloudOnce**, for achievements and related platform features. |
 | Push-style remote notifications from our servers | **No** — the App uses **local scheduled notifications** on your device only (no developer-run push backend in the App). |
 | Crash / diagnostic data | **May be collected by Unity** — Unity crash/error reporting can be enabled in the project; see Unity's documentation and privacy notices. |
@@ -35,17 +35,9 @@ The App saves game state to a **local file** on your device (for example under t
 
 ## Analytics (Unity Gaming Services)
 
-When analytics is enabled in the build, we use **Unity Gaming Services Analytics** to record **custom events** (for example level or achievement-related event names, ad start, notification scheduling). Our integration is intentionally minimal; detailed event parameters are not used for broad profiling in the way a social network or ad network might.
+When analytics is enabled in the build, we use **Unity Gaming Services Analytics** to record **custom events** (for example level or achievement-related event names, notification scheduling). Our integration is intentionally minimal; detailed event parameters are not used for broad profiling in the way a social network might.
 
 Unity processes this data under **Unity’s** privacy policy and terms. You can review Unity’s notices here: [https://unity.com/legal/privacy-policy](https://unity.com/legal/privacy-policy)
-
----
-
-## Advertising (Unity Ads)
-
-**Rewarded ads are optional** and only run when you choose to watch an ad for an in-game benefit. **Unity Ads** and its partners may collect and use data according to **their** policies and your device settings (on iOS, including **App Tracking Transparency** choices where applicable).
-
-Unity Ads privacy information: [https://unity.com/legal/game-player-and-app-user-privacy-policy](https://unity.com/legal/game-player-and-app-user-privacy-policy)
 
 ---
 
@@ -60,7 +52,7 @@ If you sign in to **Game Center** (iOS) or **Google Play Games** (Android), **Ap
 
 ## Links that leave the App
 
-The App may open the **system browser** to third-party pages (for example app store listings, an optional survey, or social links). Those sites have their own privacy practices; this policy does not cover them.
+The App may open the **system browser** to third-party pages (for example app store listings or social links). Those sites have their own privacy practices; this policy does not cover them.
 
 ---
 
@@ -72,13 +64,13 @@ The App is **not directed to children under 13**. We do not knowingly collect pe
 
 ## Sale of personal information
 
-We **do not sell** your personal information for money. Some analytics and advertising partners may use data as described in **their** policies (for example measurement or ad delivery). On iOS, you can limit cross-app tracking using **Settings → Privacy & Security → Tracking** and the prompts shown by the system and ad SDKs.
+We **do not sell** your personal information for money. Some analytics partners may use data as described in **their** policies (for example measurement).
 
 ---
 
 ## California residents
 
-If you are a California resident, you may have rights under the **CCPA/CPRA** (for example to know, delete, or opt out of certain sharing). Because we collect **minimal** information directly, there may be little or nothing we hold outside what platform and analytics/ad partners process. For requests about data **we** control, email us at the address above. For data held by **Apple, Google, or Unity**, use those companies’ privacy tools and policies.
+If you are a California resident, you may have rights under the **CCPA/CPRA** (for example to know, delete, or opt out of certain sharing). Because we collect **minimal** information directly, there may be little or nothing we hold outside what platform and analytics partners process. For requests about data **we** control, email us at the address above. For data held by **Apple, Google, or Unity**, use those companies’ privacy tools and policies.
 
 ---
 

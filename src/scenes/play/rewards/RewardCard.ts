@@ -3,7 +3,7 @@ import { createImageButton } from '../ui/ImageButton';
 import { fitInBox } from '../ui/fit';
 import { darkText } from '../ui/textStyles';
 
-export type RewardId = 'helper' | 'clicker' | 'video' | 'meta' | 'login' | 'story';
+export type RewardId = 'helper' | 'clicker' | 'meta' | 'login' | 'story';
 
 export interface RewardRow {
   id: RewardId;
@@ -12,7 +12,6 @@ export interface RewardRow {
   goal: number;
   hint: string;
   icon: string;
-  onWatch?: boolean;
 }
 
 /** Unity Achievement.prefab uses item_slot.png (260×260). */
@@ -97,55 +96,20 @@ export function createRewardCard(
         darkText('4px', '#1a1208', { align: 'center', wordWrap: { width: hintW } }),
       )
       .setOrigin(0.5),
+    createImageButton(
+      scene,
+      x(130),
+      btnY,
+      'ui-btn-green',
+      'Receive',
+      btnW,
+      btnH,
+      ready ? onClaim : undefined,
+      ready ? 1 : 0.45,
+      '4px',
+      onPressStart,
+    ),
   ];
-
-  if (row.onWatch) {
-    const halfW = btnW * 0.47;
-    parts.push(
-      createImageButton(
-        scene,
-        x(130) - halfW * 0.55,
-        btnY,
-        'ui-btn-blue',
-        'Watch',
-        halfW,
-        btnH,
-        undefined,
-        0.4,
-        '4px',
-        onPressStart,
-      ),
-      createImageButton(
-        scene,
-        x(130) + halfW * 0.55,
-        btnY,
-        'ui-btn-green',
-        'Receive',
-        halfW,
-        btnH,
-        ready ? onClaim : undefined,
-        ready ? 1 : 0.45,
-        '4px',
-        onPressStart,
-      ),
-    );
-  } else {
-    parts.push(
-      createImageButton(
-        scene,
-        x(130),
-        btnY,
-        'ui-btn-green',
-        'Receive',
-        btnW,
-        btnH,
-        ready ? onClaim : undefined,
-        ready ? 1 : 0.45,
-        '4px',
-        onPressStart,
-      ),
-    );
-  }
 
   return scene.add.container(0, 0, parts).setSize(cardW, cardH);
 }

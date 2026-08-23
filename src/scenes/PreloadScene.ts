@@ -93,7 +93,6 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('ui-reward-shop', 'assets/ui/reward-shop.png');
     this.load.image('ui-reward-notepad', 'assets/ui/reward-notepad.png');
     this.load.image('ui-reward-portal', 'assets/ui/reward-portal.png');
-    this.load.image('ui-reward-video', 'assets/ui/reward-video.png');
     this.load.image('ui-reward-trophy', 'assets/ui/reward-trophy.png');
     // Bottom nav icons — same sources as Unity Pixel/ (trophy, Portal2, Tomes)
     this.load.image('ui-trophy-nav', 'assets/ui/trophy.png');

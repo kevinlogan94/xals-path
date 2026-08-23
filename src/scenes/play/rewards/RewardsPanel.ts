@@ -42,7 +42,6 @@ function achievementClaimInfo(
       before = `${formatNumber(clickerIncrement / 15)}/click`;
       after = `${formatNumber(clickerIncrement)}/click`;
       break;
-    case 'video':
     case 'story': {
       const grant = passive * 36000;
       before = formatNumber(influence - grant);
@@ -99,7 +98,7 @@ export function renderRewardsPanel({
     onScroll,
   });
 
-  // Unity grid order: Helper, Clicker, Video, Earn Rewards, Login, Story
+  // Helper, Clicker, Earn Rewards, Login, Story
   const rows: RewardRow[] = [
     {
       id: 'helper',
@@ -116,15 +115,6 @@ export function renderRewardsPanel({
       goal: a.clickerGoal,
       hint: 'Rewards: 15x influence per click',
       icon: 'ui-reward-star',
-    },
-    {
-      id: 'video',
-      title: `Watch ${a.videoGoal} projections`,
-      n: a.videoCount,
-      goal: a.videoGoal,
-      hint: hoursHint(10, '10 hours worth of influence'),
-      icon: 'ui-reward-video',
-      onWatch: true,
     },
     {
       id: 'meta',
@@ -158,8 +148,6 @@ export function renderRewardsPanel({
         return ctx.economy.claimHelper(ctx.state);
       case 'clicker':
         return ctx.economy.claimClicker(ctx.state);
-      case 'video':
-        return ctx.economy.claimVideo(ctx.state);
       case 'meta':
         return ctx.economy.claimMeta(ctx.state);
       case 'login':

@@ -11,8 +11,7 @@ export function buildLevelUpSplash(
     const scene = content.scene;
     const items = [
       scene.add.text(0, 0, `${formatNumber(reward)} influence`, darkText('14px')).setOrigin(0.5),
-      createImageButton(scene, 0, 0, 'ui-btn-green', 'Projection', 140, 40, undefined, 0.4, '11px'),
-      createImageButton(scene, 0, 0, 'ui-btn-blue', 'No Thanks!', 140, 34, () => {
+      createImageButton(scene, 0, 0, 'ui-btn-green', 'Collect', 120, 40, () => {
         onContinue();
         api.close();
       }, 1, '11px'),

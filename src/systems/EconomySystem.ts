@@ -191,17 +191,6 @@ export class EconomySystem {
     return true;
   }
 
-  /** Unity VideoLogic — keep cumulative watches; double goal; bump meta count. */
-  claimVideo(state: GameSave): boolean {
-    const a = state.achievements;
-    a.videoGoal = Math.max(1, a.videoGoal);
-    if (a.videoCount < a.videoGoal) return false;
-    a.videoGoal *= 2;
-    this.addInfluence(state, this.passivePerSecond(state) * 36000);
-    a.achievementCount += 1;
-    return true;
-  }
-
   /** Unity AchievementLogic — keep cumulative claims; double goal; then ++. */
   claimMeta(state: GameSave): boolean {
     const a = state.achievements;
@@ -211,11 +200,6 @@ export class EconomySystem {
     this.addInfluence(state, this.passivePerSecond(state) * 3600);
     a.achievementCount += 1;
     return true;
-  }
-
-  /** Projections stub — no ads SDK; bumps watch progress. */
-  watchProjection(state: GameSave): void {
-    state.achievements.videoCount += 1;
   }
 
   claimLogin(state: GameSave): boolean {
@@ -245,7 +229,6 @@ export class EconomySystem {
     return (
       a.clickerCount >= a.clickerGoal ||
       a.helperCount >= a.helperGoal ||
-      a.videoCount >= a.videoGoal ||
       a.achievementCount >= a.achievementGoal ||
       a.loginCount >= a.loginGoal ||
       a.storyCount >= a.storyGoal

@@ -55,8 +55,6 @@ export interface AchievementSave {
   clickerCount: number;
   helperGoal: number;
   helperCount: number;
-  videoGoal: number;
-  videoCount: number;
   achievementGoal: number;
   achievementCount: number;
   loginGoal: number;
