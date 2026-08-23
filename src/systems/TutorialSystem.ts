@@ -1,6 +1,7 @@
 import type { GameSave, TabId } from '../types';
 import tutorialData from '../data/tutorial.json';
 import type { EconomySystem } from './EconomySystem';
+import { track } from '../utils/track';
 
 const LINES = tutorialData.lines as string[];
 const SHOP_UNLOCK_STEP = 1;
@@ -176,6 +177,7 @@ export class TutorialSystem {
   dismissOutlookTutorial(state: GameSave): void {
     this.outlookTutorial = false;
     state.tutorialCompleted = true;
+    track('tutorial_complete');
   }
 
   private giftForNature(state: GameSave, economy: EconomySystem): void {

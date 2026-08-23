@@ -2,6 +2,7 @@ import type { GameSave, HelperDef } from '../types';
 import helpersData from '../data/helpers.json';
 import economy from '../data/economy.json';
 import type { TutorialSystem } from './TutorialSystem';
+import { track } from '../utils/track';
 
 export class EconomySystem {
   readonly helpers: HelperDef[] = helpersData.helpers as HelperDef[];
@@ -161,6 +162,7 @@ export class EconomySystem {
     state.playerLevel += 1;
     state.buffedThisLevel = false;
     state.buffClickProgress = 0;
+    track('level_up', { player_level: state.playerLevel });
     return true;
   }
 

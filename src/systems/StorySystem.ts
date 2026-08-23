@@ -1,6 +1,7 @@
 import type { ChapterDef, GameSave, RegionId } from '../types';
 import chaptersData from '../data/chapters.json';
 import economy from '../data/economy.json';
+import { track } from '../utils/track';
 
 export interface AdvanceResult {
   finished: boolean;
@@ -82,6 +83,10 @@ export class StorySystem {
       this.reading = false;
       this.activeChapter = null;
       this.quoteIndex = 0;
+      if (firstClear) {
+        track('chapter_complete', { chapter_id: finishedChapterId });
+        if (finishedChapterId === 7) track('end_game');
+      }
       return { finished: true, finishedChapterId, portalJustUnlocked, regionChanged };
     }
     return { finished: false, portalJustUnlocked: false, regionChanged };
