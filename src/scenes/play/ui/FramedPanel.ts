@@ -41,7 +41,7 @@ export function addFramedPanel(
   const bannerY = PANEL_TOP + inset + bannerH / 2;
 
   const dim = scene.add
-    .rectangle(w / 2, (h - NAV_H) / 2, w, h - NAV_H, PANEL_DIM_COLOR, PANEL_DIM_ALPHA)
+    .rectangle(w / 2, h / 2, w, h, PANEL_DIM_COLOR, PANEL_DIM_ALPHA)
     .setInteractive();
   panel.add(dim);
   panel.add(scene.add.image(w / 2, cy, 'ui-panel').setDisplaySize(panelW, panelH));
