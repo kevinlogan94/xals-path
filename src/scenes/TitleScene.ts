@@ -62,6 +62,7 @@ export class TitleScene extends Phaser.Scene {
   private closeTitle(): void {
     if (!this.ready) return;
     this.ready = false;
+    this.sound.stopByKey('xals-theme');
     this.scene.start('Play');
   }
 }
