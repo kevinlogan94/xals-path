@@ -28,4 +28,4 @@ Use pnpm at the repo root (not npm or yarn).
 
 ## Scene colocation
 
-Keep scene-specific UI and helpers next to the scene that uses them under `src/scenes/`. Shared systems live in `src/systems/`, shared data in `src/data/`. Move code to the closest shared parent only when multiple scenes use it. Do not import CloudOnce, ads, or analytics into `src/`.
+Keep scene-specific UI and helpers next to the scene that uses them under `src/scenes/`. Shared systems live in `src/systems/`, shared data in `src/data/`. Move code to the closest shared parent only when multiple scenes use it.
