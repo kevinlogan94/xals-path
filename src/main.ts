@@ -4,6 +4,20 @@ import { PreloadScene } from './scenes/PreloadScene';
 import { TitleScene } from './scenes/TitleScene';
 import { PlayScene } from './scenes/PlayScene';
 
+const textFactory = Phaser.GameObjects.GameObjectFactory.prototype.text;
+Phaser.GameObjects.GameObjectFactory.prototype.text = function (
+  this: Phaser.GameObjects.GameObjectFactory,
+  x: number,
+  y: number,
+  text: string | string[],
+  style?: Phaser.Types.GameObjects.Text.TextStyle,
+) {
+  return textFactory.call(this, x, y, text, {
+    resolution: Math.min(window.devicePixelRatio || 1, 3),
+    ...style,
+  });
+};
+
 const parent = document.getElementById('game');
 
 new Phaser.Game({
@@ -21,7 +35,8 @@ new Phaser.Game({
     disableWebAudio: false,
   },
   render: {
-    pixelArt: true,
-    antialias: false,
+    // FIT CSS-scales a 390×844 canvas onto Retina. pixelArt nearest-neighbor looks like a low-res screenshot.
+    pixelArt: false,
+    antialias: true,
   },
 });

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#0d1a0d" />
     <meta name="description" content="Xal's Path — a story-driven clicker remake for the web" />
     <link rel="icon" href="./favicon.ico" sizes="32x32" />
@@ -38,8 +38,14 @@
       #game {
         width: 100%;
         height: 100%;
+        height: 100dvh;
         overflow: hidden;
         background: #0d1a0d;
+      }
+      html,
+      body {
+        position: fixed;
+        inset: 0;
       }
       body {
         font-family: 'Press Start 2P', 'Courier New', monospace;
