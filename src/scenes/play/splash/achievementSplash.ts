@@ -11,24 +11,44 @@ export type AchievementSplashOpts = {
   after?: string;
 };
 
+const BTN_H = 34;
+const BTN_GAP = 22;
+
+/** Card hint → splash body: drop Rewards:/Nx/parenthetical; keep one short line. */
+function splashDescription(raw: string): string {
+  const line = raw.split('\n')[0].replace(/^Rewards:\s*/i, '').trim();
+  return line
+    .replace(/\b\d+x\s+/i, '')
+    .replace(/\bworth of\b/i, 'of')
+    .replace(/^([a-z])/, (c) => c.toUpperCase());
+}
+
 export function buildAchievementSplash(opts: AchievementSplashOpts): SplashContentBuilder {
   return (content, api) => {
     const scene = content.scene;
     const items: Phaser.GameObjects.GameObject[] = [];
     if (opts.iconKey && scene.textures.exists(opts.iconKey)) {
-      items.push(scene.add.image(0, 0, opts.iconKey).setDisplaySize(48, 48));
+      items.push(scene.add.image(0, 0, opts.iconKey).setDisplaySize(80, 80));
     }
-    const body =
-      opts.before != null && opts.after != null
-        ? `${opts.description}\n${opts.before}  →  ${opts.after}`
-        : opts.description;
     items.push(
       scene.add
-        .text(0, 0, body, darkText('13px', undefined, { align: 'center', wordWrap: { width: api.bodyWidth * 0.86 } }))
+        .text(0, 0, splashDescription(opts.description), darkText('13px', undefined, {
+          align: 'center',
+          wordWrap: { width: api.bodyWidth * 0.86 },
+        }))
         .setOrigin(0.5),
     );
-    items.push(createImageButton(scene, 0, 0, 'ui-btn-blue', 'Back', 120, 34, api.close));
-    content.add(items);
-    stackSplash(items, api);
+    if (opts.before != null && opts.after != null) {
+      items.push(
+        scene.add
+          .text(0, 0, `${opts.before}  →  ${opts.after}`, darkText('11px', undefined, { align: 'center' }))
+          .setOrigin(0.5),
+      );
+    }
+
+    const btn = createImageButton(scene, 0, 0, 'ui-btn-blue', 'Back', 120, BTN_H, api.close);
+    btn.setY(api.bodyBottom - BTN_H / 2);
+    content.add([...items, btn]);
+    stackSplash(items, { ...api, bodyBottom: api.bodyBottom - BTN_H - BTN_GAP });
   };
 }
