@@ -25,9 +25,7 @@ new Phaser.Game({
   parent: parent ?? undefined,
   backgroundColor: '#0d1a0d',
   scale: {
-    mode: Phaser.Scale.FIT,
-    width: 390,
-    height: 844,
+    mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   scene: [BootScene, PreloadScene, TitleScene, PlayScene],
@@ -35,7 +33,6 @@ new Phaser.Game({
     disableWebAudio: false,
   },
   render: {
-    // FIT CSS-scales a 390×844 canvas onto Retina. pixelArt nearest-neighbor looks like a low-res screenshot.
     pixelArt: false,
     antialias: true,
   },

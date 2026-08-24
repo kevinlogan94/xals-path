@@ -34,21 +34,30 @@
         padding: 0;
       }
       html,
-      body,
-      #game {
-        width: 100%;
-        height: 100%;
-        height: 100dvh;
-        overflow: hidden;
-        background: #0d1a0d;
-      }
-      html,
       body {
         position: fixed;
         inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        background: #0d1a0d;
       }
       body {
         font-family: 'Press Start 2P', 'Courier New', monospace;
+      }
+      #game {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #0d1a0d;
+      }
+      /* Phones fill the portrait viewport. Tablet+ (and landscape) stay 390×844. */
+      @media (min-width: 768px), (orientation: landscape) {
+        #game {
+          width: min(390px, 100vw, calc(100dvh * 390 / 844));
+          height: min(844px, 100dvh);
+        }
       }
     </style>
   </head>
