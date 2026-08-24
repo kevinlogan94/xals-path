@@ -1,9 +1,10 @@
 {
   "name": "Xal's Path",
   "short_name": "Xal's Path",
-  "description": "A story-driven clicker remake for the web",
+  "description": "A story-driven clicker game",
   "start_url": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0d1a0d",
   "theme_color": "#1a2e1a",
   "lang": "en",
