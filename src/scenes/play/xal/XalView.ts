@@ -61,7 +61,7 @@ export class XalView {
   private quoteBox: QuoteBox;
   private chapterCard!: Phaser.GameObjects.Container;
   private portalBar!: Phaser.GameObjects.Container;
-  private chapterReady!: Phaser.GameObjects.Image;
+  private chapterReady!: Phaser.GameObjects.Text;
   private backBtn!: Phaser.GameObjects.Container;
   private onPortalTravel?: (region: RegionId) => void;
   private quoteOpen = false;

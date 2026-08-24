@@ -10,7 +10,7 @@ export class HudView {
   private levelLabel!: Phaser.GameObjects.Text;
   private xpFill!: Phaser.GameObjects.Rectangle;
   private manaFill!: Phaser.GameObjects.Rectangle;
-  private exclaim!: Phaser.GameObjects.Image;
+  private exclaim!: Phaser.GameObjects.Text;
   private buffCount!: Phaser.GameObjects.Text;
   private buffPanel!: Phaser.GameObjects.Container;
   private readonly xpBarMax = 100;

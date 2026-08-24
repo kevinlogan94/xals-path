@@ -16,8 +16,8 @@ const NAV: { id: TabId; icon: string }[] = [
 
 export class BottomNav {
   private navButtons: Phaser.GameObjects.Container[] = [];
-  private rewardsBadge?: Phaser.GameObjects.Image;
-  private tomesBadge?: Phaser.GameObjects.Image;
+  private rewardsBadge?: Phaser.GameObjects.Text;
+  private tomesBadge?: Phaser.GameObjects.Text;
   private tabAllowed: (tab: TabId) => boolean = () => true;
 
   constructor(
