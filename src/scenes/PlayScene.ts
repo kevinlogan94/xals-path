@@ -273,18 +273,18 @@ export class PlayScene extends Phaser.Scene {
     const floater = this.add
       .text(x, y, msg, {
         fontFamily: FONT,
-        fontSize: '14px',
+        fontSize: '21px',
         color: '#fff4c8',
         stroke: '#3a2a10',
-        strokeThickness: 3,
+        strokeThickness: 4,
       })
       .setOrigin(0.5)
       .setDepth(15);
     this.tweens.add({
       targets: floater,
-      y: y - 60,
+      y: y - 140,
       alpha: 0,
-      duration: 700,
+      duration: 900,
       onComplete: () => floater.destroy(),
     });
   }
