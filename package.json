@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "phaser": "^3.87.0"
+    "phaser": "3.90.0"
   },
   "devDependencies": {
     "typescript": "~6.0.3",
