@@ -41,7 +41,7 @@ export function buildAchievementSplash(opts: AchievementSplashOpts): SplashConte
     if (opts.before != null && opts.after != null) {
       items.push(
         scene.add
-          .text(0, 0, `${opts.before}  →  ${opts.after}`, darkText('11px', undefined, { align: 'center' }))
+          .text(0, 0, `${opts.before}  >>  ${opts.after}`, darkText('11px', undefined, { align: 'center' }))
           .setOrigin(0.5),
       );
     }
