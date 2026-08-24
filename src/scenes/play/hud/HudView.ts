@@ -124,7 +124,10 @@ export class HudView {
     for (let px = 11; this.influenceAmt.width > 58 && px > 5; px--) {
       this.influenceAmt.setFontSize(px - 1);
     }
-    this.influenceRate.setText(`${formatNumber(this.ctx.economy.passivePerSecond(s))}/sec`);
+    this.influenceRate.setText(`${formatNumber(this.ctx.economy.passivePerSecond(s))}/sec`).setFontSize(8);
+    for (let px = 8; this.influenceRate.width > 58 && px > 5; px--) {
+      this.influenceRate.setFontSize(px - 1);
+    }
     this.levelLabel.setText(`Lvl ${s.playerLevel}`);
     const xpPct = Math.min(1, s.totalInfluenceEarned / Math.max(1, s.experienceRequired));
     this.xpFill.width = Math.max(2, this.xpBarMax * xpPct);
