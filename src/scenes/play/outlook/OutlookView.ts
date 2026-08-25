@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { GameContext } from '../../../game/GameContext';
-import { NAV_H } from '../ui/constants';
+import { hudBottom, NAV_H } from '../ui/constants';
 
 export class OutlookView {
   private bg!: Phaser.GameObjects.Image;
@@ -30,18 +30,19 @@ export class OutlookView {
 
   spawnBounds(): { x: number; y: number; w: number; h: number } {
     const h = this.scene.scale.height;
+    const top = hudBottom();
     return {
       x: 0,
-      y: 100,
+      y: top,
       w: this.scene.scale.width,
-      h: h - NAV_H - 110,
+      h: h - NAV_H - top - 10,
     };
   }
 
   canCast(pointer: Phaser.Input.Pointer, ignoreCastUntil: number): boolean {
     if (this.scene.time.now < ignoreCastUntil) return false;
     if (pointer.y > this.scene.scale.height - NAV_H) return false;
-    if (pointer.y < 100) return false;
+    if (pointer.y < hudBottom()) return false;
     return !this.ctx.spawn.hits(pointer.x, pointer.y);
   }
 

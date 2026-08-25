@@ -21,7 +21,7 @@ import { buildNewGameSplash } from './play/splash/newGameSplash';
 import { buildPortalSplash } from './play/splash/portalSplash';
 import { createSplash } from './play/splash/SplashView';
 import { renderTomesPanel } from './play/tomes/TomesPanel';
-import { FONT, NAV_H } from './play/ui/constants';
+import { FONT, hudBottom, NAV_H } from './play/ui/constants';
 import { aimFinger, createFingerPointer } from './play/ui/FingerPointer';
 
 export class PlayScene extends Phaser.Scene {
@@ -109,7 +109,7 @@ export class PlayScene extends Phaser.Scene {
     }).setOrigin(0.5);
     this.toastBg = this.add.graphics();
     this.toast = this.add
-      .container(width / 2, 118, [this.toastBg, this.toastText])
+      .container(width / 2, hudBottom() + 22, [this.toastBg, this.toastText])
       .setDepth(30)
       .setAlpha(0);
     this.panel = this.add.container(0, 0).setDepth(25).setVisible(false);

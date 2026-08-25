@@ -2,116 +2,91 @@ import Phaser from 'phaser';
 import type { GameContext } from '../../../game/GameContext';
 import { formatNumber } from '../../../utils/format';
 import { createBadge, showBadge } from '../ui/Badge';
-import { DARK_STROKE, FONT } from '../ui/constants';
+import { GOLD_TEXT, HUD_CHIP_H, HUD_PAD, PANEL_DIM_COLOR, safeInsetTop } from '../ui/constants';
+import { whiteText } from '../ui/textStyles';
+
+/** Resize the ear chips here. Height/notch padding live in constants.ts (`HUD_CHIP_H`, `HUD_PAD`). */
+const LEFT_W = 108;
+const RIGHT_W = 116;
+const INSET = 6;
+const ICON = 16;
+const BAR_W = RIGHT_W - INSET * 2 - ICON - 4;
+const AMT_MAX = LEFT_W - INSET * 2 - ICON - 4;
+
+function pill(scene: Phaser.Scene, w: number, h: number): Phaser.GameObjects.Graphics {
+  const g = scene.add.graphics();
+  g.fillStyle(PANEL_DIM_COLOR, 0.78);
+  g.fillRoundedRect(-w / 2, -h / 2, w, h, 8);
+  g.lineStyle(1, 0x0a0804, 0.55);
+  g.strokeRoundedRect(-w / 2 + 0.5, -h / 2 + 0.5, w - 1, h - 1, 8);
+  return g;
+}
+
+function fit(text: Phaser.GameObjects.Text, max: number, size: number): void {
+  text.setFontSize(size);
+  while (text.width > max && size > 5) text.setFontSize(--size);
+}
 
 export class HudView {
   private influenceAmt!: Phaser.GameObjects.Text;
   private influenceRate!: Phaser.GameObjects.Text;
   private levelLabel!: Phaser.GameObjects.Text;
   private xpFill!: Phaser.GameObjects.Rectangle;
+  private manaTrack!: Phaser.GameObjects.Rectangle;
   private manaFill!: Phaser.GameObjects.Rectangle;
   private exclaim!: Phaser.GameObjects.Text;
   private buffCount!: Phaser.GameObjects.Text;
-  private buffPanel!: Phaser.GameObjects.Container;
-  private readonly xpBarMax = 100;
-  private readonly manaBarMax = 100;
   private levelReady = false;
 
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly ctx: GameContext,
-    private readonly onLevelCloud: () => void,
+    private readonly onLevelTap: () => void,
   ) {}
 
   build(): void {
     const w = this.scene.scale.width;
+    const y = Math.round(safeInsetTop() + HUD_PAD + HUD_CHIP_H / 2);
+    const textX = -LEFT_W / 2 + INSET + ICON + 6;
+    const colX = -RIGHT_W / 2 + INSET;
+    const barX = colX + ICON + 5;
 
-    const leftCloud = this.scene.add.image(0, 0, 'ui-cloud').setDisplaySize(114, 70);
-    const inflIcon = this.scene.add.image(-36, -5, 'ui-influence').setDisplaySize(24, 24);
-    this.influenceAmt = this.scene.add
-      .text(-18, -5, '', {
-        fontFamily: FONT,
-        fontSize: '11px',
-        color: '#ffffff',
-        stroke: DARK_STROKE,
-        strokeThickness: 4,
-      })
-      .setOrigin(0, 0.5);
+    this.influenceAmt = this.scene.add.text(textX, -7, '', whiteText('10px', { strokeThickness: 4 })).setOrigin(0, 0.5);
     this.influenceRate = this.scene.add
-      .text(-18, 13, '', {
-        fontFamily: FONT,
-        fontSize: '8px',
-        color: '#b8e0a8',
-        stroke: DARK_STROKE,
-        strokeThickness: 3,
-      })
+      .text(textX, 9, '', whiteText('8px', { color: '#b8e0a8' }))
       .setOrigin(0, 0.5);
     this.scene.add
-      .container(60, 46, [leftCloud, inflIcon, this.influenceAmt, this.influenceRate])
+      .container(HUD_PAD + LEFT_W / 2, y, [
+        pill(this.scene, LEFT_W, HUD_CHIP_H),
+        this.scene.add.image(-LEFT_W / 2 + INSET + ICON / 2, -6, 'ui-influence').setDisplaySize(ICON, ICON),
+        this.influenceAmt,
+        this.influenceRate,
+      ])
       .setDepth(20);
 
-    const rightCloud = this.scene.add.image(0, 0, 'ui-level-cloud').setDisplaySize(168, 88);
-    this.levelLabel = this.scene.add
-      .text(0, -27, '', {
-        fontFamily: FONT,
-        fontSize: '10px',
-        color: '#ffffff',
-        stroke: DARK_STROKE,
-        strokeThickness: 4,
-      })
-      .setOrigin(0.5);
-    const barX = -38;
-    const star = this.scene.add.image(-58, -5, 'ui-star').setDisplaySize(16, 16);
-    const xpTrack = this.scene.add
-      .rectangle(barX, -5, this.xpBarMax, 9, 0x2c3f28)
-      .setOrigin(0, 0.5)
-      .setStrokeStyle(1, 0x14200f);
-    this.xpFill = this.scene.add.rectangle(barX, -5, 4, 7, 0x5ecf5a).setOrigin(0, 0.5);
-    const manaIcon = this.scene.add.image(-58, 15, 'ui-mana-icon').setDisplaySize(16, 16);
-    // mana-bar.png as track only — fill is a rectangle (no horizontal squash of the art).
-    const manaTrack = this.scene.add
-      .image(barX, 15, 'ui-mana-bar')
-      .setOrigin(0, 0.5)
-      .setDisplaySize(this.manaBarMax, 9)
-      .setTint(0x4a5a72);
-    this.manaFill = this.scene.add.rectangle(barX, 15, 4, 7, 0x6ec8ff).setOrigin(0, 0.5);
-    this.exclaim = createBadge(this.scene, 58, -22, 18);
-    const cloud = this.scene.add
-      .container(w - 90, 50, [
-        rightCloud,
+    this.levelLabel = this.scene.add.text(colX, -18, '', whiteText('9px', { strokeThickness: 4 })).setOrigin(0, 0.5);
+    this.manaTrack = this.scene.add.rectangle(barX, 15, BAR_W, 8, 0x1a2218).setOrigin(0, 0.5).setStrokeStyle(1, 0x0a1008);
+    this.xpFill = this.scene.add.rectangle(barX + 1, 1, 2, 6, 0x5ecf5a).setOrigin(0, 0.5);
+    this.manaFill = this.scene.add.rectangle(barX + 1, 15, 2, 6, 0x6ec8ff).setOrigin(0, 0.5);
+    this.buffCount = this.scene.add.text(barX, 15, '', whiteText('9px', { color: GOLD_TEXT })).setOrigin(0, 0.5).setVisible(false);
+    this.exclaim = createBadge(this.scene, colX, -18, 10);
+    this.scene.add
+      .container(w - HUD_PAD - RIGHT_W / 2, y, [
+        pill(this.scene, RIGHT_W, HUD_CHIP_H),
         this.levelLabel,
-        star,
-        xpTrack,
+        this.scene.add.image(colX + ICON / 2, 1, 'ui-star').setDisplaySize(ICON, ICON),
+        this.scene.add.rectangle(barX, 1, BAR_W, 8, 0x1a2218).setOrigin(0, 0.5).setStrokeStyle(1, 0x0a1008),
         this.xpFill,
-        manaIcon,
-        manaTrack,
+        this.scene.add.image(colX + ICON / 2, 15, 'ui-mana-icon').setDisplaySize(ICON, ICON),
+        this.manaTrack,
         this.manaFill,
+        this.buffCount,
         this.exclaim,
       ])
       .setDepth(20)
-      .setSize(168, 88)
-      .setInteractive(
-        new Phaser.Geom.Rectangle(0, 0, 168, 88),
-        Phaser.Geom.Rectangle.Contains,
-      );
-    cloud.on('pointerup', () => this.onLevelCloud());
-
-    this.buffCount = this.scene.add
-      .text(0, 2, '', {
-        fontFamily: FONT,
-        fontSize: '22px',
-        color: DARK_STROKE,
-        stroke: '#f4ead8',
-        strokeThickness: 4,
-      })
-      .setOrigin(0.5);
-    this.buffPanel = this.scene.add
-      .container(w - 48, 148, [
-        this.scene.add.image(0, 0, 'ui-square-cloud').setDisplaySize(80, 80),
-        this.buffCount,
-      ])
-      .setDepth(20)
-      .setVisible(false);
+      .setSize(RIGHT_W, HUD_CHIP_H)
+      .setInteractive(new Phaser.Geom.Rectangle(0, 0, RIGHT_W, HUD_CHIP_H), Phaser.Geom.Rectangle.Contains)
+      .on('pointerup', () => this.onLevelTap());
   }
 
   setLevelReady(ready: boolean): void {
@@ -120,25 +95,19 @@ export class HudView {
 
   refresh(): void {
     const s = this.ctx.state;
-    this.influenceAmt.setText(formatNumber(s.influence)).setFontSize(11);
-    for (let px = 11; this.influenceAmt.width > 58 && px > 5; px--) {
-      this.influenceAmt.setFontSize(px - 1);
-    }
-    this.influenceRate.setText(`${formatNumber(this.ctx.economy.passivePerSecond(s))}/sec`).setFontSize(8);
-    for (let px = 8; this.influenceRate.width > 58 && px > 5; px--) {
-      this.influenceRate.setFontSize(px - 1);
-    }
+    this.influenceAmt.setText(formatNumber(s.influence));
+    fit(this.influenceAmt, AMT_MAX, 10);
+    this.influenceRate.setText(`${formatNumber(this.ctx.economy.passivePerSecond(s))}/sec`);
+    fit(this.influenceRate, AMT_MAX, 8);
     this.levelLabel.setText(`Lvl ${s.playerLevel}`);
-    const xpPct = Math.min(1, s.totalInfluenceEarned / Math.max(1, s.experienceRequired));
-    this.xpFill.width = Math.max(2, this.xpBarMax * xpPct);
-    const manaPct = s.buffRemaining > 0 ? 1 : Math.min(1, s.mana / Math.max(1, s.manaMax));
-    this.manaFill.width = Math.max(2, this.manaBarMax * manaPct);
+    this.exclaim.setX(this.levelLabel.x + this.levelLabel.width + 8);
+    this.xpFill.width = Math.max(2, (BAR_W - 2) * Math.min(1, s.totalInfluenceEarned / Math.max(1, s.experienceRequired)));
+    const buffOn = s.buffRemaining > 0;
+    this.manaTrack.setVisible(!buffOn);
+    this.manaFill.setVisible(!buffOn);
+    this.buffCount.setVisible(buffOn);
+    if (buffOn) this.buffCount.setText(`${Math.ceil(s.buffRemaining)}s`);
+    else this.manaFill.width = Math.max(2, (BAR_W - 2) * Math.min(1, s.mana / Math.max(1, s.manaMax)));
     showBadge(this.exclaim, this.levelReady);
-    if (s.buffRemaining > 0) {
-      this.buffPanel.setVisible(true);
-      this.buffCount.setText(String(Math.ceil(s.buffRemaining)));
-    } else {
-      this.buffPanel.setVisible(false);
-    }
   }
 }
