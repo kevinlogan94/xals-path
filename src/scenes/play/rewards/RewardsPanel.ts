@@ -3,7 +3,7 @@ import type { GameContext } from '../../../game/GameContext';
 import { formatNumber } from '../../../utils/format';
 import { addFramedPanel } from '../ui/FramedPanel';
 import { createScrollList } from '../ui/ScrollList';
-import { createRewardCard, rewardSlotHeight, type RewardRow } from './RewardCard';
+import { createRewardCard, type RewardRow } from './RewardCard';
 
 export type AchievementClaimInfo = {
   id: RewardRow['id'];
@@ -74,29 +74,12 @@ export function renderRewardsPanel({
   );
   const a = ctx.state.achievements;
   const passive = ctx.economy.passivePerSecond(ctx.state);
-  const hoursHint = (hours: number, base: string) =>
-    `Rewards: ${base}\n(${formatNumber(passive * hours * 3600)} influence)`;
+  const hoursHint = (hours: number) =>
+    `${hours}h of influence (${formatNumber(passive * hours * 3600)})`;
 
-  const gap = 15;
-  const colW = (innerW - gap) / 2;
-  const slotH = rewardSlotHeight(colW);
-  const rowH = slotH + gap;
-  const rowCount = 3;
-  const scroll = createScrollList({
-    scene,
-    panel,
-    dim,
-    listTop,
-    listBottom,
-    listLeft,
-    listWidth: innerW,
-    scrollX,
-    rowHeight: rowH,
-    itemHeight: slotH,
-    rowCount,
-    scroll: rewardsScroll,
-    onScroll,
-  });
+  const boxH = Math.round(innerW * (320 / 840));
+  const rowH = boxH + 10;
+  const listMidX = listLeft + innerW / 2;
 
   // Helper, Clicker, Earn Rewards, Login, Story
   const rows: RewardRow[] = [
@@ -105,7 +88,7 @@ export function renderRewardsPanel({
       title: `Buy ${a.helperGoal} Tomes`,
       n: a.helperCount,
       goal: a.helperGoal,
-      hint: 'Rewards: 3x influence from tomes',
+      hint: '3x influence from tomes',
       icon: 'ui-reward-shop',
     },
     {
@@ -113,7 +96,7 @@ export function renderRewardsPanel({
       title: `Cast ${a.clickerGoal} spells`,
       n: a.clickerCount,
       goal: a.clickerGoal,
-      hint: 'Rewards: 15x influence per click',
+      hint: '15x influence per click',
       icon: 'ui-reward-star',
     },
     {
@@ -121,7 +104,7 @@ export function renderRewardsPanel({
       title: `Earn ${a.achievementGoal} Rewards`,
       n: a.achievementCount,
       goal: a.achievementGoal,
-      hint: hoursHint(1, '1 hour worth of influence'),
+      hint: hoursHint(1),
       icon: 'ui-reward-trophy',
     },
     {
@@ -129,7 +112,7 @@ export function renderRewardsPanel({
       title: `Log in for ${a.loginGoal} days`,
       n: a.loginCount,
       goal: a.loginGoal,
-      hint: hoursHint(1, '1 hour worth of influence'),
+      hint: hoursHint(1),
       icon: 'ui-reward-notepad',
     },
     {
@@ -137,7 +120,7 @@ export function renderRewardsPanel({
       title: 'Finish the Story',
       n: a.storyCount,
       goal: a.storyGoal,
-      hint: hoursHint(10, '10 hours worth of influence'),
+      hint: hoursHint(10),
       icon: 'ui-reward-portal',
     },
   ];
@@ -157,46 +140,37 @@ export function renderRewardsPanel({
     }
   };
 
-  for (let i = 0; i < rowCount; i++) {
-    const left = rows[i * 2];
-    const right = rows[i * 2 + 1];
-    const pair = scene.add.container(0, 0);
-    const addSide = (row: RewardRow | undefined, x: number) => {
-      if (!row) return;
-      const card = createRewardCard(
-        scene,
-        colW,
-        row,
-        () => {
-          if (scroll.wasDrag()) return;
-          if (claim(row.id)) {
-            ctx.audio.playSfx('levelup');
-            const info = achievementClaimInfo(
-              row.id,
-              row,
-              ctx,
-              ctx.economy.passivePerSecond(ctx.state),
-            );
-            rerender();
-            onAchievementClaim(info);
-          }
-        },
-        () => scroll.resetDrag(),
-      );
-      card.setX(x);
-      pair.add(card);
-    };
-    addSide(left, -colW / 2 - gap / 4);
-    addSide(right, colW / 2 + gap / 4);
-    pair.setSize(innerW, slotH);
-    pair.setInteractive(
-      new Phaser.Geom.Rectangle(0, 0, innerW, slotH),
-      Phaser.Geom.Rectangle.Contains,
-    );
-    pair.on('pointerdown', scroll.pointerDown);
-    pair.on('pointermove', scroll.pointerMove);
-    pair.setX(listLeft + innerW / 2);
-    scroll.addCard(pair);
+  const scroll = createScrollList({
+    scene,
+    panel,
+    dim,
+    listTop,
+    listBottom,
+    listLeft,
+    listWidth: innerW,
+    scrollX,
+    rowHeight: rowH,
+    itemHeight: boxH,
+    rowCount: rows.length,
+    scroll: rewardsScroll,
+    onScroll,
+  });
+
+  for (const row of rows) {
+    const card = createRewardCard(scene, innerW, boxH, row, () => {
+      if (scroll.wasDrag()) return;
+      if (claim(row.id)) {
+        ctx.audio.playSfx('levelup');
+        rerender();
+        onAchievementClaim(
+          achievementClaimInfo(row.id, row, ctx, ctx.economy.passivePerSecond(ctx.state)),
+        );
+      }
+    }, () => scroll.resetDrag());
+    card.on('pointerdown', scroll.pointerDown);
+    card.on('pointermove', scroll.pointerMove);
+    card.setX(listMidX);
+    scroll.addCard(card);
   }
   scroll.apply();
 }
