@@ -73,11 +73,9 @@ export function renderRewardsPanel({
     'Rewards',
   );
   const a = ctx.state.achievements;
-  const passive = ctx.economy.passivePerSecond(ctx.state);
-  const hoursHint = (hours: number) =>
-    `${hours}h of influence (${formatNumber(passive * hours * 3600)})`;
+  const hoursHint = (hours: number) => `${hours}h of influence`;
 
-  const boxH = Math.round(innerW * (320 / 840));
+  const boxH = Math.round(innerW * (260 / 840));
   const rowH = boxH + 10;
   const listMidX = listLeft + innerW / 2;
 
