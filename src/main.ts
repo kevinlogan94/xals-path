@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { passInstallGate } from './installGate';
 import { BootScene } from './scenes/BootScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { TitleScene } from './scenes/TitleScene';
@@ -19,6 +20,8 @@ Phaser.GameObjects.GameObjectFactory.prototype.text = function (
 };
 
 const parent = document.getElementById('game');
+
+await passInstallGate();
 
 new Phaser.Game({
   type: Phaser.AUTO,
