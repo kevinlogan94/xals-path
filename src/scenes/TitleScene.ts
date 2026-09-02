@@ -30,11 +30,18 @@ export class TitleScene extends Phaser.Scene {
     audio.playBgm('xals-theme');
     this.input.on('pointerup', () => {
       audio.playBgm('xals-theme');
+      if (!this.ready) {
+        this.tweens.killTweensOf(title);
+        title.setAlpha(1);
+        this.showDetails();
+        return;
+      }
       this.closeTitle();
     });
   }
 
   private showDetails(): void {
+    if (this.ready) return;
     const { width, height } = this.scale;
     const prompt = this.add
       .text(width / 2, height * 0.48, 'Tap to pass the barrier', {
