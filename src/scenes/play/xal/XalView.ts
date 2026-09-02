@@ -3,7 +3,7 @@ import type { ChapterDef, RegionId } from '../../../types';
 import { NAV_H } from '../ui/constants';
 import { createImageButton, createStoryBack, showButton } from '../ui/ImageButton';
 import { whiteText } from '../ui/textStyles';
-import { renderChapterCard } from './ChapterCard';
+import { CHAPTER_CARD_H, CHAPTER_CARD_NAV_GAP, renderChapterCard } from './ChapterCard';
 import { QuoteBox } from './QuoteBox';
 
 const IDLE_SHEET = 'xal-idle-sheet';
@@ -101,7 +101,7 @@ export class XalView {
       .setVisible(false);
     this.fitPortrait();
     this.chapterCard = this.scene.add
-      .container(width / 2, height - NAV_H - 120)
+      .container(width / 2, height - NAV_H - CHAPTER_CARD_NAV_GAP - CHAPTER_CARD_H / 2)
       .setDepth(22)
       .setVisible(false);
     this.portalBar = this.scene.add.container(width / 2, height - NAV_H - 36).setDepth(23).setVisible(false);

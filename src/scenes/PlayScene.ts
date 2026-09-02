@@ -620,7 +620,7 @@ export class PlayScene extends Phaser.Scene {
         const p = this.xal.chapterCardCenter();
         x = p.x;
         // Sit under the title so the glove doesn't cover Chapter / name.
-        y = p.y + 52;
+        y = p.y + 28;
         break;
       }
       case 'tomesNav': {
