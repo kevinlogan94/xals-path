@@ -29,7 +29,7 @@ export class PlayScene extends Phaser.Scene {
   private tab: TabId = 'outlook';
   private hud!: HudView;
   private nav!: BottomNav;
-  private map!: XalView;
+  private xal!: XalView;
   private outlook!: OutlookView;
   private news!: NewsBanner;
   private barlog!: BarlogView;
@@ -80,7 +80,7 @@ export class PlayScene extends Phaser.Scene {
       () => this.onStoryBack(),
     );
     this.barlog.build();
-    this.map = new XalView(
+    this.xal = new XalView(
       this,
       () => {
         this.ignoreCastUntil = this.time.now + 50;
@@ -89,8 +89,8 @@ export class PlayScene extends Phaser.Scene {
       () => this.onChapterButton(),
       () => this.onStoryBack(),
     );
-    this.map.build();
-    this.map.setPortalTravelHandler((region) => this.onPortalTravel(region));
+    this.xal.build();
+    this.xal.setPortalTravelHandler((region) => this.onPortalTravel(region));
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (this.blocked() || this.tab !== 'outlook') return;
@@ -300,8 +300,8 @@ export class PlayScene extends Phaser.Scene {
         this.ctx.spawn.clear();
       }
       if (result.finished) {
-        this.map.hideQuote();
-        this.map.setPortraitExpression('generic');
+        this.xal.hideQuote();
+        this.xal.setPortraitExpression('generic');
         this.refreshChapterCard();
         const chId = result.finishedChapterId;
         if (chId === 7) {
@@ -328,8 +328,8 @@ export class PlayScene extends Phaser.Scene {
           this.ctx.tutorial.startAfterChapter1(this.ctx.state);
           const line = this.ctx.tutorial.advanceLine(this.ctx.state, this.ctx.economy);
           if (line) {
-            this.map.showQuote(line);
-            this.map.setPortraitExpression('generic');
+            this.xal.showQuote(line);
+            this.xal.setPortraitExpression('generic');
           }
           this.applyNavLock();
           this.refreshTutorialPointers();
@@ -351,10 +351,10 @@ export class PlayScene extends Phaser.Scene {
       const line = this.ctx.tutorial.advanceLine(this.ctx.state, this.ctx.economy);
       if (line) {
         this.clearBanterTimer();
-        this.map.showQuote(line);
-        this.map.setPortraitExpression('generic');
+        this.xal.showQuote(line);
+        this.xal.setPortraitExpression('generic');
       } else if (!this.ctx.tutorial.waitingNature) {
-        this.map.hideQuote();
+        this.xal.hideQuote();
       }
       this.applyNavLock();
       this.refreshTutorialPointers();
@@ -365,11 +365,11 @@ export class PlayScene extends Phaser.Scene {
     if (!this.ctx.state.tutorialCompleted) return;
 
     this.clearBanterTimer();
-    this.map.setPortraitExpression('angry');
-    this.map.showQuote(this.ctx.story.banterLine());
+    this.xal.setPortraitExpression('angry');
+    this.xal.showQuote(this.ctx.story.banterLine());
     this.banterTimer = this.time.delayedCall(5000, () => {
-      this.map.hideQuote();
-      this.map.setPortraitExpression('generic');
+      this.xal.hideQuote();
+      this.xal.setPortraitExpression('generic');
     });
   }
 
@@ -407,7 +407,7 @@ export class PlayScene extends Phaser.Scene {
     return this.splash.isOpen() || this.barlog.active();
   }
 
-  private chapterOnMap() {
+  private chapterOnXal() {
     const next = this.nextChapter();
     return {
       next,
@@ -422,13 +422,13 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private refreshChapterCard(): void {
-    const { next, visible } = this.chapterOnMap();
-    this.map.refreshChapterCard(
+    const { next, visible } = this.chapterOnXal();
+    this.xal.refreshChapterCard(
       next,
       next ? !this.ctx.story.canStart(this.ctx.state, next.id) : false,
       visible,
     );
-    this.map.refreshPortalBar(
+    this.xal.refreshPortalBar(
       this.ctx.state.portalUnlocked,
       this.tab === 'scene' && !this.ctx.story.reading && !visible,
       this.ctx.state.region,
@@ -445,13 +445,13 @@ export class PlayScene extends Phaser.Scene {
     const line = this.ctx.story.currentLine();
     if (!line) return;
     this.clearBanterTimer();
-    this.map.showQuote(line.text);
-    this.map.hideChapterCard();
-    this.map.refreshPortalBar(false, false, this.ctx.state.region);
+    this.xal.showQuote(line.text);
+    this.xal.hideChapterCard();
+    this.xal.refreshPortalBar(false, false, this.ctx.state.region);
     if (line.speaker !== 'barlog') {
-      this.map.setPortraitExpression(line.expression);
+      this.xal.setPortraitExpression(line.expression);
     }
-    this.map.setBackVisible(this.ctx.story.quoteIndex > 0);
+    this.xal.setBackVisible(this.ctx.story.quoteIndex > 0);
   }
 
   /** Unity SelectView: re-tapping active tab returns to Outlook. */
@@ -475,7 +475,7 @@ export class PlayScene extends Phaser.Scene {
     }
 
     this.clearBanterTimer();
-    if (tab !== 'scene') this.map.hideQuote();
+    if (tab !== 'scene') this.xal.hideQuote();
 
     this.tab = tab;
     this.nav.setActive(tab);
@@ -484,11 +484,11 @@ export class PlayScene extends Phaser.Scene {
     this.ctx.audio.playSfx('pop', 0.35);
 
     this.outlook.setVisible(tab !== 'scene');
-    this.map.setVisible(tab === 'scene');
+    this.xal.setVisible(tab === 'scene');
 
     if (tab === 'outlook') {
-      this.map.hideChapterCard();
-      this.map.refreshPortalBar(false, false, this.ctx.state.region);
+      this.xal.hideChapterCard();
+      this.xal.refreshPortalBar(false, false, this.ctx.state.region);
       this.maybeStartBarlog();
       if (requested === tab && !this.barlog.active()) {
         this.ctx.audio.playRegion(this.ctx.state.region);
@@ -499,7 +499,7 @@ export class PlayScene extends Phaser.Scene {
     }
 
     if (tab === 'scene') {
-      this.map.fitPortrait();
+      this.xal.fitPortrait();
       this.ctx.spawn.clear();
       this.ctx.audio.playBgm('xals-theme');
       if (this.ctx.story.reading) this.renderQuote();
@@ -509,8 +509,8 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
 
-    this.map.hideChapterCard();
-    this.map.refreshPortalBar(false, false, this.ctx.state.region);
+    this.xal.hideChapterCard();
+    this.xal.refreshPortalBar(false, false, this.ctx.state.region);
     this.ctx.spawn.clear();
     if (tab === 'shop') this.renderShop();
     if (tab === 'achievements') this.renderAchievements();
@@ -591,7 +591,7 @@ export class PlayScene extends Phaser.Scene {
       this.finger.setVisible(false);
       return;
     }
-    const { visible: chapterVisible } = this.chapterOnMap();
+    const { visible: chapterVisible } = this.chapterOnXal();
     const target = this.ctx.tutorial.pointerTarget(
       this.ctx.state,
       this.tab,
@@ -599,7 +599,7 @@ export class PlayScene extends Phaser.Scene {
       this.tab === 'shop',
       chapterVisible,
     );
-    if (target === 'xal' && this.map.quoteVisible()) {
+    if (target === 'xal' && this.xal.quoteVisible()) {
       this.finger.setVisible(false);
       return;
     }
@@ -617,7 +617,7 @@ export class PlayScene extends Phaser.Scene {
     let y = 0;
     switch (target) {
       case 'chapter': {
-        const p = this.map.chapterCardCenter();
+        const p = this.xal.chapterCardCenter();
         x = p.x;
         // Sit under the title so the glove doesn't cover Chapter / name.
         y = p.y + 52;
@@ -761,13 +761,12 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.economy.readyToLevelUp(this.ctx.state) && !this.ctx.story.reading,
     );
     this.hud.refresh();
-    this.nav.refreshBadges(this.ctx.story.reading);
-    this.map.setChapterReady(this.chapterReady());
+    this.nav.refreshBadges(this.ctx.story.reading, this.chapterReady());
   }
 
   /** Unity SceneManager.ManageExclamationPoint — next unread chapter startable, not ch1. */
   private chapterReady(): boolean {
-    if (this.tab !== 'scene' || this.ctx.story.reading) return false;
+    if (this.ctx.story.reading) return false;
     if (this.ctx.state.playerLevel === 1) return false;
     if (this.ctx.tutorial.isEarlyMapLock(this.ctx.state)) return false;
     const next = this.nextChapter();

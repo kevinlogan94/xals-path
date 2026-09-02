@@ -5,7 +5,7 @@ import { createBadge, showBadge } from '../ui/Badge';
 import { NAV_H } from '../ui/constants';
 import { fitInBox } from '../ui/fit';
 
-/** Unity BottomNav: Settings · Rewards · Outlook · Map · Tomes */
+/** Unity BottomNav: Settings · Rewards · Outlook · Xal · Tomes */
 const NAV: { id: TabId; icon: string }[] = [
   { id: 'settings', icon: 'ui-gear' },
   { id: 'achievements', icon: 'ui-trophy-nav' },
@@ -17,6 +17,7 @@ const NAV: { id: TabId; icon: string }[] = [
 export class BottomNav {
   private navButtons: Phaser.GameObjects.Container[] = [];
   private rewardsBadge?: Phaser.GameObjects.Text;
+  private xalBadge?: Phaser.GameObjects.Text;
   private tomesBadge?: Phaser.GameObjects.Text;
   private tabAllowed: (tab: TabId) => boolean = () => true;
 
@@ -62,6 +63,7 @@ export class BottomNav {
 
     const badge = frame / 2 - 2;
     this.rewardsBadge = createBadge(this.scene, columnW * 1.5 + badge, h - NAV_H / 2 - badge, 16, 42);
+    this.xalBadge = createBadge(this.scene, columnW * 3.5 + badge, h - NAV_H / 2 - badge, 16, 42);
     this.tomesBadge = createBadge(this.scene, columnW * 4.5 + badge, h - NAV_H / 2 - badge, 16, 42);
   }
 
@@ -96,8 +98,9 @@ export class BottomNav {
     });
   }
 
-  refreshBadges(reading: boolean): void {
+  refreshBadges(reading: boolean, chapterReady: boolean): void {
     showBadge(this.rewardsBadge, this.ctx.economy.anyClaimable(this.ctx.state));
+    showBadge(this.xalBadge, chapterReady);
     showBadge(this.tomesBadge, this.ctx.economy.anyAffordableHelper(this.ctx.state, reading));
   }
 }

@@ -1,5 +1,5 @@
 export type RegionId = 'meadow' | 'river' | 'altar';
-/** Matches Unity BottomNav: overlays + Scene (tower) + Outlook (world). */
+/** Matches Unity BottomNav: overlays + Xal (tower) + Outlook (world). */
 export type TabId =
   | 'outlook'
   | 'scene'

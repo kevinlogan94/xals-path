@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import type { ChapterDef, RegionId } from '../../../types';
-import { createBadge, showBadge } from '../ui/Badge';
 import { NAV_H } from '../ui/constants';
 import { createImageButton, createStoryBack, showButton } from '../ui/ImageButton';
 import { whiteText } from '../ui/textStyles';
@@ -61,7 +60,6 @@ export class XalView {
   private quoteBox: QuoteBox;
   private chapterCard!: Phaser.GameObjects.Container;
   private portalBar!: Phaser.GameObjects.Container;
-  private chapterReady!: Phaser.GameObjects.Text;
   private backBtn!: Phaser.GameObjects.Container;
   private onPortalTravel?: (region: RegionId) => void;
   private quoteOpen = false;
@@ -107,8 +105,6 @@ export class XalView {
       .setDepth(22)
       .setVisible(false);
     this.portalBar = this.scene.add.container(width / 2, height - NAV_H - 36).setDepth(23).setVisible(false);
-    // Unity ExclamationPointXal — hover near Xal, below HUD clouds.
-    this.chapterReady = createBadge(this.scene, width - 52, 128, 18, 24);
     this.backBtn = createStoryBack(this.scene, this.onStoryBack, 24);
     this.quoteBox.build();
   }
@@ -126,15 +122,10 @@ export class XalView {
       this.stopIdle();
       this.book.setVisible(false);
       this.portalBar.setVisible(false);
-      showBadge(this.chapterReady, false);
       this.setBackVisible(false);
     } else if (!this.quoteOpen) {
       this.playIdle();
     }
-  }
-
-  setChapterReady(ready: boolean): void {
-    showBadge(this.chapterReady, ready);
   }
 
   fitPortrait(): void {
