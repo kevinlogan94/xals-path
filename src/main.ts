@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import { passInstallGate } from './installGate';
 import { BootScene } from './scenes/BootScene';
-import { PreloadScene } from './scenes/PreloadScene';
 import { TitleScene } from './scenes/TitleScene';
 import { PlayScene } from './scenes/PlayScene';
 
@@ -31,7 +30,7 @@ new Phaser.Game({
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, PreloadScene, TitleScene, PlayScene],
+  scene: [BootScene, TitleScene, PlayScene],
   audio: {
     disableWebAudio: false,
   },

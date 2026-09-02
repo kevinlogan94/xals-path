@@ -145,6 +145,7 @@ export function createSplash(
         .text(cx, bannerY, title, whiteText('14px', { strokeThickness: 4 }))
         .setOrigin(0.5)
         .setVisible(!deferChrome);
+      titleText.setScale(Math.min(1, (bannerW * 0.62) / titleText.width));
       overlay.add(titleText);
     }
 
