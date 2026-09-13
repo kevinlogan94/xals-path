@@ -14,6 +14,8 @@ The story delivers a morally complex narrative about perspective, power, and the
 
 **Status:** *The original mobile release is no longer on the App Store or Google Play. Thank you to everyone who supported it — the web remake continues the journey.*
 
+The Unity archive is recoverable at tag `v1.1.1` (commit `996f667`).
+
 ## Key Features
 
 *   **Engaging Narrative:** A deep and mysterious story that unfolds as you progress.
