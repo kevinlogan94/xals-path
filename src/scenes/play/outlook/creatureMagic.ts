@@ -12,7 +12,7 @@ export function preloadCreatureMagic(load: Phaser.Loader.LoaderPlugin): void {
 
 function slice(tex: Phaser.Textures.Texture, prefix: string, xs: number[]): void {
   if (tex.has(`${prefix}-0`)) return;
-  xs.forEach((x, i) => tex.add(`${prefix}-${i}`, 0, x, 10, 170, 170));
+  xs.forEach((x, i) => tex.add(`${prefix}-${i}`, 0, x * 2, 20, 340, 340));
 }
 
 export function ensureMagicAnims(scene: Phaser.Scene): boolean {

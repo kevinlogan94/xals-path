@@ -167,7 +167,7 @@ function ensureLockFrames(scene: Phaser.Scene): boolean {
   if (!scene.textures.exists(LOCK_SHEET_KEY)) return false;
   const tex = scene.textures.get(LOCK_SHEET_KEY);
   if (!tex.has('lock-0')) {
-    LOCK_FRAME_X.forEach((x, i) => tex.add(`lock-${i}`, 0, x, 4, 324, 540));
+    LOCK_FRAME_X.forEach((x, i) => tex.add(`lock-${i}`, 0, x * 2, 8, 648, 1080));
   }
   return tex.has('lock-0');
 }
@@ -194,7 +194,9 @@ export function ensureRunAnim(scene: Phaser.Scene, creatureId: string): string |
   if (!scene.textures.exists(textureKey)) return null;
   const tex = scene.textures.get(textureKey);
   if (!tex.has(`${creatureId}-0`)) {
-    sheet.frames.forEach(([x, uy, w, h], i) => tex.add(`${creatureId}-${i}`, 0, x, sheet.h - uy - h, w, h));
+    sheet.frames.forEach(([x, uy, w, h], i) =>
+      tex.add(`${creatureId}-${i}`, 0, x * 2, (sheet.h - uy - h) * 2, w * 2, h * 2),
+    );
   }
   if (!tex.has(`${creatureId}-0`)) return null;
 

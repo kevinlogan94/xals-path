@@ -5,7 +5,7 @@ export function createFingerPointer(
   y: number,
   depth = 55,
 ): Phaser.GameObjects.Container {
-  const img = scene.add.image(0, 0, 'ui-pointer');
+  const img = scene.add.image(0, 0, 'ui-pointer').setDisplaySize(64, 64);
   const root = scene.add.container(x, y, [img]).setDepth(depth).setVisible(false);
   bob(scene, img, false);
   return root;

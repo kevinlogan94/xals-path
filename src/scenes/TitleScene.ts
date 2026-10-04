@@ -117,8 +117,8 @@ function queueGameAssets(load: Phaser.Loader.LoaderPlugin): void {
   load.image('xal-idle-sheet', 'assets/xal/xal_idle_animation.png');
   load.image('xal-book-sheet', 'assets/xal/xal_book_animation.png');
   load.spritesheet('barlog', 'assets/characters/barlog.png', {
-    frameWidth: 266,
-    frameHeight: 300,
+    frameWidth: 532,
+    frameHeight: 600,
   });
 
   load.image('ui-nav-default', 'assets/ui/nav-default.png');
@@ -129,8 +129,8 @@ function queueGameAssets(load: Phaser.Loader.LoaderPlugin): void {
   preloadCreatureSplashAssets(load);
   preloadCreatureMagic(load);
   load.spritesheet('pegasus', 'assets/creatures/pegasus-animation.png', {
-    frameWidth: 232,
-    frameHeight: 114,
+    frameWidth: 464,
+    frameHeight: 228,
   });
   load.image('ui-panel', 'assets/ui/panel.png');
   load.image('ui-cloud', 'assets/ui/clouds/cloud.png');
