@@ -53,7 +53,7 @@ export function renderChapterCard({
       .text(textLeft, -CHAPTER_CARD_H * 0.18, `Chapter ${chapter.id}`, darkText('10px', titleColor))
       .setOrigin(0, 0.5),
     scene.add
-      .text(textLeft, CHAPTER_CARD_H * 0.18, chapter.name, darkText('13px', titleColor))
+      .text(textLeft, CHAPTER_CARD_H * 0.18, chapter.name, darkText('11px', titleColor))
       .setOrigin(0, 0.5),
   ];
   if (locked) {
