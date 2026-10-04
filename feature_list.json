@@ -83,5 +83,27 @@
       "Confirm the mana bar returns when the countdown ends"
     ],
     "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "During the tutorial, tapping the Xal button in the bottom nav while already on the Xal view stays on that view. On the last tutorial step, the Outlook button is still the way to leave.",
+    "steps": [
+      "Start a new game and stay on the Xal view during the tutorial",
+      "Tap the Xal button in the bottom nav",
+      "Confirm the Xal view stays open and Outlook does not appear",
+      "Finish the tutorial dialogue until the pointer aims at the Outlook button",
+      "Tap the Outlook button and confirm Outlook opens"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "After the tutorial, tapping the current bottom-nav tab again opens Outlook.",
+    "steps": [
+      "Finish the tutorial",
+      "Open the Xal view, then tap the Xal button again",
+      "Confirm that second tap opens Outlook"
+    ],
+    "passes": false
   }
 ]
