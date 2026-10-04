@@ -70,7 +70,7 @@ export class HudView {
     this.xpFill = this.scene.add.rectangle(barX + 1, 1, 2, 6, 0x5ecf5a).setOrigin(0, 0.5);
     this.manaFill = this.scene.add.rectangle(barX + 1, 15, 2, 6, 0x6ec8ff).setOrigin(0, 0.5);
     this.buffCount = this.scene.add.text(barX, 15, '', whiteText('15px', { color: GOLD_TEXT })).setOrigin(0, 0.5).setVisible(false);
-    this.exclaim = createBadge(this.scene, colX, -18, 10);
+    this.exclaim = createBadge(this.scene, colX, -18, 22);
     this.scene.add
       .container(w - HUD_PAD - RIGHT_W / 2, y, [
         pill(this.scene, RIGHT_W, HUD_CHIP_H),

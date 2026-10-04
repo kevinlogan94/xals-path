@@ -14,9 +14,8 @@ export interface RewardRow {
   icon: string;
 }
 
-const GAP = 8;
-const CHIP_PAD_X = 10;
-const CHIP_PAD_Y = 6;
+const CHIP_PAD_X = 8;
+const CHIP_PAD_Y = 4;
 const CLAIM_W = 100;
 
 /** Title + prize chip; progress bar in-flight, Claim when ready. */
@@ -34,7 +33,8 @@ export function createRewardCard(
   const wellSize = innerW * (160 / 840);
   const textLeft = -innerW / 2 + innerW * (221 / 840) + 8;
   const textW = innerW / 2 - 18 - textLeft;
-  const barH = Math.max(22, Math.round(boxH * 0.16));
+  const pad = 10;
+  const barH = Math.min(26, Math.max(18, Math.round(boxH * 0.16)));
   const frac = `${row.n}/${row.goal}`;
   const fillW = Math.max(2, textW * Math.min(1, row.n / Math.max(1, row.goal)));
 
@@ -47,9 +47,11 @@ export function createRewardCard(
     );
   }
 
-  const title = scene.add.text(textLeft, -boxH / 2 + 12, row.title, darkText('18px')).setOrigin(0, 0);
-  const prize = chip(scene, textLeft, title.y + title.height + GAP, row.hint, textW);
-  const actionY = prize.y + prize.h + GAP + barH / 2;
+  const title = scene.add.text(textLeft, -boxH / 2 + pad, row.title, darkText('15px')).setOrigin(0, 0);
+  const actionY = boxH / 2 - pad - barH / 2;
+  const chipTop = title.y + title.height + 4;
+  const chipRoom = actionY - barH / 2 - 4 - chipTop;
+  const prize = chip(scene, textLeft, chipTop, row.hint, textW, Math.max(16, chipRoom));
 
   kids.push(
     fitInBox(scene, row.icon, wellSize * 0.85, wellSize * 0.85).setPosition(
@@ -96,7 +98,7 @@ function bar(
   return scene.add.container(0, 0, [
     scene.add.rectangle(x + w / 2, y, w, h, 0xb8b0a0).setStrokeStyle(1, 0x6a6058),
     scene.add.rectangle(x, y, fillW, h, 0x5ecf5a).setOrigin(0, 0.5),
-    scene.add.text(x + w / 2, y, label, darkText('16px')).setOrigin(0.5),
+    scene.add.text(x + w / 2, y, label, darkText('13px')).setOrigin(0.5),
   ]);
 }
 
@@ -106,15 +108,19 @@ function chip(
   y: number,
   label: string,
   maxW: number,
+  maxH: number,
 ): { container: Phaser.GameObjects.Container; y: number; h: number } {
   const t = scene.add
     .text(
       x + CHIP_PAD_X,
       y + CHIP_PAD_Y,
       label,
-      darkText('14px', '#3d2a18', { wordWrap: { width: maxW - CHIP_PAD_X * 2 } }),
+      darkText('12px', '#3d2a18', { wordWrap: { width: maxW - CHIP_PAD_X * 2 } }),
     )
     .setOrigin(0, 0);
+  for (let px = 12; t.height + CHIP_PAD_Y * 2 > maxH && px > 9; px--) {
+    t.setStyle(darkText(`${px}px`, '#3d2a18', { wordWrap: { width: maxW - CHIP_PAD_X * 2 } }));
+  }
   const w = Math.min(maxW, t.width + CHIP_PAD_X * 2);
   const h = t.height + CHIP_PAD_Y * 2;
   return {

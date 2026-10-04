@@ -62,9 +62,9 @@ export class BottomNav {
     });
 
     const badge = frame / 2 - 2;
-    this.rewardsBadge = createBadge(this.scene, columnW * 1.5 + badge, h - NAV_H / 2 - badge, 16, 42);
-    this.xalBadge = createBadge(this.scene, columnW * 3.5 + badge, h - NAV_H / 2 - badge, 16, 42);
-    this.tomesBadge = createBadge(this.scene, columnW * 4.5 + badge, h - NAV_H / 2 - badge, 16, 42);
+    this.rewardsBadge = createBadge(this.scene, columnW * 1.5 + badge, h - NAV_H / 2 - badge, 28, 42);
+    this.xalBadge = createBadge(this.scene, columnW * 3.5 + badge, h - NAV_H / 2 - badge, 28, 42);
+    this.tomesBadge = createBadge(this.scene, columnW * 4.5 + badge, h - NAV_H / 2 - badge, 28, 42);
   }
 
   setTabAllowed(fn: (tab: TabId) => boolean): void {
