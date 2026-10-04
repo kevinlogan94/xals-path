@@ -463,7 +463,6 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
 
-    const requested = tab;
     if (!force && this.tab === tab) {
       tab = 'outlook';
     }
