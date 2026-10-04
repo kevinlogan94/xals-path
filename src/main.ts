@@ -13,7 +13,7 @@ Phaser.GameObjects.GameObjectFactory.prototype.text = function (
   style?: Phaser.Types.GameObjects.Text.TextStyle,
 ) {
   return textFactory.call(this, x, y, text, {
-    resolution: Math.min(window.devicePixelRatio || 1, 3),
+    resolution: 1,
     ...style,
   });
 };
@@ -26,6 +26,7 @@ new Phaser.Game({
   type: Phaser.AUTO,
   parent: parent ?? undefined,
   backgroundColor: '#0d1a0d',
+  resolution: Math.min(window.devicePixelRatio || 1, 2),
   scale: {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
