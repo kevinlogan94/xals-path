@@ -11,5 +11,16 @@
       "Confirm the new region's music starts the same way"
     ],
     "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "The first time the player is ready to go from level 1 to level 2, a finger points at the level chip until they open the level-up splash. Later level-ups only show the exclamation mark.",
+    "steps": [
+      "Reach a full experience bar while still level 1",
+      "Confirm a finger points up at the level chip next to the exclamation mark",
+      "Tap the chip and confirm the level-up splash opens and the finger hides",
+      "Collect the reward and confirm the finger does not return on later level-ups"
+    ],
+    "passes": true
   }
 ]

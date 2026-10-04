@@ -21,7 +21,7 @@ import { buildNewGameSplash } from './play/splash/newGameSplash';
 import { buildPortalSplash } from './play/splash/portalSplash';
 import { createSplash } from './play/splash/SplashView';
 import { renderTomesPanel } from './play/tomes/TomesPanel';
-import { FONT, hudBottom, NAV_H } from './play/ui/constants';
+import { FONT, HUD_PAD, hudBottom, NAV_H } from './play/ui/constants';
 import { aimFinger, createFingerPointer } from './play/ui/FingerPointer';
 
 export class PlayScene extends Phaser.Scene {
@@ -605,7 +605,20 @@ export class PlayScene extends Phaser.Scene {
     }
 
     if (target === 'none') {
-      this.finger.setVisible(false);
+      const s = this.ctx.state;
+      const firstLevelUp =
+        s.playerLevel === 1 &&
+        !this.ctx.story.reading &&
+        !this.splash.isOpen() &&
+        this.ctx.economy.readyToLevelUp(s);
+      if (!firstLevelUp) {
+        this.finger.setVisible(false);
+        return;
+      }
+      // Right HUD chip (level + mana). Tip points up from just below it.
+      aimFinger(this.finger, false);
+      this.finger.setPosition(this.scale.width - HUD_PAD - 58, hudBottom() + 36);
+      this.finger.setVisible(true);
       return;
     }
 
