@@ -22,5 +22,66 @@
       "Collect the reward and confirm the finger does not return on later level-ups"
     ],
     "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "The blessing is offered once per level, after 200 casts or creature taps. Reaching that count does not open the splash. Leveling up allows the offer again.",
+    "steps": [
+      "Cast or tap creatures until the count reaches 200 this level",
+      "Confirm the Blessing of the Gods splash does not open",
+      "Confirm another 200 taps this level do not start a second offer",
+      "Level up, then reach 200 taps again",
+      "Confirm the offer can happen again on the new level"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "While a blessing is offered, a Pegasus flies across the screen. If it is not tapped, it comes back from the other direction and keeps alternating until the player taps it. Tapping it opens the Blessing of the Gods splash.",
+    "steps": [
+      "Reach a blessing offer",
+      "Confirm a Pegasus flies across the screen",
+      "Let it leave without tapping",
+      "Confirm it returns from the opposite direction",
+      "Confirm it keeps alternating directions until tapped",
+      "Tap the Pegasus and confirm the Blessing splash opens"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "After the Pegasus flies off one side, it waits about 10 seconds, then flies back from the other side. Leaving Outlook pauses that wait.",
+    "steps": [
+      "Reach a blessing offer and let the Pegasus fly off the screen",
+      "Confirm it stays gone for about 10 seconds",
+      "Confirm it then flies back from the opposite direction",
+      "Leave Outlook during a wait",
+      "Confirm the next pass does not start until you are back on Outlook"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "The first time the player has never collected the blessing, a pointer sits just under the flying Pegasus. After they have collected it once, later Pegasus flybys have no pointer.",
+    "steps": [
+      "On a save that has never collected the blessing, reach an offer",
+      "Confirm a pointer sits just under the Pegasus while it flies",
+      "Collect the blessing",
+      "On a later level, reach another offer",
+      "Confirm the Pegasus flies with no pointer"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Collect on the Blessing splash starts 15 seconds of infinite mana. The mana bar is replaced by a countdown for those seconds.",
+    "steps": [
+      "Open the Blessing of the Gods splash by tapping the Pegasus",
+      "Tap Collect",
+      "Confirm casts no longer spend mana",
+      "Confirm the mana bar shows a countdown from 15s down to 1s",
+      "Confirm the mana bar returns when the countdown ends"
+    ],
+    "passes": true
   }
 ]

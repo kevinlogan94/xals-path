@@ -128,6 +128,10 @@ function queueGameAssets(load: Phaser.Loader.LoaderPlugin): void {
   load.image('ui-lock', 'assets/ui/lock.png');
   preloadCreatureSplashAssets(load);
   preloadCreatureMagic(load);
+  load.spritesheet('pegasus', 'assets/creatures/pegasus-animation.png', {
+    frameWidth: 161,
+    frameHeight: 129,
+  });
   load.image('ui-panel', 'assets/ui/panel.png');
   load.image('ui-cloud', 'assets/ui/clouds/cloud.png');
   load.image('ui-level-cloud', 'assets/ui/clouds/LevelCloud.png');

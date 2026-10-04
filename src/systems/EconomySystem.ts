@@ -73,6 +73,7 @@ export class EconomySystem {
   acceptBuffOffer(state: GameSave): boolean {
     if (!state.buffOfferPending) return false;
     state.buffOfferPending = false;
+    state.buffEverCollected = true;
     state.buffRemaining = economy.buffDurationSeconds;
     return true;
   }

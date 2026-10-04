@@ -81,6 +81,8 @@ export interface GameSave {
   buffedThisLevel: boolean;
   buffClickProgress: number;
   buffOfferPending: boolean;
+  /** True after the player has collected Blessing of the Gods once. */
+  buffEverCollected: boolean;
   buffRemaining: number;
   portalUnlocked: boolean;
   unlockedRegions: RegionId[];

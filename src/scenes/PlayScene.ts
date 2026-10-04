@@ -6,6 +6,7 @@ import { HudView } from './play/hud/HudView';
 import { BottomNav } from './play/nav/BottomNav';
 import { XalView } from './play/xal/XalView';
 import { NewsBanner } from './play/outlook/NewsBanner';
+import { PegasusFlyby } from './play/outlook/PegasusFlyby';
 import { BarlogView } from './play/outlook/BarlogView';
 import { OutlookView } from './play/outlook/OutlookView';
 import { renderRewardsPanel } from './play/rewards/RewardsPanel';
@@ -54,6 +55,7 @@ export class PlayScene extends Phaser.Scene {
   private layoutH = 0;
   private splash!: ReturnType<typeof createSplash>;
   private finger!: Phaser.GameObjects.Container;
+  private pegasus!: PegasusFlyby;
   private natureRow?: Phaser.GameObjects.Container;
 
   constructor() {
@@ -92,8 +94,10 @@ export class PlayScene extends Phaser.Scene {
     this.xal.build();
     this.xal.setPortalTravelHandler((region) => this.onPortalTravel(region));
 
+    this.pegasus = new PegasusFlyby(this, () => this.onPegasusTap());
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (this.blocked() || this.tab !== 'outlook') return;
+      if (this.pegasus.hits(pointer.x, pointer.y)) return;
       if (!this.outlook.canCast(pointer, this.ignoreCastUntil)) return;
       this.castAt(pointer.x, pointer.y);
     });
@@ -149,6 +153,7 @@ export class PlayScene extends Phaser.Scene {
       window.removeEventListener('pageshow', this.onPageShow);
       this.scale.off('resize', this.onResizeBound);
       this.splash.dismiss();
+      this.pegasus.destroy();
       this.ctx.audio.attach(null);
       this.ctx.spawn.clear();
     });
@@ -212,9 +217,15 @@ export class PlayScene extends Phaser.Scene {
     }
     if (!ready) this.levelJinglePlayed = false;
 
-    if (this.ctx.state.buffOfferPending && !this.blocked()) {
-      this.openBuffSplash();
-    }
+    const bounds = this.outlook.spawnBounds();
+    const pending = this.ctx.state.buffOfferPending;
+    this.pegasus.sync({
+      pending,
+      flying: pending && this.tab === 'outlook' && !this.blocked(),
+      showPointer: !this.ctx.state.buffEverCollected,
+      bounds,
+    });
+    this.pegasus.tick(dt, bounds);
     this.maybeStartBarlog();
     if (this.lastBuff > 0 && this.ctx.state.buffRemaining <= 0) {
       this.ctx.audio.playSfx('debuff');
@@ -721,6 +732,12 @@ export class PlayScene extends Phaser.Scene {
     this.outlook.applyRegionVisual();
     this.ctx.audio.playSfx('cast');
     this.setTab('outlook', true);
+  }
+
+  private onPegasusTap(): void {
+    if (this.blocked() || !this.ctx.state.buffOfferPending) return;
+    this.ignoreCastUntil = this.time.now + 50;
+    this.openBuffSplash();
   }
 
   private openBuffSplash(): void {
