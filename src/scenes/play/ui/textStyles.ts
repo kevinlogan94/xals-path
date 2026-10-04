@@ -3,13 +3,13 @@ import { DARK_STROKE, FONT, LIGHT_TEXT } from './constants';
 
 type TextStyle = Phaser.Types.GameObjects.Text.TextStyle;
 
-/** Extra pixels between wrapped lines. 0.5× font size matches the creature splash. */
+/** Nunito already has leading. A small extra gap keeps wrapped lines from colliding. */
 function base(fontSize: string, extra: TextStyle): TextStyle {
   return {
     fontFamily: FONT,
     fontStyle: 'bold',
     fontSize,
-    lineSpacing: Math.round(Number.parseInt(fontSize, 10) * 0.5),
+    lineSpacing: Math.round(Number.parseInt(fontSize, 10) * 0.15),
     ...extra,
   };
 }

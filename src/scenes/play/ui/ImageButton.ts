@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { NAV_H } from './constants';
-import { whiteText } from './textStyles';
+import { darkText } from './textStyles';
 
 /**
  * Image + centered label with an explicit display-sized hit rect.
@@ -20,7 +20,7 @@ export function createImageButton(
   onPressStart?: () => void,
 ): Phaser.GameObjects.Container {
   const image = scene.add.image(0, 0, key).setDisplaySize(width, height).setAlpha(alpha);
-  const text = scene.add.text(0, 0, label, whiteText(fontSize)).setOrigin(0.5);
+  const text = scene.add.text(0, 0, label, darkText(fontSize)).setOrigin(0.5);
   const button = scene.add.container(x, y, [image, text]).setSize(width, height);
 
   if (onClick || onPressStart) {
