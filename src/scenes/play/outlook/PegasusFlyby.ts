@@ -82,7 +82,7 @@ export class PegasusFlyby {
       this.wait = GAP_SECONDS;
     }
     if (this.pointer?.visible) {
-      this.pointer.setPosition(s.x, s.y + s.displayHeight / 2 + 4);
+      this.pointer.setPosition(s.x, s.y + s.displayHeight / 2 + 36);
     }
   }
 
@@ -109,7 +109,7 @@ export class PegasusFlyby {
     }
     const sprite = this.scene.add.sprite(0, 0, 'pegasus', 0).setDepth(8).setVisible(false);
     sprite.play('pegasus-fly');
-    sprite.setScale(180 / sprite.width);
+    sprite.setScale(Math.min(96 / sprite.width, 72 / sprite.height));
     sprite.x = bounds.x - sprite.displayWidth / 2;
     sprite.on('pointerdown', () => this.onTap());
     this.sprite = sprite;
