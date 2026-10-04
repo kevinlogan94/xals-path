@@ -6,12 +6,13 @@ import { GOLD_TEXT, HUD_CHIP_H, HUD_PAD, PANEL_DIM_COLOR, safeInsetTop } from '.
 import { whiteText } from '../ui/textStyles';
 
 /** Resize the ear chips here. Height/notch padding live in constants.ts (`HUD_CHIP_H`, `HUD_PAD`). */
-const LEFT_W = 108;
+const LEFT_W = 156;
 const RIGHT_W = 116;
 const INSET = 6;
 const ICON = 16;
+const LEFT_ICON = 28;
 const BAR_W = RIGHT_W - INSET * 2 - ICON - 4;
-const AMT_MAX = LEFT_W - INSET * 2 - ICON - 4;
+const AMT_MAX = LEFT_W - INSET * 2 - LEFT_ICON - 8;
 
 function pill(scene: Phaser.Scene, w: number, h: number): Phaser.GameObjects.Graphics {
   const g = scene.add.graphics();
@@ -47,18 +48,18 @@ export class HudView {
   build(): void {
     const w = this.scene.scale.width;
     const y = Math.round(safeInsetTop() + HUD_PAD + HUD_CHIP_H / 2);
-    const textX = -LEFT_W / 2 + INSET + ICON + 6;
+    const textX = -LEFT_W / 2 + INSET + LEFT_ICON + 8;
     const colX = -RIGHT_W / 2 + INSET;
     const barX = colX + ICON + 5;
 
-    this.influenceAmt = this.scene.add.text(textX, -7, '', whiteText('16px')).setOrigin(0, 0.5);
+    this.influenceAmt = this.scene.add.text(textX, -10, '', whiteText('18px')).setOrigin(0, 0.5);
     this.influenceRate = this.scene.add
-      .text(textX, 9, '', whiteText('14px', { color: '#b8e0a8' }))
+      .text(textX, 12, '', whiteText('15px', { color: '#b8e0a8' }))
       .setOrigin(0, 0.5);
     this.scene.add
       .container(HUD_PAD + LEFT_W / 2, y, [
         pill(this.scene, LEFT_W, HUD_CHIP_H),
-        this.scene.add.image(-LEFT_W / 2 + INSET + ICON / 2, -6, 'ui-influence').setDisplaySize(ICON, ICON),
+        this.scene.add.image(-LEFT_W / 2 + INSET + LEFT_ICON / 2, 0, 'ui-influence').setDisplaySize(LEFT_ICON, LEFT_ICON),
         this.influenceAmt,
         this.influenceRate,
       ])
@@ -96,9 +97,9 @@ export class HudView {
   refresh(): void {
     const s = this.ctx.state;
     this.influenceAmt.setText(formatNumber(s.influence));
-    fit(this.influenceAmt, AMT_MAX, 10);
+    fit(this.influenceAmt, AMT_MAX, 18);
     this.influenceRate.setText(`${formatNumber(this.ctx.economy.passivePerSecond(s))}/sec`);
-    fit(this.influenceRate, AMT_MAX, 8);
+    fit(this.influenceRate, AMT_MAX, 15);
     this.levelLabel.setText(`Lvl ${s.playerLevel}`);
     this.exclaim.setX(this.levelLabel.x + this.levelLabel.width + 8);
     this.xpFill.width = Math.max(2, (BAR_W - 2) * Math.min(1, s.totalInfluenceEarned / Math.max(1, s.experienceRequired)));
