@@ -94,7 +94,7 @@
       "Finish the tutorial dialogue until the pointer aims at the Outlook button",
       "Tap the Outlook button and confirm Outlook opens"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "category": "functional",
@@ -104,6 +104,6 @@
       "Open the Xal view, then tap the Xal button again",
       "Confirm that second tap opens Outlook"
     ],
-    "passes": false
+    "passes": true
   }
 ]
