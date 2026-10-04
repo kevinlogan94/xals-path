@@ -13,7 +13,7 @@ Phaser.GameObjects.GameObjectFactory.prototype.text = function (
   style?: Phaser.Types.GameObjects.Text.TextStyle,
 ) {
   return textFactory.call(this, x, y, text, {
-    resolution: 1,
+    resolution: Math.min(window.devicePixelRatio || 1, 2),
     ...style,
   });
 };
