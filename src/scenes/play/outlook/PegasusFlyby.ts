@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import { createFingerPointer } from '../ui/FingerPointer';
 
-/** Full pegasus-animation.png sheet: 4 columns × 3 rows. */
-const FLY_FRAMES = 12;
+/** pegasus-animation.png: 4-frame glide loop. */
+const FLY_FRAMES = 4;
 const CROSS_SECONDS = 2.5;
 const GAP_SECONDS = 10;
 
@@ -103,7 +103,7 @@ export class PegasusFlyby {
       this.scene.anims.create({
         key: 'pegasus-fly',
         frames: this.scene.anims.generateFrameNumbers('pegasus', { start: 0, end: FLY_FRAMES - 1 }),
-        frameRate: 10,
+        frameRate: 5,
         repeat: -1,
       });
     }
