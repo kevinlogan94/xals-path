@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { DARK_STROKE, FONT } from './constants';
 
-/** Pixel-font bang with stroke so it stays crisp at HUD/nav sizes. */
+/** Red bang on the nav badges. */
 export function createBadge(
   scene: Phaser.Scene,
   x: number,
@@ -12,10 +12,11 @@ export function createBadge(
   const badge = scene.add
     .text(x, y, '!', {
       fontFamily: FONT,
+      fontStyle: 'bold',
       fontSize: `${size}px`,
       color: '#ff3a3a',
       stroke: DARK_STROKE,
-      strokeThickness: 4,
+      strokeThickness: 1,
     })
     .setOrigin(0.5)
     .setVisible(false);

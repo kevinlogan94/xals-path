@@ -56,16 +56,16 @@ export function createTomeRow({
   costIcon.setPosition(textLeft + costIcon.displayWidth / 2, boxH * 0.2);
 
   const nameText = scene.add
-    .text(textLeft, -boxH * 0.22, def.name, darkText('12px', titleColor))
+    .text(textLeft, -boxH * 0.22, def.name, darkText('18px', titleColor))
     .setOrigin(0, 0.5);
   const costText = scene.add
-    .text(textLeft + costIcon.displayWidth + 4, boxH * 0.2, formatNumber(save.dynamicCost), darkText('10px', metaColor))
+    .text(textLeft + costIcon.displayWidth + 4, boxH * 0.2, formatNumber(save.dynamicCost), darkText('16px', metaColor))
     .setOrigin(0, 0.5);
   const ownedText = scene.add
-    .text(textRight, -boxH * 0.2, locked ? `Lvl ${def.unlockLevel}` : String(save.amountOwned), darkText(locked ? '11px' : '16px', titleColor))
+    .text(textRight, -boxH * 0.2, locked ? `Lvl ${def.unlockLevel}` : String(save.amountOwned), darkText(locked ? '17px' : '22px', titleColor))
     .setOrigin(1, 0.5);
   const rateText = scene.add
-    .text(textRight, boxH * 0.22, `${formatNumber(save.dynamicIncrement)}/sec`, darkText('9px', metaColor))
+    .text(textRight, boxH * 0.22, `${formatNumber(save.dynamicIncrement)}/sec`, darkText('15px', metaColor))
     .setOrigin(1, 0.5);
   shrinkToGap(nameText, ownedText);
   shrinkToGap(costText, rateText, true);

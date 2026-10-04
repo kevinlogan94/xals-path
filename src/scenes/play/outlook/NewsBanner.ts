@@ -43,7 +43,7 @@ export class NewsBanner {
     const w = this.scene.scale.width;
     this.bg = this.scene.add.graphics();
     this.label = this.scene.add
-      .text(0, 0, '', whiteText('11px', { align: 'center', wordWrap: { width: w - 56 } }))
+      .text(0, 0, '', whiteText('17px', { align: 'center', wordWrap: { width: w - 56 } }))
       .setOrigin(0.5);
     this.root = this.scene.add.container(w / 2, 196, [this.bg, this.label]).setDepth(22).setVisible(false);
   }

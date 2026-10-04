@@ -1,4 +1,4 @@
-export const FONT = "'Press Start 2P', 'Courier New', monospace";
+export const FONT = 'Nunito, sans-serif';
 export const NAV_H = 104;
 
 export const PANEL_TOP = 96;

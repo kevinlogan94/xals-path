@@ -106,7 +106,8 @@ export class PlayScene extends Phaser.Scene {
     this.hud.build();
     this.toastText = this.add.text(0, 0, '', {
       fontFamily: FONT,
-      fontSize: '12px',
+      fontStyle: 'bold',
+      fontSize: '18px',
       color: '#ffe6a8',
       align: 'center',
       wordWrap: { width: width - 56 },
@@ -284,10 +285,11 @@ export class PlayScene extends Phaser.Scene {
     const floater = this.add
       .text(x, y, msg, {
         fontFamily: FONT,
-        fontSize: '21px',
+        fontStyle: 'bold',
+        fontSize: '26px',
         color: '#fff4c8',
         stroke: '#3a2a10',
-        strokeThickness: 4,
+        strokeThickness: 1,
       })
       .setOrigin(0.5)
       .setDepth(15);

@@ -10,11 +10,11 @@ export function buildLevelUpSplash(
   return (content, api) => {
     const scene = content.scene;
     const items = [
-      scene.add.text(0, 0, `${formatNumber(reward)} influence`, darkText('14px')).setOrigin(0.5),
+      scene.add.text(0, 0, `${formatNumber(reward)} influence`, darkText('20px')).setOrigin(0.5),
       createImageButton(scene, 0, 0, 'ui-btn-green', 'Collect', 120, 40, () => {
         onContinue();
         api.close();
-      }, 1, '11px'),
+      }, 1, '15px'),
     ];
     content.add(items);
     stackSplash(items, api);

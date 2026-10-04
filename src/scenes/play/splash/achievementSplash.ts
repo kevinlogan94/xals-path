@@ -32,7 +32,7 @@ export function buildAchievementSplash(opts: AchievementSplashOpts): SplashConte
     }
     items.push(
       scene.add
-        .text(0, 0, splashDescription(opts.description), darkText('13px', undefined, {
+        .text(0, 0, splashDescription(opts.description), darkText('19px', undefined, {
           align: 'center',
           wordWrap: { width: api.bodyWidth * 0.86 },
         }))
@@ -41,7 +41,7 @@ export function buildAchievementSplash(opts: AchievementSplashOpts): SplashConte
     if (opts.before != null && opts.after != null) {
       items.push(
         scene.add
-          .text(0, 0, `${opts.before}  >>  ${opts.after}`, darkText('11px', undefined, { align: 'center' }))
+          .text(0, 0, `${opts.before}  >>  ${opts.after}`, darkText('17px', undefined, { align: 'center' }))
           .setOrigin(0.5),
       );
     }

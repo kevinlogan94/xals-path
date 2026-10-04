@@ -16,7 +16,7 @@ export function createImageButton(
   height: number,
   onClick?: () => void,
   alpha = 1,
-  fontSize = '8px',
+  fontSize = '14px',
   onPressStart?: () => void,
 ): Phaser.GameObjects.Container {
   const image = scene.add.image(0, 0, key).setDisplaySize(width, height).setAlpha(alpha);

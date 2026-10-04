@@ -37,7 +37,7 @@ export class TitleScene extends Phaser.Scene {
       .rectangle(cx - (barW - 10) / 2, y, 2, FILL_H, 0xffe6a8)
       .setOrigin(0, 0.5);
     const label = this.add
-      .text(cx, y - 22, 'Opening the way', whiteText('8px', { align: 'center' }))
+      .text(cx, y - 22, 'Opening the way', whiteText('14px', { align: 'center' }))
       .setOrigin(0.5);
     this.loadUi = this.add.container(0, 0, [track, well, fill, label]);
 
@@ -73,11 +73,11 @@ export class TitleScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const prompt = this.add
       .text(width / 2, height * 0.48, 'Tap to pass the barrier', {
-        ...whiteText('12px', { align: 'center' }),
+        ...whiteText('18px', { align: 'center' }),
         wordWrap: { width: width - 48 },
       })
       .setOrigin(0.5);
-    this.add.text(width - 12, 16, `v${version}`, darkText('8px')).setOrigin(1, 0);
+    this.add.text(width - 12, 16, `v${version}`, darkText('14px')).setOrigin(1, 0);
     this.tweens.add({
       targets: prompt,
       alpha: 0.55,

@@ -11,7 +11,7 @@ export function buildPortalSplash(): SplashContentBuilder {
           0,
           0,
           'The path closes… The portal opens.',
-          darkText('13px', undefined, { align: 'center', wordWrap: { width: api.bodyWidth * 0.86 } }),
+          darkText('19px', undefined, { align: 'center', wordWrap: { width: api.bodyWidth * 0.86 } }),
         )
         .setOrigin(0.5),
       createImageButton(scene, 0, 0, 'ui-btn-blue', 'Back', 120, 34, api.close),

@@ -47,7 +47,7 @@ export function createRewardCard(
     );
   }
 
-  const title = scene.add.text(textLeft, -boxH / 2 + 12, row.title, darkText('12px')).setOrigin(0, 0);
+  const title = scene.add.text(textLeft, -boxH / 2 + 12, row.title, darkText('18px')).setOrigin(0, 0);
   const prize = chip(scene, textLeft, title.y + title.height + GAP, row.hint, textW);
   const actionY = prize.y + prize.h + GAP + barH / 2;
 
@@ -71,7 +71,7 @@ export function createRewardCard(
         barH,
         onClaim,
         1,
-        '8px',
+        '14px',
         onPressStart,
       ),
     );
@@ -96,7 +96,7 @@ function bar(
   return scene.add.container(0, 0, [
     scene.add.rectangle(x + w / 2, y, w, h, 0xb8b0a0).setStrokeStyle(1, 0x6a6058),
     scene.add.rectangle(x, y, fillW, h, 0x5ecf5a).setOrigin(0, 0.5),
-    scene.add.text(x + w / 2, y, label, darkText('10px')).setOrigin(0.5),
+    scene.add.text(x + w / 2, y, label, darkText('16px')).setOrigin(0.5),
   ]);
 }
 
@@ -112,7 +112,7 @@ function chip(
       x + CHIP_PAD_X,
       y + CHIP_PAD_Y,
       label,
-      darkText('8px', '#3d2a18', { wordWrap: { width: maxW - CHIP_PAD_X * 2 } }),
+      darkText('14px', '#3d2a18', { wordWrap: { width: maxW - CHIP_PAD_X * 2 } }),
     )
     .setOrigin(0, 0);
   const w = Math.min(maxW, t.width + CHIP_PAD_X * 2);

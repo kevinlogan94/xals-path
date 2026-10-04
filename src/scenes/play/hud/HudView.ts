@@ -51,9 +51,9 @@ export class HudView {
     const colX = -RIGHT_W / 2 + INSET;
     const barX = colX + ICON + 5;
 
-    this.influenceAmt = this.scene.add.text(textX, -7, '', whiteText('10px', { strokeThickness: 4 })).setOrigin(0, 0.5);
+    this.influenceAmt = this.scene.add.text(textX, -7, '', whiteText('16px')).setOrigin(0, 0.5);
     this.influenceRate = this.scene.add
-      .text(textX, 9, '', whiteText('8px', { color: '#b8e0a8' }))
+      .text(textX, 9, '', whiteText('14px', { color: '#b8e0a8' }))
       .setOrigin(0, 0.5);
     this.scene.add
       .container(HUD_PAD + LEFT_W / 2, y, [
@@ -64,11 +64,11 @@ export class HudView {
       ])
       .setDepth(20);
 
-    this.levelLabel = this.scene.add.text(colX, -18, '', whiteText('9px', { strokeThickness: 4 })).setOrigin(0, 0.5);
+    this.levelLabel = this.scene.add.text(colX, -18, '', whiteText('15px')).setOrigin(0, 0.5);
     this.manaTrack = this.scene.add.rectangle(barX, 15, BAR_W, 8, 0x1a2218).setOrigin(0, 0.5).setStrokeStyle(1, 0x0a1008);
     this.xpFill = this.scene.add.rectangle(barX + 1, 1, 2, 6, 0x5ecf5a).setOrigin(0, 0.5);
     this.manaFill = this.scene.add.rectangle(barX + 1, 15, 2, 6, 0x6ec8ff).setOrigin(0, 0.5);
-    this.buffCount = this.scene.add.text(barX, 15, '', whiteText('9px', { color: GOLD_TEXT })).setOrigin(0, 0.5).setVisible(false);
+    this.buffCount = this.scene.add.text(barX, 15, '', whiteText('15px', { color: GOLD_TEXT })).setOrigin(0, 0.5).setVisible(false);
     this.exclaim = createBadge(this.scene, colX, -18, 10);
     this.scene.add
       .container(w - HUD_PAD - RIGHT_W / 2, y, [

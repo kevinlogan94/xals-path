@@ -7,6 +7,7 @@ type TextStyle = Phaser.Types.GameObjects.Text.TextStyle;
 function base(fontSize: string, extra: TextStyle): TextStyle {
   return {
     fontFamily: FONT,
+    fontStyle: 'bold',
     fontSize,
     lineSpacing: Math.round(Number.parseInt(fontSize, 10) * 0.5),
     ...extra,
@@ -17,7 +18,7 @@ export function whiteText(fontSize: string, extra: TextStyle = {}): TextStyle {
   return base(fontSize, {
     color: LIGHT_TEXT,
     stroke: DARK_STROKE,
-    strokeThickness: 3,
+    strokeThickness: 1,
     ...extra,
   });
 }

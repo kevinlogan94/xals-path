@@ -232,7 +232,7 @@ export class XalView {
     }
     const regions: RegionId[] = ['meadow', 'river', 'altar'];
     const label = this.scene.add
-      .text(0, -22, 'Portal', whiteText('7px', { color: '#c8b89a' }))
+      .text(0, -22, 'Portal', whiteText('14px', { color: '#c8b89a' }))
       .setOrigin(0.5);
     this.portalBar.add(label);
     regions.forEach((r, i) => {
@@ -253,7 +253,7 @@ export class XalView {
                 this.onPortalTravel?.(r);
               },
           active ? 0.7 : 1,
-          '6px',
+          '12px',
         ),
       );
     });

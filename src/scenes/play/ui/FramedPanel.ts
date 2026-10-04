@@ -47,7 +47,7 @@ export function addFramedPanel(
   panel.add(dim);
   panel.add(scene.add.image(w / 2, cy, 'ui-panel').setDisplaySize(panelW, panelH));
   panel.add(scene.add.image(w / 2, bannerY, 'ui-banner').setDisplaySize(bannerW, bannerH));
-  panel.add(scene.add.text(w / 2, bannerY, title, whiteText('13px', { strokeThickness: 4 })).setOrigin(0.5));
+  panel.add(scene.add.text(w / 2, bannerY, title, whiteText('19px')).setOrigin(0.5));
 
   const listTop = bannerY + bannerH / 2 + 12;
   const listBottom = top + panelH - inset;

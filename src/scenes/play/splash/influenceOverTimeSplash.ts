@@ -17,7 +17,7 @@ export function buildInfluenceOverTimeSplash(
           0,
           0,
           'While you were away, the incantation from your tomes continued to collect influence.',
-          darkText('11px', undefined, { align: 'center', wordWrap: { width: wrap } }),
+          darkText('17px', undefined, { align: 'center', wordWrap: { width: wrap } }),
         )
         .setOrigin(0.5),
       scene.add
@@ -25,13 +25,13 @@ export function buildInfluenceOverTimeSplash(
           0,
           0,
           `${formatNumber(amount)} influence`,
-          darkText('12px', undefined, { align: 'center', wordWrap: { width: wrap } }),
+          darkText('18px', undefined, { align: 'center', wordWrap: { width: wrap } }),
         )
         .setOrigin(0.5),
       createImageButton(scene, 0, 0, 'ui-btn-green', 'Collect', 120, 40, () => {
         onCollect();
         api.close();
-      }, 1, '11px'),
+      }, 1, '15px'),
     ];
     content.add(items);
     stackSplash(items, api);

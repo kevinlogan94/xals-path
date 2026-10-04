@@ -34,7 +34,7 @@ export function renderSettingsPanel({
   const ink = (size: string) => darkText(size);
 
   const section = (label: string) => {
-    panel.add(scene.add.text(listLeft + pad, y, label, ink('9px')).setOrigin(0, 0.5));
+    panel.add(scene.add.text(listLeft + pad, y, label, ink('15px')).setOrigin(0, 0.5));
     y += 30;
   };
 
@@ -45,7 +45,7 @@ export function renderSettingsPanel({
     const speaker = scene.add
       .image(right - stateSlot - icon / 2, y, isMuted ? 'ui-speaker-off' : 'ui-speaker-on')
       .setDisplaySize(icon, icon);
-    const state = scene.add.text(right, y, isMuted ? 'MUTED' : 'ON', ink('8px')).setOrigin(1, 0.5);
+    const state = scene.add.text(right, y, isMuted ? 'MUTED' : 'ON', ink('14px')).setOrigin(1, 0.5);
     const apply = () => {
       isMuted = onToggle();
       speaker.setTexture(isMuted ? 'ui-speaker-off' : 'ui-speaker-on');
@@ -57,7 +57,7 @@ export function renderSettingsPanel({
     hit.on('pointerdown', apply);
     panel.add([
       hit,
-      scene.add.text(listLeft + pad, y, label, ink('8px')).setOrigin(0, 0.5),
+      scene.add.text(listLeft + pad, y, label, ink('14px')).setOrigin(0, 0.5),
       speaker,
       state,
     ]);
@@ -95,13 +95,13 @@ export function renderSettingsPanel({
         btnH,
         fn,
         1,
-        '8px',
+        '14px',
       ),
     );
   });
   y += (btnH + gap) * 2 + 16;
 
   panel.add(
-    createImageButton(scene, midX, y, 'ui-btn-orange', 'New Game', listWidth, 40, onNewGame, 1, '9px'),
+    createImageButton(scene, midX, y, 'ui-btn-orange', 'New Game', listWidth, 40, onNewGame, 1, '15px'),
   );
 }

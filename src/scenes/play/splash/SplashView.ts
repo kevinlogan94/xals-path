@@ -142,7 +142,7 @@ export function createSplash(
       bannerImg.setVisible(!deferChrome);
       overlay.add(bannerImg);
       titleText = scene.add
-        .text(cx, bannerY, title, whiteText('14px', { strokeThickness: 4 }))
+        .text(cx, bannerY, title, whiteText('20px'))
         .setOrigin(0.5)
         .setVisible(!deferChrome);
       titleText.setScale(Math.min(1, (bannerW * 0.62) / titleText.width));

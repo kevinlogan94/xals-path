@@ -233,8 +233,8 @@ function showCreaturePanel(
   }
   portrait.setSize(slot, slot);
 
-  const name = scene.add.text(0, 0, creature.name, darkText('14px')).setOrigin(0.5);
-  const desc = scene.add.text(0, 0, creature.description, darkText('10px')).setOrigin(0.5);
+  const name = scene.add.text(0, 0, creature.name, darkText('20px')).setOrigin(0.5);
+  const desc = scene.add.text(0, 0, creature.description, darkText('16px')).setOrigin(0.5);
   const back = createImageButton(scene, 0, 0, 'ui-btn-blue', 'Back', 120, 34, api.close);
   const items = [portrait, name, desc, back];
   content.add(items);
@@ -242,7 +242,7 @@ function showCreaturePanel(
   const gap = 22;
   const chrome = slot + name.height + back.height + gap * 3;
   const maxDesc = Math.max(48, api.bodyBottom - api.bodyTop - chrome);
-  for (let px = 10; px >= 7; px--) {
+  for (let px = 16; px >= 12; px--) {
     desc.setStyle(darkText(`${px}px`, undefined, { align: 'center', wordWrap: { width: wrap } }));
     if (desc.height <= maxDesc) break;
   }

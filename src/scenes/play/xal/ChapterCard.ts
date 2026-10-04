@@ -50,10 +50,10 @@ export function renderChapterCard({
       -CHAPTER_CARD_H / 2 + wellY,
     ),
     scene.add
-      .text(textLeft, -CHAPTER_CARD_H * 0.18, `Chapter ${chapter.id}`, darkText('10px', titleColor))
+      .text(textLeft, -CHAPTER_CARD_H * 0.18, `Chapter ${chapter.id}`, darkText('16px', titleColor))
       .setOrigin(0, 0.5),
     scene.add
-      .text(textLeft, CHAPTER_CARD_H * 0.18, chapter.name, darkText('11px', titleColor))
+      .text(textLeft, CHAPTER_CARD_H * 0.18, chapter.name, darkText('17px', titleColor))
       .setOrigin(0, 0.5),
   ];
   if (locked) {
@@ -63,7 +63,7 @@ export function renderChapterCard({
           textRight,
           mana ? -CHAPTER_CARD_H * 0.18 : 0,
           `Lvl ${chapter.levelRequirement}`,
-          darkText('10px', metaColor),
+          darkText('16px', metaColor),
         )
         .setOrigin(1, 0.5),
     );
@@ -71,7 +71,7 @@ export function renderChapterCard({
   if (mana) {
     parts.push(
       scene.add
-        .text(textRight, locked ? CHAPTER_CARD_H * 0.18 : 0, '2x mana', darkText('10px', '#1a4a7a'))
+        .text(textRight, locked ? CHAPTER_CARD_H * 0.18 : 0, '2x mana', darkText('16px', '#1a4a7a'))
         .setOrigin(1, 0.5),
     );
   }
