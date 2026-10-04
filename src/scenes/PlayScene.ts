@@ -490,7 +490,7 @@ export class PlayScene extends Phaser.Scene {
       this.xal.hideChapterCard();
       this.xal.refreshPortalBar(false, false, this.ctx.state.region);
       this.maybeStartBarlog();
-      if (requested === tab && !this.barlog.active()) {
+      if (!this.barlog.active()) {
         this.ctx.audio.playRegion(this.ctx.state.region);
       }
       this.applyNavLock();

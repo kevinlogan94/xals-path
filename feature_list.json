@@ -1,0 +1,15 @@
+[
+  {
+    "category": "functional",
+    "description": "When Xal says \"It is done.\" and the region changes, music stays on the current theme until the player opens Outlook. Opening Outlook, including by tapping the current tab again, then plays that region's track. This is intentional.",
+    "steps": [
+      "Play through a scene until Xal says \"It is done.\" and the region changes",
+      "Confirm the outlook picture updates while the current theme keeps playing",
+      "Open Outlook by tapping the Outlook button",
+      "Confirm the new region's music starts",
+      "Repeat the scene change, then open Outlook by tapping the current tab again",
+      "Confirm the new region's music starts the same way"
+    ],
+    "passes": true
+  }
+]
