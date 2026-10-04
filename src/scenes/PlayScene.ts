@@ -475,6 +475,7 @@ export class PlayScene extends Phaser.Scene {
     }
 
     if (!force && this.tab === tab) {
+      if (!this.ctx.state.tutorialCompleted) return;
       tab = 'outlook';
     }
 
