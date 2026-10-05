@@ -24,6 +24,32 @@ export function createBadge(
   return badge;
 }
 
+const BASE_Y = 'badgeBaseY';
+
 export function showBadge(badge: Phaser.GameObjects.Text | undefined, visible: boolean): void {
-  badge?.setVisible(visible);
+  if (!badge) return;
+  const was = badge.visible;
+  badge.setVisible(visible);
+  if (!visible) {
+    badge.scene.tweens.killTweensOf(badge);
+    const base = badge.getData(BASE_Y) as number | undefined;
+    if (base !== undefined) badge.y = base;
+    return;
+  }
+  if (!was) bounce(badge);
+}
+
+function bounce(badge: Phaser.GameObjects.Text): void {
+  const base = (badge.getData(BASE_Y) as number | undefined) ?? badge.y;
+  badge.setData(BASE_Y, base);
+  badge.scene.tweens.killTweensOf(badge);
+  badge.y = base;
+  badge.scene.tweens.add({
+    targets: badge,
+    y: base - 4,
+    duration: 420,
+    yoyo: true,
+    repeat: -1,
+    ease: 'Sine.easeInOut',
+  });
 }
