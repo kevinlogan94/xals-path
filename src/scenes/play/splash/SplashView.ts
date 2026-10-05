@@ -46,18 +46,35 @@ function splashItemH(obj: Phaser.GameObjects.GameObject): number {
   return sized.displayHeight || sized.height || 0;
 }
 
-/** Center a column in the splash body with even gaps. */
+/** Center a column in the splash body with even gaps. Shrink only when it overflows. */
 export function stackSplash(
   items: Phaser.GameObjects.GameObject[],
   api: SplashContentApi,
   gap = SPLASH_GAP,
 ): void {
-  const hs = items.map(splashItemH);
-  const total = hs.reduce((a, b) => a + b, 0) + gap * Math.max(0, items.length - 1);
-  let y = api.bodyTop + Math.max(0, (api.bodyBottom - api.bodyTop - total) / 2);
+  const available = api.bodyBottom - api.bodyTop;
+  const raw = items.map(splashItemH);
+  const nGaps = Math.max(0, items.length - 1);
+  const contentH = raw.reduce((a, b) => a + b, 0);
+  let g = gap;
+  let total = contentH + g * nGaps;
+  if (total > available && nGaps > 0) {
+    g = Math.max(8, (available - contentH) / nGaps);
+    total = contentH + g * nGaps;
+  }
+  let fit = 1;
+  if (total > available && total > 0) {
+    fit = available / total;
+    g *= fit;
+    total = available;
+  }
+  const hs = raw.map((h) => h * fit);
+  let y = api.bodyTop + Math.max(0, (available - total) / 2);
   items.forEach((item, i) => {
-    (item as Phaser.GameObjects.Image).setY(y + hs[i] / 2);
-    y += hs[i] + gap;
+    const go = item as Phaser.GameObjects.Container;
+    if (fit !== 1) go.setScale(go.scaleX * fit, go.scaleY * fit);
+    go.setY(y + hs[i] / 2);
+    y += hs[i] + g;
   });
 }
 
