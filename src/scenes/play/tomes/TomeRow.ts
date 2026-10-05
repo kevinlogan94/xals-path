@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { HelperDef, HelperSave } from '../../../types';
 import { formatNumber } from '../../../utils/format';
-import { fitInBox } from '../ui/fit';
+import { fitInBox, lockedEmblem } from '../ui/fit';
 import { darkText } from '../ui/textStyles';
 
 interface TomeRowConfig {
@@ -35,13 +35,12 @@ export function createTomeRow({
   const wellY = ((46 + 205) / 2 / 260) * boxH;
   const wellSize = innerW * (160 / 840);
   const avatarMax = wellSize - wellSize * 0.1 * 2;
-  const lockMax = avatarMax * (130 / 112);
   const avatarX = -innerW / 2 + wellX;
   const avatarY = -boxH / 2 + wellY;
   const emblemKey = `tome-${def.id}`;
   let avatar: Phaser.GameObjects.GameObject;
-  if (locked && scene.textures.exists('ui-lock')) {
-    avatar = fitInBox(scene, 'ui-lock', lockMax, lockMax).setPosition(avatarX, avatarY);
+  if (locked && scene.textures.exists(emblemKey)) {
+    avatar = lockedEmblem(scene, emblemKey, avatarMax).setPosition(avatarX, avatarY);
   } else if (scene.textures.exists(emblemKey)) {
     avatar = fitInBox(scene, emblemKey, avatarMax, avatarMax).setPosition(avatarX, avatarY);
   } else {

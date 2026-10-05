@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import type { ChapterDef } from '../../../types';
-import { fitInBox } from '../ui/fit';
+import { fitInBox, lockedEmblem } from '../ui/fit';
 import { darkText } from '../ui/textStyles';
 
 export const CHAPTER_CARD_H = 88;
@@ -45,7 +45,10 @@ export function renderChapterCard({
       cardW,
       CHAPTER_CARD_H,
     ),
-    fitInBox(scene, locked ? 'ui-lock' : 'ui-portal-nav', wellSize * 0.7, wellSize * 0.7).setPosition(
+    (locked
+      ? lockedEmblem(scene, 'ui-portal-nav', wellSize * 0.7)
+      : fitInBox(scene, 'ui-portal-nav', wellSize * 0.7, wellSize * 0.7)
+    ).setPosition(
       -cardW / 2 + wellX,
       -CHAPTER_CARD_H / 2 + wellY,
     ),
