@@ -26,7 +26,6 @@ new Phaser.Game({
   type: Phaser.AUTO,
   parent: parent ?? undefined,
   backgroundColor: '#0d1a0d',
-  resolution: Math.min(window.devicePixelRatio || 1, 2),
   scale: {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
