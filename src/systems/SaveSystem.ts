@@ -215,7 +215,7 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
               'TomeAchievement',
             ],
           },
-          [1, 2, 3, 4, 5],
+          [1, 2, 3, 4],
           {
             nature: 12,
             lightning: 8,
