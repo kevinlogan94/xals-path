@@ -54,6 +54,187 @@ function createDefaultSave(): GameSave {
   };
 }
 
+/** XP required to leave `level`, matching EconomySystem.levelUp's multiply. */
+function xpRequiredAt(level: number): number {
+  let xp = economy.levelXpStart;
+  for (let i = 1; i < level; i++) xp *= economy.levelXpMultiplier;
+  return xp;
+}
+
+function chaptersViewed(ids: number[]): GameSave['chapters'] {
+  return [1, 2, 3, 4, 5, 6, 7].map((id) => ({
+    id,
+    sceneViewed: ids.includes(id),
+  }));
+}
+
+function buyHelpers(save: GameSave, owned: Record<string, number>): void {
+  const mult = helpersData.costMultiplier as number;
+  for (const [id, times] of Object.entries(owned)) {
+    const h = save.helpers.find((x) => x.id === id);
+    if (!h) continue;
+    for (let i = 0; i < times; i++) {
+      h.amountOwned += 1;
+      h.dynamicCost = Math.round(h.dynamicCost * mult);
+      save.achievements.helperCount += 1;
+    }
+  }
+  const a = save.achievements;
+  if (a.helperCount >= a.helperGoal) {
+    a.helperCount -= a.helperGoal;
+    a.helperGoal *= 2;
+    for (const h of save.helpers) h.dynamicIncrement *= economy.helperIncrementMultiplier;
+    a.achievementCount += 1;
+  }
+}
+
+function claimClicker(save: GameSave, times: number, leftover: number): void {
+  for (let i = 0; i < times; i++) {
+    save.clickerIncrement *= economy.clickerIncrementMultiplier;
+    save.achievements.clickerGoal *= 2;
+    save.achievements.achievementCount += 1;
+  }
+  save.achievements.clickerCount = leftover;
+}
+
+function setMana(save: GameSave, level: number): void {
+  save.manaLevel = level;
+  save.manaMax = 100 * level;
+  save.mana = save.manaMax;
+}
+
+function devSave(
+  patch: Pick<GameSave, 'playerLevel' | 'region' | 'unlockedRegions'> &
+    Partial<GameSave>,
+  viewed: number[],
+  owned: Record<string, number>,
+): GameSave {
+  const save = createDefaultSave();
+  const experienceRequired = xpRequiredAt(patch.playerLevel);
+  Object.assign(save, patch, {
+    tutorialCompleted: true,
+    experienceRequired,
+    chapters: chaptersViewed(viewed),
+    totalInfluenceEarned: patch.totalInfluenceEarned ?? 0,
+  });
+  buyHelpers(save, owned);
+  return save;
+}
+
+/** Dev jumps. tutorialCompleted so SaveSystem.save will persist them. */
+export function devPresets(): { label: string; save: () => GameSave }[] {
+  return [
+    {
+      label: 'First blessing',
+      save: () => {
+        const save = devSave(
+          {
+            playerLevel: 2,
+            region: 'meadow',
+            unlockedRegions: ['meadow'],
+            influence: 80,
+            buffEverCollected: false,
+            buffOfferPending: true,
+            buffedThisLevel: true,
+            buffClickProgress: economy.buffClickThreshold,
+            newsShown: ['Outlook', 'Spells'],
+          },
+          [1],
+          { nature: 4 },
+        );
+        claimClicker(save, 1, 40);
+        return save;
+      },
+    },
+    {
+      label: 'Enter river',
+      save: () => {
+        const save = devSave(
+          {
+            playerLevel: 10,
+            region: 'meadow',
+            unlockedRegions: ['meadow'],
+            influence: 280,
+            buffEverCollected: true,
+            newsShown: ['Outlook', 'Spells', 'Xal', 'Tomes', 'ClickerAchievement'],
+          },
+          [1, 2],
+          { nature: 8, lightning: 5, earth: 4, water: 1 },
+        );
+        setMana(save, 2);
+        claimClicker(save, 2, 80);
+        return save;
+      },
+    },
+    {
+      label: 'Enter altar',
+      save: () => {
+        const save = devSave(
+          {
+            playerLevel: 20,
+            region: 'river',
+            unlockedRegions: ['meadow', 'river'],
+            influence: 900,
+            buffEverCollected: true,
+            newsShown: [
+              'Outlook',
+              'Spells',
+              'Xal',
+              'Tomes',
+              'ClickerAchievement',
+              'TomeAchievement',
+            ],
+          },
+          [1, 2, 3],
+          { nature: 10, lightning: 7, earth: 6, water: 6, mystic: 4, air: 3 },
+        );
+        setMana(save, 3);
+        claimClicker(save, 2, 120);
+        return save;
+      },
+    },
+    {
+      label: 'Into Barlog',
+      save: () => {
+        const experienceRequired = xpRequiredAt(29);
+        const save = devSave(
+          {
+            playerLevel: 29,
+            region: 'altar',
+            unlockedRegions: ['meadow', 'river', 'altar'],
+            totalInfluenceEarned: experienceRequired,
+            influence: 2500,
+            portalUnlocked: false,
+            buffEverCollected: true,
+            newsShown: [
+              'Outlook',
+              'Spells',
+              'Xal',
+              'Tomes',
+              'ClickerAchievement',
+              'TomeAchievement',
+            ],
+          },
+          [1, 2, 3, 4, 5],
+          {
+            nature: 12,
+            lightning: 8,
+            earth: 7,
+            water: 8,
+            mystic: 6,
+            air: 5,
+            fire: 5,
+            death: 3,
+          },
+        );
+        setMana(save, 4);
+        claimClicker(save, 3, 200);
+        return save;
+      },
+    },
+  ];
+}
+
 function finite(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }

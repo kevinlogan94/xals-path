@@ -724,6 +724,10 @@ export class PlayScene extends Phaser.Scene {
       ctx: this.ctx,
       onCredits: () => showCreditsModal(this, this.panel),
       onNewGame: () => this.onNewGame(),
+      onJump: (state) => {
+        this.ctx.replace(state);
+        this.restartPlay();
+      },
     });
   }
 
@@ -760,9 +764,13 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private confirmNewGame(): void {
+    this.ctx.reset();
+    this.restartPlay();
+  }
+
+  private restartPlay(): void {
     this.barlog.hide();
     this.news.hide();
-    this.ctx.reset();
     this.lastBuff = 0;
     this.levelJinglePlayed = false;
     this.shopScroll = 0;

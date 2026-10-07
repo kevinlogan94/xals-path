@@ -38,6 +38,16 @@ export class GameContext {
     this.tutorial.reset();
   }
 
+  /** Swap the live save and persist it. Caller restarts play chrome. */
+  replace(state: GameSave): void {
+    this.state = state;
+    this.offlineGained = 0;
+    this.story.reset();
+    this.spawn.clear();
+    this.tutorial.reset();
+    this.persist();
+  }
+
   private trackLogin(): void {
     const today = new Date().toISOString().slice(0, 10);
     if (this.state.achievements.lastLoginDay !== today) {

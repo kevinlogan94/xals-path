@@ -1,8 +1,23 @@
 import Phaser from 'phaser';
 import type { GameContext } from '../../../game/GameContext';
+import { devPresets } from '../../../systems/SaveSystem';
+import type { GameSave } from '../../../types';
 import { addFramedPanel } from '../ui/FramedPanel';
 import { createImageButton } from '../ui/ImageButton';
 import { darkText } from '../ui/textStyles';
+
+const DEV_KEY = 'xals-path-dev';
+
+function devToolsUnlocked(): boolean {
+  try {
+    if (new URLSearchParams(window.location.search).get('dev') === '1') {
+      localStorage.setItem(DEV_KEY, '1');
+    }
+    return localStorage.getItem(DEV_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
 
 const GITHUB = 'https://github.com/kevinlogan94/xals-path';
 const COFFEE = 'https://buymeacoffee.com/kevinmlogan';
@@ -14,6 +29,7 @@ interface SettingsPanelConfig {
   ctx: GameContext;
   onCredits: () => void;
   onNewGame: () => void;
+  onJump: (state: GameSave) => void;
 }
 
 const openUrl = (url: string) => () => window.open(url, '_blank', 'noopener,noreferrer');
@@ -24,6 +40,7 @@ export function renderSettingsPanel({
   ctx,
   onCredits,
   onNewGame,
+  onJump,
 }: SettingsPanelConfig): void {
   const { listTop, listLeft, listWidth } = addFramedPanel(scene, panel, 'Settings');
   const midX = listLeft + listWidth / 2;
@@ -104,4 +121,30 @@ export function renderSettingsPanel({
   panel.add(
     createImageButton(scene, midX, y, 'ui-btn-orange', 'New Game', listWidth, 40, onNewGame, 1, '15px'),
   );
+
+  if (!devToolsUnlocked()) return;
+  y += 36;
+  section('Testing');
+  panel.add(
+    scene.add.text(listLeft + pad, y, 'Jump to a point in the game.', ink('13px')).setOrigin(0, 0.5),
+  );
+  y += 40;
+  devPresets().forEach((preset, i) => {
+    const row = Math.floor(i / 2);
+    const col = i % 2;
+    panel.add(
+      createImageButton(
+        scene,
+        col ? colR : colL,
+        y + row * (btnH + gap),
+        'ui-btn-orange',
+        preset.label,
+        btnW,
+        btnH,
+        () => onJump(preset.save()),
+        1,
+        '12px',
+      ),
+    );
+  });
 }
