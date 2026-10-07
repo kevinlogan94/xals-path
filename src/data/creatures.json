@@ -1,0 +1,74 @@
+{
+  "creatures": [
+    {
+      "id": "elk",
+      "name": "Elk",
+      "helperId": "nature",
+      "region": "meadow",
+      "description": "In Native American Mythology, many tribes associated the elk with Love. Considered guardians of women, they were said even to lead women back to their homes if captured by enemy warriors."
+    },
+    {
+      "id": "raiju",
+      "name": "Raiju",
+      "helperId": "lightning",
+      "region": "meadow",
+      "description": "The Raiju are the faithful companions of the God of Lightning. Generally, they are calm creatures that become fierce predators in thunderstorms."
+    },
+    {
+      "id": "basilisk",
+      "name": "Basilisk",
+      "helperId": "earth",
+      "region": "meadow",
+      "description": "The Basilisk is a magical serpent bred by dark mages. The snake can take down any living thing with a single strike, making it a king among reptiles."
+    },
+    {
+      "id": "hippocampus",
+      "name": "Hippocampus",
+      "helperId": "water",
+      "region": "river",
+      "description": "The Hippocampus is commonly spotted pulling the Chariot of the Greek God of the sea, Poseidon. The water horse is best known for its fierce loyalty and ability to calm soldiers' minds before going off into battle."
+    },
+    {
+      "id": "bluecap",
+      "name": "Bluecap",
+      "helperId": "mystic",
+      "region": "river",
+      "description": "The Bluecap is a mythical creature from English Folklore. Legend has it; if you treat them with respect, they will lead you to rich deposits of minerals."
+    },
+    {
+      "id": "griffin",
+      "name": "Griffin",
+      "helperId": "air",
+      "region": "river",
+      "description": "The Griffin has the head and wings of an eagle. In comparison, the rest of its body is that of a lion. With this creature having the qualities of the king of beasts and birds, it is quite powerful."
+    },
+    {
+      "id": "abraxas",
+      "name": "Abraxas",
+      "helperId": "fire",
+      "region": "altar",
+      "description": "The Fire Horse is the immortal horse of the sun-god Helios in Greek Mythology. The fire horse is the most unconventional and passionate of all the elemental horses, making them keen leaders."
+    },
+    {
+      "id": "wraith",
+      "name": "Wraith",
+      "helperId": "death",
+      "region": "altar",
+      "description": "The Wraith is an undead creature from Scottish Folklore. Wraith's are souls that have recently passed on that take pleasure from harming living creatures."
+    },
+    {
+      "id": "phoenix",
+      "name": "Phoenix",
+      "helperId": "rebirth",
+      "region": "altar",
+      "description": "The Phoenix is known for being a positive omen that's associated with the sun. The sunbird can reincarnate itself from its ashes after death as well as heal any wound."
+    },
+    {
+      "id": "voidSpawn",
+      "name": "Void Spawn",
+      "helperId": "void",
+      "region": "altar",
+      "description": "This monster comes from the darkest corner of known reality. Many people spend their lives hoping never to see one."
+    }
+  ]
+}

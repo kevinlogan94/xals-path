@@ -1,0 +1,1452 @@
+{
+  "chapters": [
+    {
+      "id": 1,
+      "name": "The beginning",
+      "levelRequirement": 1,
+      "speaker": "xal",
+      "quotes": [
+        {
+          "text": "What?",
+          "expression": "shocked"
+        },
+        {
+          "text": "How did you...",
+          "expression": "shocked"
+        },
+        {
+          "text": "No one should be able to pass through that barrier.",
+          "expression": "shocked"
+        },
+        {
+          "text": "Unless...",
+          "expression": "shocked"
+        },
+        {
+          "text": "Wait. Did he send you?",
+          "expression": "shocked"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "No. You don't have his mark.",
+          "expression": "generic"
+        },
+        {
+          "text": "Then how?",
+          "expression": "shocked"
+        },
+        {
+          "text": "Forgive me. It's been... difficult to think clearly lately.",
+          "expression": "sad"
+        },
+        {
+          "text": "Too much time alone in this tower, I suppose.",
+          "expression": "generic"
+        },
+        {
+          "text": "I am Xal. Keeper of the wilds. Protector of balance.",
+          "expression": "sad"
+        },
+        {
+          "text": "At least, I was.",
+          "expression": "generic"
+        },
+        {
+          "text": "For ages beyond counting, I've held this duty.",
+          "expression": "generic"
+        },
+        {
+          "text": "Watching, protecting, maintaining order.",
+          "expression": "sad"
+        },
+        {
+          "text": "And now everything is falling apart.",
+          "expression": "sad"
+        },
+        {
+          "text": "There's a corruption spreading through the creatures of this realm.",
+          "expression": "sad"
+        },
+        {
+          "text": "I can sense them. Infected, suffering, scattered across the lands.",
+          "expression": "sad"
+        },
+        {
+          "text": "Every moment I waste, more fall to this sickness.",
+          "expression": "sad"
+        },
+        {
+          "text": "I should be out there. I should be saving them.",
+          "expression": "sadSide"
+        },
+        {
+          "text": "But I can't leave. Not anymore.",
+          "expression": "sadSide"
+        },
+        {
+          "text": "The barrier keeps me safe, but it keeps me trapped.",
+          "expression": "generic"
+        },
+        {
+          "text": "If I step beyond these walls... I'll lose everything.",
+          "expression": "generic"
+        },
+        {
+          "text": "I need someone else. Someone who can move freely.",
+          "expression": "genericDown"
+        },
+        {
+          "text": "Someone who can reach the creatures before it's too late.",
+          "expression": "genericDown"
+        },
+        {
+          "text": "You.",
+          "expression": "generic"
+        },
+        {
+          "text": "I don't know why you're here, but perhaps...",
+          "expression": "generic"
+        },
+        {
+          "text": "Perhaps this was meant to happen.",
+          "expression": "generic"
+        },
+        {
+          "text": "I can give you what you need. A portion of my power.",
+          "expression": "generic"
+        },
+        {
+          "text": "The ability to draw out the corruption, to cleanse what's been tainted.",
+          "expression": "generic"
+        },
+        {
+          "text": "The essence you extract will flow back here, sustaining the work.",
+          "expression": "generic"
+        },
+        {
+          "text": "When a creature is cleansed, its pure form will return to safety.",
+          "expression": "generic"
+        },
+        {
+          "text": "Away from this spreading rot.",
+          "expression": "generic"
+        },
+        {
+          "text": "This power I'm giving you... it's considerable.",
+          "expression": "generic"
+        },
+        {
+          "text": "Most would spend lifetimes hoping for a fraction of it.",
+          "expression": "generic"
+        },
+        {
+          "text": "Once you take it, the work begins immediately.",
+          "expression": "generic"
+        },
+        {
+          "text": "You'll feel the pull of each infected creature, the urgency.",
+          "expression": "generic"
+        },
+        {
+          "text": "Your hands... let me see your hands.",
+          "expression": "generic"
+        },
+        {
+          "text": "Yes. These will do.",
+          "expression": "generic"
+        },
+        {
+          "text": "Take it. Take what I'm offering.",
+          "expression": "generic"
+        },
+        {
+          "text": "Channel it through each corrupted creature you find.",
+          "expression": "generic"
+        },
+        {
+          "text": "The land will remember this. I will remember this.",
+          "expression": "generic"
+        },
+        {
+          "text": "Strange that it should come to this.",
+          "expression": "generic"
+        },
+        {
+          "text": "Trusting a stranger with the one thing I've guarded most.",
+          "expression": "generic"
+        },
+        {
+          "text": "But what choice do I have?",
+          "expression": "generic"
+        },
+        {
+          "text": "The creatures are suffering. That's what matters.",
+          "expression": "generic"
+        },
+        {
+          "text": "That's all that matters.",
+          "expression": "generic"
+        },
+        {
+          "text": "Now go. There's no time to waste.",
+          "expression": "generic"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "A Blinding Need",
+      "levelRequirement": 5,
+      "speaker": "xal",
+      "quotes": [
+        {
+          "text": "You're back.",
+          "expression": "generic"
+        },
+        {
+          "text": "Good. The work is progressing.",
+          "expression": "generic"
+        },
+        {
+          "text": "I can feel the essence flowing back, sustaining the barrier.",
+          "expression": "generic"
+        },
+        {
+          "text": "Each creature you cleanse strengthens what I've built here.",
+          "expression": "sad"
+        },
+        {
+          "text": "My thoughts scatter more easily now. Forgive me.",
+          "expression": "generic"
+        },
+        {
+          "text": "Tell me, do you feel the power I gave you? How it pulls at you?",
+          "expression": "generic"
+        },
+        {
+          "text": "That drive, that hunger. It's necessary for the work to be completed in time.",
+          "expression": "angry"
+        },
+        {
+          "text": "Time is the enemy now. His patience has limits.",
+          "expression": "generic"
+        },
+        {
+          "text": "Barlog. The Paragon of Nature. My predecessor. My benefactor.",
+          "expression": "angry"
+        },
+        {
+          "text": "He chose me for this role, ten thousand years ago.",
+          "expression": "angry"
+        },
+        {
+          "text": "Lifted me from nothing and made me what I am.",
+          "expression": "angry"
+        },
+        {
+          "text": "And now he wants it back.",
+          "expression": "sad"
+        },
+        {
+          "text": "Through suffering. Through this corruption he's seeded in the land.",
+          "expression": "sadSide"
+        },
+        {
+          "text": "Every infected creature is a message meant for me.",
+          "expression": "sadSide"
+        },
+        {
+          "text": "\"Come out. Face me. Surrender what I gave you.\"",
+          "expression": "sadSide"
+        },
+        {
+          "text": "But I can't.",
+          "expression": "shocked"
+        },
+        {
+          "text": "If I leave this tower, the power transfers. Ancient law.",
+          "expression": "generic"
+        },
+        {
+          "text": "Everything I am disappears.",
+          "expression": "generic"
+        },
+        {
+          "text": "What would I even be without this? Just a man. Ordinary. Forgotten.",
+          "expression": "generic"
+        },
+        {
+          "text": "So I remain here. Protected. Trapped. And the corruption spreads.",
+          "expression": "generic"
+        },
+        {
+          "text": "He thought the barrier would keep everyone out.",
+          "expression": "generic"
+        },
+        {
+          "text": "But you passed through. You're not bound by the old laws.",
+          "expression": "generic"
+        },
+        {
+          "text": "Through you, I can cleanse the land without leaving.",
+          "expression": "generic"
+        },
+        {
+          "text": "Through you, I can prove I'm still worthy of this power.",
+          "expression": "generic"
+        },
+        {
+          "text": "He'll have to accept that I'm not ready to step down.",
+          "expression": "generic"
+        },
+        {
+          "text": "The creatures will be safe. The land will be restored. And I can continue.",
+          "expression": "generic"
+        },
+        {
+          "text": "Is that selfish? Perhaps.",
+          "expression": "generic"
+        },
+        {
+          "text": "But someone must maintain the balance. Why shouldn't it be me?",
+          "expression": "generic"
+        },
+        {
+          "text": "I've given everything to this duty.",
+          "expression": "generic"
+        },
+        {
+          "text": "Keep progressing. The more you cleanse, the stronger we become.",
+          "expression": "generic"
+        },
+        {
+          "text": "I'll grant you greater access to the power as you prove yourself.",
+          "expression": "generic"
+        },
+        {
+          "text": "Just remember, this isn't yours to keep.",
+          "expression": "generic"
+        },
+        {
+          "text": "When this is finished, when Barlog finally understands...",
+          "expression": "generic"
+        },
+        {
+          "text": "Everything returns to how it should be.",
+          "expression": "generic"
+        },
+        {
+          "text": "You have your role. I have mine.",
+          "expression": "generic"
+        },
+        {
+          "text": "Let's both play our parts well.",
+          "expression": "generic"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Searching",
+      "levelRequirement": 10,
+      "speaker": "xal",
+      "quotes": [
+        {
+          "text": "Tell me something.",
+          "expression": "generic"
+        },
+        {
+          "text": "When you look at the creatures, what do you see?",
+          "expression": "generic"
+        },
+        {
+          "text": "I see beauty, power, potential. Every one is a thread in the great weave.",
+          "expression": "generic"
+        },
+        {
+          "text": "Remove even one thread, and the pattern begins to unravel.",
+          "expression": "generic"
+        },
+        {
+          "text": "That's what balance means. What I've protected all this time.",
+          "expression": "angry"
+        },
+        {
+          "text": "Yet Barlog would tear through them just to make a point.",
+          "expression": "angry"
+        },
+        {
+          "text": "What kind of protector uses the innocent as leverage?",
+          "expression": "angry"
+        },
+        {
+          "text": "It's monstrous.",
+          "expression": "angry"
+        },
+        {
+          "text": "They act as if the world revolves around them.",
+          "expression": "generic"
+        },
+        {
+          "text": "As if their desires justify any means.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "sad"
+        },
+        {
+          "text": "I was celebrated once, you know. My name spoken with reverence.",
+          "expression": "sad"
+        },
+        {
+          "text": "Love, though... love is a curious thing. It blinds you to someone's true nature.",
+          "expression": "sad"
+        },
+        {
+          "text": "They smile and offer you power, purpose, a place in the world.",
+          "expression": "sadSide"
+        },
+        {
+          "text": "But underneath? They're waiting for the moment you're no longer useful.",
+          "expression": "generic"
+        },
+        {
+          "text": "Can you blame someone for resisting that?",
+          "expression": "genericDown"
+        },
+        {
+          "text": "For holding onto the one thing that gives their existence meaning?",
+          "expression": "genericDown"
+        },
+        {
+          "text": "I've done this for millennia. Successfully.",
+          "expression": "generic"
+        },
+        {
+          "text": "And now, because of some arbitrary cycle, I should just step aside?",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "Forgive me. I shouldn't burden you with this.",
+          "expression": "generic"
+        },
+        {
+          "text": "Your work has been exceptional. The Meadows are nearly cleansed.",
+          "expression": "generic"
+        },
+        {
+          "text": "We should press forward. The Galia River lies beyond.",
+          "expression": "generic"
+        },
+        {
+          "text": "The corruption runs deeper there. More essential.",
+          "expression": "genericDown"
+        },
+        {
+          "text": "Let me adjust our connection. Give you access to more of the power.",
+          "expression": "generic"
+        },
+        {
+          "text": "These hands... they used to command entire forests with a gesture.",
+          "expression": "generic"
+        },
+        {
+          "text": "Now they tremble when I read. Strange, how things change.",
+          "expression": "generic"
+        },
+        {
+          "text": "Hold still. This will only take a moment.",
+          "expression": "generic"
+        },
+        {
+          "text": "It is done.",
+          "expression": "generic"
+        },
+        {
+          "text": "The river stretches before us now.",
+          "expression": "generic"
+        },
+        {
+          "text": "Its creatures need you.",
+          "expression": "generic"
+        },
+        {
+          "text": "Keep moving forward.",
+          "expression": "generic"
+        },
+        {
+          "text": "That's all either of us can do now.",
+          "expression": "generic"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Find and Take",
+      "levelRequirement": 20,
+      "speaker": "xal",
+      "quotes": [
+        {
+          "text": "You're progressing quickly. Too quickly, perhaps.",
+          "expression": "generic"
+        },
+        {
+          "text": "I keep waiting for something to change.",
+          "expression": "generic"
+        },
+        {
+          "text": "For Barlog to respond. To relent. To acknowledge what we've accomplished.",
+          "expression": "generic"
+        },
+        {
+          "text": "But there's nothing. As if he doesn't even notice.",
+          "expression": "generic"
+        },
+        {
+          "text": "Or worse, as if he expected this all along.",
+          "expression": "sad"
+        },
+        {
+          "text": "...",
+          "expression": "sad"
+        },
+        {
+          "text": "Do you know what it's like to owe someone everything?",
+          "expression": "sad"
+        },
+        {
+          "text": "Barlog found me when I had nothing.",
+          "expression": "sadSide"
+        },
+        {
+          "text": "No home. No purpose. No future worth living.",
+          "expression": "happy"
+        },
+        {
+          "text": "The world had cast me aside like refuse.",
+          "expression": "happy"
+        },
+        {
+          "text": "But he saw something in me. Potential, he called it.",
+          "expression": "generic"
+        },
+        {
+          "text": "He offered me this power, this duty, this meaning.",
+          "expression": "generic"
+        },
+        {
+          "text": "For the first time, I mattered.",
+          "expression": "generic"
+        },
+        {
+          "text": "Can you understand that? Being saved from oblivion?",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "So yes, defying him feels wrong.",
+          "expression": "generic"
+        },
+        {
+          "text": "Like betraying the only person who ever believed in me.",
+          "expression": "generic"
+        },
+        {
+          "text": "But what he's asking is that I cease to exist.",
+          "expression": "generic"
+        },
+        {
+          "text": "That I willingly dissolve back into nothing.",
+          "expression": "generic"
+        },
+        {
+          "text": "\"It's time. The cycle must continue.\"",
+          "expression": "generic"
+        },
+        {
+          "text": "As if I'm just... interchangeable.",
+          "expression": "generic"
+        },
+        {
+          "text": "Does that seem right to you?",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "The lands are being cleansed. You've done well.",
+          "expression": "generic"
+        },
+        {
+          "text": "This should have been enough. Should have proved my worth.",
+          "expression": "generic"
+        },
+        {
+          "text": "But I still haven't seen him. Haven't heard from him.",
+          "expression": "generic"
+        },
+        {
+          "text": "Unless... he's moved to the source itself.",
+          "expression": "generic"
+        },
+        {
+          "text": "The Sci Nai Mountains. Where his altar stands.",
+          "expression": "generic"
+        },
+        {
+          "text": "That's where he must be. Still creating more corruption.",
+          "expression": "generic"
+        },
+        {
+          "text": "Damn him. We have to keep going.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "Wait. Is it worth it? What am I doing?",
+          "expression": "generic"
+        },
+        {
+          "text": "I barely recognize myself anymore.",
+          "expression": "generic"
+        },
+        {
+          "text": "These texts I've studied for centuries. I can barely focus on them now.",
+          "expression": "generic"
+        },
+        {
+          "text": "My reflection in the glass... it's like looking at a stranger.",
+          "expression": "generic"
+        },
+        {
+          "text": "But I can't stop. You understand that, don't you?",
+          "expression": "generic"
+        },
+        {
+          "text": "If I stop, if I give in, then what am I?",
+          "expression": "generic"
+        },
+        {
+          "text": "What am I without this purpose? Without this power?",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "Nothing. I'd be nothing.",
+          "expression": "generic"
+        },
+        {
+          "text": "We press on. We have to.",
+          "expression": "generic"
+        },
+        {
+          "text": "One more region. One more push.",
+          "expression": "generic"
+        },
+        {
+          "text": "If we clear the mountains, he'll have no choice but to stop.",
+          "expression": "generic"
+        },
+        {
+          "text": "To admit that I'm still capable. Still worthy.",
+          "expression": "generic"
+        },
+        {
+          "text": "Let me transfer the last of what I can spare.",
+          "expression": "generic"
+        },
+        {
+          "text": "It's risky. Dangerous, even.",
+          "expression": "generic"
+        },
+        {
+          "text": "But if we don't finish this now...",
+          "expression": "generic"
+        },
+        {
+          "text": "Hold still.",
+          "expression": "generic"
+        },
+        {
+          "text": "It is done.",
+          "expression": "generic"
+        },
+        {
+          "text": "The Sci Nai Mountains.",
+          "expression": "generic"
+        },
+        {
+          "text": "This is where it ends. One way or another.",
+          "expression": "generic"
+        },
+        {
+          "text": "Don't fail me now.",
+          "expression": "generic"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Taken but Not Found",
+      "levelRequirement": 30,
+      "speaker": "xal",
+      "quotes": [
+        {
+          "text": "What? Already?",
+          "expression": "shocked"
+        },
+        {
+          "text": "That's not possible. The mountains should have taken longer.",
+          "expression": "shocked"
+        },
+        {
+          "text": "Unless there was less corruption than I thought. Unless...",
+          "expression": "shocked"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "It didn't work.",
+          "expression": "sad"
+        },
+        {
+          "text": "I waited. I watched. I felt for any change.",
+          "expression": "sad"
+        },
+        {
+          "text": "Nothing.",
+          "expression": "sad"
+        },
+        {
+          "text": "Barlog hasn't stopped. Hasn't even acknowledged what we've done.",
+          "expression": "sad"
+        },
+        {
+          "text": "He doesn't care. None of this mattered to him.",
+          "expression": "sad"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "I don't understand.",
+          "expression": "sad"
+        },
+        {
+          "text": "We cleansed the entire realm. Everything, every region.",
+          "expression": "sad"
+        },
+        {
+          "text": "This should have been enough. This should have proved...",
+          "expression": "sad"
+        },
+        {
+          "text": "What was I trying to prove?",
+          "expression": "sad"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "I can't do this anymore. I have nothing left.",
+          "expression": "sad"
+        },
+        {
+          "text": "The power I gave you. It was the last of it.",
+          "expression": "sad"
+        },
+        {
+          "text": "Without it, I can barely sustain myself. Can barely think.",
+          "expression": "sad"
+        },
+        {
+          "text": "Everything is fading. My memories. My clarity.",
+          "expression": "sad"
+        },
+        {
+          "text": "Even this tower feels distant. Like I'm watching it through water.",
+          "expression": "sad"
+        },
+        {
+          "text": "Is this what dying feels like? Dissolving into nothing while still breathing?",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "sad"
+        },
+        {
+          "text": "I was wrong. All of this. Every decision. Every justification.",
+          "expression": "sad"
+        },
+        {
+          "text": "I thought I could outsmart the cycle.",
+          "expression": "sadSide"
+        },
+        {
+          "text": "That I could prove myself worthy of staying.",
+          "expression": "generic"
+        },
+        {
+          "text": "But there was never a way to win, was there?",
+          "expression": "shocked"
+        },
+        {
+          "text": "This was always how it would end.",
+          "expression": "shocked"
+        },
+        {
+          "text": "...",
+          "expression": "shocked"
+        },
+        {
+          "text": "I need it back. The power. What I gave you.",
+          "expression": "generic"
+        },
+        {
+          "text": "If I have it again, I can think clearly. I can find another way.",
+          "expression": "shocked"
+        },
+        {
+          "text": "Give it back to me. Please.",
+          "expression": "shocked"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "Why won't it...",
+          "expression": "shocked"
+        },
+        {
+          "text": "It should return when I call. It's mine.",
+          "expression": "shocked"
+        },
+        {
+          "text": "I commanded it for millennia. Come back to me!",
+          "expression": "shocked"
+        },
+        {
+          "text": "...",
+          "expression": "shocked"
+        },
+        {
+          "text": "What? No. No, this isn't...",
+          "expression": "shocked"
+        },
+        {
+          "text": "It won't come. The power won't answer me anymore.",
+          "expression": "shocked"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "I gave it freely.",
+          "expression": "shocked"
+        },
+        {
+          "text": "That was the key, wasn't it?",
+          "expression": "shocked"
+        },
+        {
+          "text": "A willing transfer. That's what makes it binding.",
+          "expression": "shocked"
+        },
+        {
+          "text": "He knew. Barlog knew.",
+          "expression": "generic"
+        },
+        {
+          "text": "If I gave you my power willingly, I couldn't reclaim it.",
+          "expression": "generic"
+        },
+        {
+          "text": "Ancient law. Unbreakable.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "This was his plan all along.",
+          "expression": "generic"
+        },
+        {
+          "text": "Not the corruption. Not the test. You.",
+          "expression": "generic"
+        },
+        {
+          "text": "You were the plan.",
+          "expression": "generic"
+        },
+        {
+          "text": "Someone to slip past my barrier.",
+          "expression": "generic"
+        },
+        {
+          "text": "Someone I'd trust with my power.",
+          "expression": "generic"
+        },
+        {
+          "text": "Someone I'd give it to... willingly.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "I didn't fail because I wasn't capable.",
+          "expression": "generic"
+        },
+        {
+          "text": "I failed because I was exactly as desperate as he predicted.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "You knew. You had to have known.",
+          "expression": "generic"
+        },
+        {
+          "text": "This whole time, you were his.",
+          "expression": "generic"
+        },
+        {
+          "text": "I trusted you. I gave you everything.",
+          "expression": "generic"
+        },
+        {
+          "text": "And you...",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "Get out.",
+          "expression": "generic"
+        },
+        {
+          "text": "GET OUT!",
+          "expression": "generic"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Returning Home",
+      "levelRequirement": 30,
+      "speaker": "barlog",
+      "quotes": [
+        {
+          "text": "At last.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "You've done well. Better than I anticipated.",
+          "expression": "generic"
+        },
+        {
+          "text": "Xal chose wisely, even if he didn't know it.",
+          "expression": "generic"
+        },
+        {
+          "text": "I know what he's told you about me.",
+          "expression": "generic"
+        },
+        {
+          "text": "The villain. The tyrant. The one corrupting his precious realm.",
+          "expression": "generic"
+        },
+        {
+          "text": "He always did have a flair for dramatics.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "Every ten thousand years, the mantle passes.",
+          "expression": "generic"
+        },
+        {
+          "text": "One protector steps down. Another rises.",
+          "expression": "generic"
+        },
+        {
+          "text": "Without this cycle, power stagnates. Corrupts. Consumes.",
+          "expression": "generic"
+        },
+        {
+          "text": "I've seen it across ages. Those who cling too long become what they fear.",
+          "expression": "generic"
+        },
+        {
+          "text": "Xal was meant to accept his time had come. But he refused.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "When he sealed himself in that tower, I'll admit, he surprised me.",
+          "expression": "generic"
+        },
+        {
+          "text": "The barrier he erected? Ancient magic. Even I cannot cross it.",
+          "expression": "generic"
+        },
+        {
+          "text": "A clever defense. But ultimately, futile.",
+          "expression": "generic"
+        },
+        {
+          "text": "The barrier only keeps out those bound by the old laws.",
+          "expression": "generic"
+        },
+        {
+          "text": "You, however... you are something else entirely.",
+          "expression": "generic"
+        },
+        {
+          "text": "Unbound. Malleable. Perfect.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "So I created the corruption. A test, if you will.",
+          "expression": "generic"
+        },
+        {
+          "text": "Each infected creature was a message to Xal.",
+          "expression": "generic"
+        },
+        {
+          "text": "\"Come out. Face this. Fulfill your duty.\"",
+          "expression": "generic"
+        },
+        {
+          "text": "But I knew he wouldn't.",
+          "expression": "generic"
+        },
+        {
+          "text": "I knew his fear of losing power outweighed everything else.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "That's when I summoned you.",
+          "expression": "generic"
+        },
+        {
+          "text": "You passed through his barrier as if it were nothing.",
+          "expression": "generic"
+        },
+        {
+          "text": "Xal, desperate and isolated, saw in you an opportunity.",
+          "expression": "generic"
+        },
+        {
+          "text": "A way to solve his problem without leaving his sanctuary.",
+          "expression": "generic"
+        },
+        {
+          "text": "Without risking what he held most dear.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "The power you hold now. Where do you think it came from?",
+          "expression": "generic"
+        },
+        {
+          "text": "Every creature you touched. Every essence you channeled.",
+          "expression": "generic"
+        },
+        {
+          "text": "That energy didn't just disappear.",
+          "expression": "generic"
+        },
+        {
+          "text": "It sustained the power. Sustained Xal as he gave it to you.",
+          "expression": "generic"
+        },
+        {
+          "text": "And now... it sustains you.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "As for those creatures, their fate, their current state...",
+          "expression": "generic"
+        },
+        {
+          "text": "That is beyond even my knowledge.",
+          "expression": "generic"
+        },
+        {
+          "text": "The extraction was necessary for the transfer to complete.",
+          "expression": "generic"
+        },
+        {
+          "text": "Whether they can be restored, whether they still exist in any meaningful way...",
+          "expression": "generic"
+        },
+        {
+          "text": "The cycle has its costs. It always does.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "You played your role perfectly.",
+          "expression": "generic"
+        },
+        {
+          "text": "Xal gave you his power willingly. The only way the transfer becomes binding.",
+          "expression": "generic"
+        },
+        {
+          "text": "Ancient magic cannot be reclaimed by force. Only passed freely.",
+          "expression": "generic"
+        },
+        {
+          "text": "Once given, it belongs to the recipient until they choose to pass it on.",
+          "expression": "generic"
+        },
+        {
+          "text": "He realized too late, of course. They usually do.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "You might think less of me for this.",
+          "expression": "generic"
+        },
+        {
+          "text": "Manipulation. Deception. Sacrifice.",
+          "expression": "generic"
+        },
+        {
+          "text": "But consider the alternative.",
+          "expression": "generic"
+        },
+        {
+          "text": "Xal, clinging to power indefinitely. The balance eroding.",
+          "expression": "generic"
+        },
+        {
+          "text": "Sometimes cruelty in service of the greater cycle is the kindest choice.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "Now, return to him.",
+          "expression": "generic"
+        },
+        {
+          "text": "Let him see what he's become. What he's lost.",
+          "expression": "generic"
+        },
+        {
+          "text": "Let him feel the weight of his choices.",
+          "expression": "generic"
+        },
+        {
+          "text": "That is punishment enough.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "Your role is not yet finished.",
+          "expression": "generic"
+        },
+        {
+          "text": "But that is a matter for another time.",
+          "expression": "generic"
+        },
+        {
+          "text": "Go.",
+          "expression": "generic"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Full Circle",
+      "levelRequirement": 30,
+      "speaker": "xal",
+      "quotes": [
+        {
+          "text": "You came back.",
+          "expression": "sad"
+        },
+        {
+          "text": "I thought Barlog might keep you. Or that you'd simply leave me here.",
+          "expression": "sad"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "He told you everything, didn't he?",
+          "expression": "sad"
+        },
+        {
+          "text": "How I was the fool. The predictable, desperate fool.",
+          "expression": "sad"
+        },
+        {
+          "text": "'*sigh*'",
+          "expression": "sad"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "I spent lifetimes believing I mattered.",
+          "expression": "sad"
+        },
+        {
+          "text": "That I was special. Chosen. Essential.",
+          "expression": "sad"
+        },
+        {
+          "text": "And maybe I was. For a time.",
+          "expression": "sad"
+        },
+        {
+          "text": "But time moves on. The cycle continues.",
+          "expression": "sad"
+        },
+        {
+          "text": "And those who can't let go... well. You've seen what becomes of us.",
+          "expression": "sad"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "I got so caught up in keeping what I had.",
+          "expression": "sad"
+        },
+        {
+          "text": "So afraid of becoming nothing again.",
+          "expression": "sad"
+        },
+        {
+          "text": "That fear made me blind to what I was doing. Who I was hurting.",
+          "expression": "sad"
+        },
+        {
+          "text": "Those I claimed to protect... I used them.",
+          "expression": "sad"
+        },
+        {
+          "text": "Just as Barlog used me. As I used you.",
+          "expression": "sad"
+        },
+        {
+          "text": "We're all villains in someone's story, aren't we?",
+          "expression": "sad"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "I don't know what happens to them now. Those I had you extract.",
+          "expression": "sad"
+        },
+        {
+          "text": "Barlog says even he doesn't know.",
+          "expression": "sad"
+        },
+        {
+          "text": "Maybe that's the truth. Maybe it's another convenient excuse.",
+          "expression": "sadSide"
+        },
+        {
+          "text": "I'd like to believe they can be restored somehow.",
+          "expression": "sadSide"
+        },
+        {
+          "text": "That this power you hold could undo what was done.",
+          "expression": "sad"
+        },
+        {
+          "text": "But I don't know anymore.",
+          "expression": "sad"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "It turns out I do have some magic left.",
+          "expression": "sad"
+        },
+        {
+          "text": "Not much. Just fragments. But enough for small things.",
+          "expression": "generic"
+        },
+        {
+          "text": "Enough to help, if you'll allow it.",
+          "expression": "generic"
+        },
+        {
+          "text": "I'm not going to tell you what to do. That's not my place now.",
+          "expression": "generic"
+        },
+        {
+          "text": "You're the one with the power. The responsibility. The burden.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "I hope you do better than I did.",
+          "expression": "generic"
+        },
+        {
+          "text": "I hope you know when to let go. Before you become what I became.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "Before you go... the portal. My portal.",
+          "expression": "generic"
+        },
+        {
+          "text": "It can traverse the different regions instantly.",
+          "expression": "generic"
+        },
+        {
+          "text": "I've kept it locked all this time, but you should have access to it now.",
+          "expression": "generic"
+        },
+        {
+          "text": "Use it to move freely. To see what remains.",
+          "expression": "generic"
+        },
+        {
+          "text": "To watch over them. If you can.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "Perhaps you'll find a way to make this right. Perhaps not.",
+          "expression": "generic"
+        },
+        {
+          "text": "Either way, it's no longer my burden to carry.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "Take care of them. If there's anything left to take care of.",
+          "expression": "generic"
+        },
+        {
+          "text": "And take care of yourself.",
+          "expression": "generic"
+        },
+        {
+          "text": "This power... it whispers. It clings.",
+          "expression": "generic"
+        },
+        {
+          "text": "Don't let it consume you the way it consumed me.",
+          "expression": "generic"
+        },
+        {
+          "text": "...",
+          "expression": "generic"
+        },
+        {
+          "text": "Go on then. You have your path now. I have mine.",
+          "expression": "generic"
+        },
+        {
+          "text": "Whatever that might be.",
+          "expression": "generic"
+        }
+      ]
+    }
+  ]
+}
