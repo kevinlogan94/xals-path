@@ -4,8 +4,14 @@ import { darkText } from '../ui/textStyles';
 
 const QUOTE_PAD_X = 24;
 const QUOTE_ASPECT = 300 / 460;
+const QUOTE_MAX_H = 132;
 /** Just above Xal's head — bubble tail points down toward him. */
 const QUOTE_Y_RATIO = 0.36;
+
+export function quoteBoxHeight(gameWidth: number): number {
+  const boxW = gameWidth - QUOTE_PAD_X;
+  return Math.min(Math.round(boxW * QUOTE_ASPECT), QUOTE_MAX_H);
+}
 
 export class QuoteBox {
   private container!: Phaser.GameObjects.Container;
@@ -15,25 +21,25 @@ export class QuoteBox {
 
   constructor(private readonly scene: Phaser.Scene) {}
 
-  build(depth = 22): void {
+  build(depth = 22, y?: number): void {
     const w = this.scene.scale.width;
     const h = this.scene.scale.height;
     const playH = h - NAV_H;
     const boxW = w - QUOTE_PAD_X;
-    const boxH = Math.min(Math.round(boxW * QUOTE_ASPECT), 132);
-    const y = playH * QUOTE_Y_RATIO;
+    const boxH = quoteBoxHeight(w);
+    const placedY = y ?? playH * QUOTE_Y_RATIO;
     const textWrap = boxW - 64;
-    this.bubbleY = y;
+    this.bubbleY = placedY;
     this.boxH = boxH;
     const bg = this.scene.textures.exists('ui-quote-box')
-      ? this.scene.add.image(w / 2, y, 'ui-quote-box').setDisplaySize(boxW, boxH)
+      ? this.scene.add.image(w / 2, placedY, 'ui-quote-box').setDisplaySize(boxW, boxH)
       : this.scene.add
-          .rectangle(w / 2, y, boxW, boxH, 0x1a140c, 0.92)
+          .rectangle(w / 2, placedY, boxW, boxH, 0x1a140c, 0.92)
           .setStrokeStyle(2, 0xc4a35a);
     this.text = this.scene.add
       .text(
         w / 2,
-        y,
+        placedY,
         '',
         darkText('16px', undefined, {
           align: 'center',
