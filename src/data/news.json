@@ -1,0 +1,30 @@
+[
+  {
+    "id": "Tomes",
+    "message": "Remember, each tome will continue to help you even when you leave this realm."
+  },
+  {
+    "id": "Outlook",
+    "message": "Here, you can see the full view of the land outside of Xal's study."
+  },
+  {
+    "id": "Spells",
+    "message": "Keep channeling essence to cleanse corrupted creatures and gather influence from the realm."
+  },
+  {
+    "id": "Xal",
+    "message": "Don't forget to return to Xal every few levels to progress further in the story."
+  },
+  {
+    "id": "ClickerAchievement",
+    "message": "Your magic has begun to grow in strength. Keep casting to get even more potent."
+  },
+  {
+    "id": "LoginAchievement",
+    "message": "Return to the realm everyday to earn extra influence."
+  },
+  {
+    "id": "TomeAchievement",
+    "message": "Your experience in Tomes has dramatically increased. Keep purchasing Tomes to increase their effectiveness."
+  }
+]

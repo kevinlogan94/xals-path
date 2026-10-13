@@ -1,0 +1,109 @@
+[
+  {
+    "category": "functional",
+    "description": "When Xal says \"It is done.\" and the region changes, music stays on the current theme until the player opens Outlook. Opening Outlook, including by tapping the current tab again, then plays that region's track. This is intentional.",
+    "steps": [
+      "Play through a scene until Xal says \"It is done.\" and the region changes",
+      "Confirm the outlook picture updates while the current theme keeps playing",
+      "Open Outlook by tapping the Outlook button",
+      "Confirm the new region's music starts",
+      "Repeat the scene change, then open Outlook by tapping the current tab again",
+      "Confirm the new region's music starts the same way"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "The first time the player is ready to go from level 1 to level 2, a finger points at the level chip until they open the level-up splash. Later level-ups only show the exclamation mark.",
+    "steps": [
+      "Reach a full experience bar while still level 1",
+      "Confirm a finger points up at the level chip next to the exclamation mark",
+      "Tap the chip and confirm the level-up splash opens and the finger hides",
+      "Collect the reward and confirm the finger does not return on later level-ups"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "The blessing is offered once per level, after 200 casts or creature taps. Reaching that count does not open the splash. Leveling up allows the offer again.",
+    "steps": [
+      "Cast or tap creatures until the count reaches 200 this level",
+      "Confirm the Blessing of the Gods splash does not open",
+      "Confirm another 200 taps this level do not start a second offer",
+      "Level up, then reach 200 taps again",
+      "Confirm the offer can happen again on the new level"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "While a blessing is offered, a Pegasus flies across the screen. If it is not tapped, it comes back from the other direction and keeps alternating until the player taps it. Tapping it opens the Blessing of the Gods splash.",
+    "steps": [
+      "Reach a blessing offer",
+      "Confirm a Pegasus flies across the screen",
+      "Let it leave without tapping",
+      "Confirm it returns from the opposite direction",
+      "Confirm it keeps alternating directions until tapped",
+      "Tap the Pegasus and confirm the Blessing splash opens"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "After the Pegasus flies off one side, it waits about 10 seconds, then flies back from the other side. Leaving Outlook pauses that wait.",
+    "steps": [
+      "Reach a blessing offer and let the Pegasus fly off the screen",
+      "Confirm it stays gone for about 10 seconds",
+      "Confirm it then flies back from the opposite direction",
+      "Leave Outlook during a wait",
+      "Confirm the next pass does not start until you are back on Outlook"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "The first time the player has never collected the blessing, a pointer sits just under the flying Pegasus. After they have collected it once, later Pegasus flybys have no pointer.",
+    "steps": [
+      "On a save that has never collected the blessing, reach an offer",
+      "Confirm a pointer sits just under the Pegasus while it flies",
+      "Collect the blessing",
+      "On a later level, reach another offer",
+      "Confirm the Pegasus flies with no pointer"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Collect on the Blessing splash starts 15 seconds of infinite mana. The mana bar is replaced by a countdown for those seconds.",
+    "steps": [
+      "Open the Blessing of the Gods splash by tapping the Pegasus",
+      "Tap Collect",
+      "Confirm casts no longer spend mana",
+      "Confirm the mana bar shows a countdown from 15s down to 1s",
+      "Confirm the mana bar returns when the countdown ends"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "During the tutorial, tapping the Xal button in the bottom nav while already on the Xal view stays on that view. On the last tutorial step, the Outlook button is still the way to leave.",
+    "steps": [
+      "Start a new game and stay on the Xal view during the tutorial",
+      "Tap the Xal button in the bottom nav",
+      "Confirm the Xal view stays open and Outlook does not appear",
+      "Finish the tutorial dialogue until the pointer aims at the Outlook button",
+      "Tap the Outlook button and confirm Outlook opens"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "After the tutorial, tapping the current bottom-nav tab again opens Outlook.",
+    "steps": [
+      "Finish the tutorial",
+      "Open the Xal view, then tap the Xal button again",
+      "Confirm that second tap opens Outlook"
+    ],
+    "passes": true
+  }
+]
