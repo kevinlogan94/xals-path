@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { addFramedPanel } from '../ui/FramedPanel';
 import { createImageButton } from '../ui/ImageButton';
 import { createScrollList } from '../ui/ScrollList';
-import { darkText } from '../ui/textStyles';
+import { darkText, wordmarkText } from '../ui/textStyles';
 
 const CREDITS_NAME = 'credits-modal';
 
@@ -63,9 +63,12 @@ export function showCreditsModal(scene: Phaser.Scene, parent: Phaser.GameObjects
     [[], []],
   );
   const style = darkText('13px');
-  const title = scene.add.image(0, 0, 'ui-xal-title');
-  const tw = Math.min(listWidth - 24, 240);
-  title.setDisplaySize(tw, tw * (57 / 280));
+  const title = scene.add
+    .text(0, 0, "Xal's Path", wordmarkText('32px', '#1a1208'))
+    .setOrigin(0.5)
+    .setShadow(0, 2, 'rgba(16, 185, 129, 0.35)', 8, true, true);
+  const maxW = listWidth - 24;
+  if (title.width > maxW) title.setScale(maxW / title.width);
   const created = scene.add
     .text(0, 0, 'Created By\nKevin Logan', darkText('14px', undefined, { align: 'center' }))
     .setOrigin(0.5, 0);

@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { passInstallGate } from './installGate';
-import { BootScene } from './scenes/BootScene';
 import { TitleScene } from './scenes/TitleScene';
 import { PlayScene } from './scenes/PlayScene';
 
@@ -21,16 +20,24 @@ Phaser.GameObjects.GameObjectFactory.prototype.text = function (
 const parent = document.getElementById('game');
 
 await passInstallGate();
+await Promise.race([
+  Promise.all([
+    document.fonts.load('900 44px "Cinzel Decorative"'),
+    document.fonts.load('italic 600 16px "Cormorant Garamond"'),
+    document.fonts.load('500 11px "JetBrains Mono"'),
+  ]),
+  new Promise((resolve) => window.setTimeout(resolve, 2500)),
+]);
 
 new Phaser.Game({
   type: Phaser.AUTO,
   parent: parent ?? undefined,
-  backgroundColor: '#0d1a0d',
+  backgroundColor: '#070408',
   scale: {
     mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, TitleScene, PlayScene],
+  scene: [TitleScene, PlayScene],
   audio: {
     disableWebAudio: false,
   },

@@ -23,6 +23,16 @@ export function whiteText(fontSize: string, extra: TextStyle = {}): TextStyle {
   });
 }
 
+export function wordmarkText(fontSize: string, color: string): TextStyle {
+  return {
+    fontFamily: '"Cinzel Decorative", serif',
+    fontSize,
+    fontStyle: '900',
+    color,
+    letterSpacing: 1,
+  };
+}
+
 export function darkText(
   fontSize: string,
   color = DARK_STROKE,
