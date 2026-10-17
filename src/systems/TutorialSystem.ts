@@ -14,6 +14,7 @@ export type PointerTarget =
   | 'tomesNav'
   | 'natureRow'
   | 'xal'
+  | 'sceneNav'
   | 'outlookNav'
   | 'cast';
 
@@ -61,8 +62,10 @@ export class TutorialSystem {
   }
 
   isTabAllowed(state: GameSave, tab: TabId): boolean {
-    if (this.isEarlyMapLock(state)) return tab === 'scene';
     if (state.tutorialCompleted) return true;
+    // Volume and the rest of Settings stay reachable. Every other tab stays on the funnel.
+    if (tab === 'settings') return true;
+    if (this.isEarlyMapLock(state)) return tab === 'scene';
     if (this.outlookTutorial) return tab === 'outlook' || tab === 'scene';
     if (this.active) {
       if (tab === 'shop') return this.shopNavUnlocked;

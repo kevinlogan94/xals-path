@@ -105,5 +105,62 @@
       "Confirm that second tap opens Outlook"
     ],
     "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "During the tutorial, Settings stays lit and opens. Rewards stays locked.",
+    "steps": [
+      "Start a new game and confirm Settings opens",
+      "Confirm Rewards stays dim and does not open",
+      "Reach the tome step, then the step where the pointer aims at Outlook",
+      "Confirm Settings still opens and Rewards still does not"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Opening Settings during the tutorial does not advance Xal's line. Returning to Xal shows that same line.",
+    "steps": [
+      "Finish Chapter 1 so a tutorial line is showing",
+      "Open Settings, then return to the Xal view",
+      "Confirm the same line is showing and the tutorial has not moved on"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "During the tutorial, tapping Settings while it is already open returns to the screen they came from. It does not open Outlook.",
+    "steps": [
+      "On the Xal view, open Settings, then tap Settings again",
+      "Confirm the Xal view returns and Outlook does not open",
+      "On the Tomes view during the tome step, open Settings, then tap Settings again",
+      "Confirm the Tomes view returns and Outlook does not open",
+      "While the pointer aims at Outlook, open Settings from the Xal view, then tap Settings again",
+      "Confirm the Xal view returns and the tutorial does not finish"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "While Settings is open during the tutorial, the finger points at the nav button for the step they left, not at Settings.",
+    "steps": [
+      "Open Settings during tutorial dialogue on Xal",
+      "Confirm the finger points at the Xal button",
+      "Open Settings from Tomes while the tutorial is waiting on the Nature tome",
+      "Confirm the finger points at the Tomes button",
+      "Open Settings while the pointer aims at Outlook",
+      "Confirm the finger points at the Outlook button"
+    ],
+    "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Barlog only shows on Outlook while chapter 6, Returning Home, is playing.",
+    "steps": [
+      "Open Outlook when Returning Home is the next chapter and confirm Barlog appears",
+      "Finish that chapter and confirm he leaves",
+      "Confirm he does not appear during the tutorial or on any other chapter"
+    ],
+    "passes": true
   }
 ]

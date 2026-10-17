@@ -28,6 +28,10 @@ import { aimFinger, createFingerPointer } from './play/ui/FingerPointer';
 export class PlayScene extends Phaser.Scene {
   private ctx = getContext();
   private tab: TabId = 'outlook';
+  /** Tab the tutorial had open before Settings, so a second tap returns there. */
+  private tutorialReturnTab: TabId = 'scene';
+  /** Tutorial line already shown. Leaving Settings must not advance it. */
+  private tutorialLine: string | null = null;
   private hud!: HudView;
   private nav!: BottomNav;
   private xal!: XalView;
@@ -340,10 +344,7 @@ export class PlayScene extends Phaser.Scene {
         if (finishingCh1) {
           this.ctx.tutorial.startAfterChapter1(this.ctx.state);
           const line = this.ctx.tutorial.advanceLine(this.ctx.state, this.ctx.economy);
-          if (line) {
-            this.xal.showQuote(line);
-            this.xal.setPortraitExpression('generic');
-          }
+          if (line) this.showTutorialLine(line);
           this.applyNavLock();
           this.refreshTutorialPointers();
         }
@@ -364,9 +365,9 @@ export class PlayScene extends Phaser.Scene {
       const line = this.ctx.tutorial.advanceLine(this.ctx.state, this.ctx.economy);
       if (line) {
         this.clearBanterTimer();
-        this.xal.showQuote(line);
-        this.xal.setPortraitExpression('generic');
+        this.showTutorialLine(line);
       } else if (!this.ctx.tutorial.waitingNature) {
+        this.tutorialLine = null;
         this.xal.hideQuote();
       }
       this.applyNavLock();
@@ -467,6 +468,12 @@ export class PlayScene extends Phaser.Scene {
     this.xal.setBackVisible(this.ctx.story.quoteIndex > 0);
   }
 
+  private showTutorialLine(line: string): void {
+    this.tutorialLine = line;
+    this.xal.showQuote(line);
+    this.xal.setPortraitExpression('generic');
+  }
+
   /** Unity SelectView: re-tapping active tab returns to Outlook. */
   private setTab(tab: TabId, force = false): void {
     if (
@@ -477,13 +484,22 @@ export class PlayScene extends Phaser.Scene {
     }
 
     if (!force && this.tab === tab) {
-      if (!this.ctx.state.tutorialCompleted) return;
-      tab = 'outlook';
+      if (!this.ctx.state.tutorialCompleted) {
+        if (tab !== 'settings') return;
+        tab = this.tutorialReturnTab === 'settings' ? 'scene' : this.tutorialReturnTab;
+      } else {
+        tab = 'outlook';
+      }
+    }
+
+    if (!this.ctx.state.tutorialCompleted && tab === 'settings' && this.tab !== 'settings') {
+      this.tutorialReturnTab = this.tab;
     }
 
     if (this.splash.isOpen()) this.splash.dismiss();
     if (tab === 'outlook' && this.ctx.tutorial.outlookTutorial) {
       this.ctx.tutorial.dismissOutlookTutorial(this.ctx.state);
+      this.tutorialLine = null;
       this.ctx.persist();
     }
 
@@ -516,7 +532,13 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.spawn.clear();
       this.ctx.audio.playBgm('xals-theme');
       if (this.ctx.story.reading) this.renderQuote();
-      else this.refreshChapterCard();
+      else {
+        this.refreshChapterCard();
+        if (this.tutorialLine && !this.ctx.state.tutorialCompleted) {
+          this.xal.showQuote(this.tutorialLine);
+          this.xal.setPortraitExpression('generic');
+        }
+      }
       this.applyNavLock();
       this.refreshTutorialPointers();
       return;
@@ -605,13 +627,28 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
     const { visible: chapterVisible } = this.chapterOnXal();
-    const target = this.ctx.tutorial.pointerTarget(
+    const onSettings = this.tab === 'settings' && !this.ctx.state.tutorialCompleted;
+    let target = this.ctx.tutorial.pointerTarget(
       this.ctx.state,
-      this.tab,
+      onSettings ? this.tutorialReturnTab : this.tab,
       this.ctx.story.reading,
       this.tab === 'shop',
-      chapterVisible,
+      onSettings ? false : chapterVisible,
     );
+    // Settings covers the play area. Point at the nav button for the step they left.
+    if (onSettings) {
+      if (target === 'natureRow') target = 'tomesNav';
+      else if (target === 'cast') target = 'outlookNav';
+      else if (target === 'xal' || target === 'chapter') target = 'sceneNav';
+      else if (target === 'none') {
+        target =
+          this.tutorialReturnTab === 'shop'
+            ? 'tomesNav'
+            : this.tutorialReturnTab === 'outlook'
+              ? 'outlookNav'
+              : 'sceneNav';
+      }
+    }
     if (target === 'xal' && this.xal.quoteVisible()) {
       this.finger.setVisible(false);
       return;
@@ -636,7 +673,8 @@ export class PlayScene extends Phaser.Scene {
     }
 
     // Flip upside-down so the tip points at the target (nav buttons, Xal portrait).
-    const pointDown = target === 'tomesNav' || target === 'outlookNav' || target === 'xal';
+    const pointDown =
+      target === 'tomesNav' || target === 'outlookNav' || target === 'sceneNav' || target === 'xal';
     aimFinger(this.finger, pointDown);
 
     let x = 0;
@@ -649,8 +687,9 @@ export class PlayScene extends Phaser.Scene {
         y = p.y + 28;
         break;
       }
-      case 'tomesNav': {
-        const p = this.nav.navButtonCenter('shop');
+      case 'tomesNav':
+      case 'sceneNav': {
+        const p = this.nav.navButtonCenter(target === 'sceneNav' ? 'scene' : 'shop');
         if (p) {
           x = p.x;
           y = p.y - 56;
