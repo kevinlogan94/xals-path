@@ -476,7 +476,9 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  border: 0;
+  margin: 2px 3px;
+  border: 1px solid transparent;
+  border-radius: 12px;
   background: transparent;
   color: #9ca3af;
   font-family: 'JetBrains Mono', monospace;
@@ -492,13 +494,17 @@
   filter: grayscale(0.35) brightness(0.85);
 }
 
-.nav-btn.is-on {
-  color: #fbbf24;
-  text-shadow: 0 0 10px rgba(245, 158, 11, 0.7);
+.nav-btn.is-on,
+.nav-btn:focus-visible {
+  color: #e8c078;
+  background: rgba(10, 7, 12, 0.55);
+  border-color: rgba(212, 175, 55, 0.88);
+  outline: none;
 }
 
-.nav-btn.is-on img {
-  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.75)) brightness(1.15);
+.nav-btn.is-on img,
+.nav-btn:focus-visible img {
+  filter: none;
 }
 
 .nav-btn.is-off {
