@@ -1,9 +1,8 @@
 import Phaser from 'phaser';
-import type { ChapterDef, RegionId } from '../../../types';
+import type { RegionId } from '../../../types';
 import { NAV_H } from '../ui/constants';
 import { createImageButton, createStoryBack, showButton } from '../ui/ImageButton';
 import { whiteText } from '../ui/textStyles';
-import { CHAPTER_CARD_H, CHAPTER_CARD_NAV_GAP, renderChapterCard } from './ChapterCard';
 import { QuoteBox } from './QuoteBox';
 
 const IDLE_SHEET = 'xal-idle-sheet';
@@ -58,7 +57,6 @@ export class XalView {
   private idle!: Phaser.GameObjects.Sprite;
   private book!: Phaser.GameObjects.Sprite;
   private quoteBox: QuoteBox;
-  private chapterCard!: Phaser.GameObjects.Container;
   private portalBar!: Phaser.GameObjects.Container;
   private backBtn!: Phaser.GameObjects.Container;
   private onPortalTravel?: (region: RegionId) => void;
@@ -67,7 +65,6 @@ export class XalView {
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly onPortraitTap: () => void,
-    private readonly onChapterButton: () => void,
     private readonly onStoryBack: () => void,
   ) {
     this.quoteBox = new QuoteBox(scene);
@@ -75,35 +72,30 @@ export class XalView {
 
   build(): void {
     const { width, height } = this.scene.scale;
-    const playH = height - NAV_H;
     // Full-scene tap target behind map UI + nav (depth order resolves hits).
     this.tapZone = this.scene.add
-      .rectangle(width / 2, playH / 2, width, playH, 0x000000, 0)
+      .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
       .setDepth(1)
       .setInteractive({ useHandCursor: true });
     this.tapZone.on('pointerdown', this.onPortraitTap);
     // Intentionally no Scene.png base — xal-* expressions are full tower scenes.
     this.portrait = this.scene.add
-      .image(width / 2, playH / 2, 'xal-generic')
+      .image(width / 2, height / 2, 'xal-generic')
       .setDepth(2)
       .setVisible(false);
     ensureXalAnims(this.scene);
     this.book = this.scene.add
-      .sprite(width / 2, playH / 2, BOOK_SHEET, 'book-0')
+      .sprite(width / 2, height / 2, BOOK_SHEET, 'book-0')
       // Flip rises into the idle torso; book has to paint over that overlay.
       .setDepth(5)
       .setOrigin(0)
       .setVisible(false);
     this.idle = this.scene.add
-      .sprite(width / 2, playH / 2, IDLE_SHEET, 'idle-0')
+      .sprite(width / 2, height / 2, IDLE_SHEET, 'idle-0')
       .setDepth(4)
       .setOrigin(0)
       .setVisible(false);
     this.fitPortrait();
-    this.chapterCard = this.scene.add
-      .container(width / 2, height - NAV_H - CHAPTER_CARD_NAV_GAP - CHAPTER_CARD_H / 2)
-      .setDepth(22)
-      .setVisible(false);
     this.portalBar = this.scene.add.container(width / 2, height - NAV_H - 36).setDepth(23).setVisible(false);
     this.backBtn = createStoryBack(this.scene, this.onStoryBack, 24);
     this.quoteBox.build();
@@ -135,18 +127,17 @@ export class XalView {
       height: number;
     };
     if (!src.width || !src.height) return;
-    const playH = height - NAV_H;
-    const scale = Math.max(width / src.width, playH / src.height);
+    const scale = Math.max(width / src.width, height / src.height);
     this.portrait.setScale(scale);
-    this.portrait.setPosition(width / 2, playH / 2);
+    this.portrait.setPosition(width / 2, height / 2);
     const left = width / 2 - (SCENE_W * scale) / 2;
-    const top = playH / 2 - (SCENE_H * scale) / 2;
+    const top = height / 2 - (SCENE_H * scale) / 2;
     this.idle.setScale(scale).setPosition(left + IDLE_X * scale, top + IDLE_Y * scale);
     this.book
       .setScale(scale * BOOK_SX, scale)
       .setPosition(left + BOOK_X * scale, top + BOOK_Y * scale);
-    this.tapZone.setPosition(width / 2, playH / 2);
-    this.tapZone.setSize(width, playH);
+    this.tapZone.setPosition(width / 2, height / 2);
+    this.tapZone.setSize(width, height);
   }
 
   setPortraitExpression(expr: string): void {
@@ -200,29 +191,6 @@ export class XalView {
     return this.quoteOpen;
   }
 
-  hideChapterCard(): void {
-    this.teardownChapterCard();
-  }
-
-  chapterCardCenter(): { x: number; y: number } {
-    const m = this.chapterCard.getWorldTransformMatrix();
-    return { x: m.tx, y: m.ty };
-  }
-
-  refreshChapterCard(chapter: ChapterDef | undefined, locked: boolean, visible: boolean): void {
-    if (!visible) {
-      this.teardownChapterCard();
-      return;
-    }
-    renderChapterCard({
-      scene: this.scene,
-      container: this.chapterCard,
-      chapter,
-      locked,
-      onClick: this.onChapterButton,
-    });
-  }
-
   /** Portal region travel after story unlock (rehomed from Settings). */
   refreshPortalBar(unlocked: boolean, visible: boolean, current: RegionId): void {
     this.portalBar.removeAll(true);
@@ -260,9 +228,4 @@ export class XalView {
     this.portalBar.setVisible(true);
   }
 
-  private teardownChapterCard(): void {
-    this.chapterCard.removeAll(true);
-    this.chapterCard.removeInteractive();
-    this.chapterCard.setVisible(false);
-  }
 }

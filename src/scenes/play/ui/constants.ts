@@ -1,5 +1,5 @@
 export const FONT = 'Nunito, sans-serif';
-export const NAV_H = 104;
+export const NAV_H = 88;
 
 export const PANEL_TOP = 96;
 export const PANEL_BOTTOM_PAD = 8;

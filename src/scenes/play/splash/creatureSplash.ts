@@ -1,8 +1,4 @@
 import Phaser from 'phaser';
-import type { CreatureDef } from '../../../types';
-import { createImageButton } from '../ui/ImageButton';
-import { darkText } from '../ui/textStyles';
-import { stackSplash, type SplashContentApi, type SplashContentBuilder } from './SplashView';
 
 /** Unity sprite rects (x, bottom-left y, w, h). Tiny auto-slice junk omitted. */
 const CREATURE_RUN: Record<
@@ -143,39 +139,34 @@ const CREATURE_RUN: Record<
   },
 };
 
-const LOCK_SHEET_KEY = 'ui-lock-sheet';
-const LOCK_FRAME_X = [12, 362, 712, 1062, 1412];
-
 export function texKey(id: string): string {
   return `creature-${id}-run`;
 }
 
+export function creatureFirstFrame(id: string): {
+  src: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+} | null {
+  const sheet = CREATURE_RUN[id];
+  const frame = sheet?.frames[0];
+  if (!sheet || !frame) return null;
+  const [x, uy, w, h] = frame;
+  return {
+    src: `./assets/creatures/${sheet.src}`,
+    x: x * 2,
+    y: (sheet.h - uy - h) * 2,
+    w: w * 2,
+    h: h * 2,
+  };
+}
+
 export function preloadCreatureSplashAssets(load: Phaser.Loader.LoaderPlugin): void {
-  load.image(LOCK_SHEET_KEY, 'assets/ui/lock-sheet.png');
   for (const [id, sheet] of Object.entries(CREATURE_RUN)) {
     load.image(texKey(id), `assets/creatures/${sheet.src}`);
   }
-}
-
-function ensureLockFrames(scene: Phaser.Scene): boolean {
-  if (!scene.textures.exists(LOCK_SHEET_KEY)) return false;
-  const tex = scene.textures.get(LOCK_SHEET_KEY);
-  if (!tex.has('lock-0')) {
-    LOCK_FRAME_X.forEach((x, i) => tex.add(`lock-${i}`, 0, x * 2, 8, 648, 1080));
-  }
-  return tex.has('lock-0');
-}
-
-/** Unity `Unlock.anim`: hold closed 2s, ±5° shakes, snap open 2.00–2.15s, panel at 3.167s. */
-function playLockUnlock(lock: Phaser.GameObjects.Sprite, onDone: () => void): void {
-  const t = lock.scene.time;
-  const at = (ms: number, fn: () => void) => t.delayedCall(ms, () => { if (lock.active) fn(); });
-  [2000, 2050, 2100, 2150].forEach((ms, i) => at(ms, () => lock.setFrame(`lock-${i + 1}`)));
-  const z = [0, -5, 5, -5, 5, 0, 0, -5, 5, -5, 5, 0];
-  [1000, 1050, 1100, 1150, 1200, 1267, 1400, 1450, 1500, 1550, 1600, 1667].forEach((ms, i) =>
-    at(ms, () => lock.setAngle(z[i])),
-  );
-  at(3167, onDone);
 }
 
 export function ensureRunAnim(scene: Phaser.Scene, creatureId: string): string | null {
@@ -201,59 +192,4 @@ export function ensureRunAnim(scene: Phaser.Scene, creatureId: string): string |
     repeat: -1,
   });
   return key;
-}
-
-function showCreaturePanel(
-  content: Phaser.GameObjects.Container,
-  creature: CreatureDef,
-  api: SplashContentApi,
-): void {
-  const scene = content.scene;
-  api.showChrome();
-  content.removeAll(true);
-
-  const wrap = Math.max(160, Math.round(api.bodyWidth * 0.86));
-  const slot = 90;
-  const portrait = scene.add.container(0, 0);
-  portrait.add(scene.add.image(0, 0, 'ui-item-slot').setDisplaySize(slot, slot));
-
-  const runKey = ensureRunAnim(scene, creature.id);
-  if (runKey) {
-    const sprite = scene.add.sprite(0, 0, texKey(creature.id), `${creature.id}-0`).setOrigin(0.5, 0.5);
-    const scale = (slot * 0.72) / Math.max(sprite.width, sprite.height);
-    sprite.setScale(scale);
-    sprite.play(runKey);
-    portrait.add(sprite);
-  }
-  portrait.setSize(slot, slot);
-
-  const name = scene.add.text(0, 0, creature.name, darkText('20px')).setOrigin(0.5);
-  const desc = scene.add.text(0, 0, creature.description, darkText('16px')).setOrigin(0.5);
-  const back = createImageButton(scene, 0, 0, 'ui-btn-blue', 'Back', 120, 34, api.close);
-  const items = [portrait, name, desc, back];
-  content.add(items);
-
-  const gap = 22;
-  const chrome = slot + name.height + back.height + gap * 3;
-  const maxDesc = Math.max(48, api.bodyBottom - api.bodyTop - chrome);
-  for (let px = 16; px >= 12; px--) {
-    desc.setStyle(darkText(`${px}px`, undefined, { align: 'center', wordWrap: { width: wrap } }));
-    if (desc.height <= maxDesc) break;
-  }
-  stackSplash(items, api, gap);
-}
-
-export function buildCreatureSplash(creature: CreatureDef): SplashContentBuilder {
-  return (content, api) => {
-    const scene = content.scene;
-    if (!ensureLockFrames(scene)) {
-      showCreaturePanel(content, creature, api);
-      return;
-    }
-
-    const lock = scene.add.sprite(0, 0, LOCK_SHEET_KEY, 'lock-0').setOrigin(0.5);
-    lock.setScale((scene.scale.height * 0.35) / lock.height);
-    content.add(lock);
-    playLockUnlock(lock, () => showCreaturePanel(content, creature, api));
-  };
 }

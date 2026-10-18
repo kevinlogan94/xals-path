@@ -390,50 +390,27 @@ function queueGameAssets(load: Phaser.Loader.LoaderPlugin): void {
     frameHeight: 600,
   });
 
-  load.image('ui-nav-default', 'assets/ui/nav-default.png');
-  load.image('ui-nav-active', 'assets/ui/nav-active.png');
-  load.image('ui-tome-box', 'assets/ui/tome-box.png');
-  load.image('ui-tome-locked', 'assets/ui/tome-box-locked.png');
-  load.image('ui-lock', 'assets/ui/lock.png');
   preloadCreatureSplashAssets(load);
   preloadCreatureMagic(load);
   load.spritesheet('pegasus', 'assets/creatures/pegasus-animation.png', {
     frameWidth: 464,
     frameHeight: 228,
   });
-  load.image('ui-panel', 'assets/ui/panel.png');
   load.image('ui-cloud', 'assets/ui/clouds/cloud.png');
   load.image('ui-level-cloud', 'assets/ui/clouds/LevelCloud.png');
   load.image('ui-square-cloud', 'assets/ui/clouds/squareCloud.png');
-  load.image('ui-gear', 'assets/ui/Gear.png');
-  load.image('ui-flower', 'assets/ui/OutlookFlower.png');
-  load.image('ui-banner', 'assets/ui/PanelBanner.png');
-  load.image('ui-splash-banner', 'assets/ui/splash-banner.png');
   load.image('ui-quote-box', 'assets/ui/QuoteBox.png');
   load.image('ui-mana-icon', 'assets/ui/manaIcon.png');
-  load.image('ui-mana-bar', 'assets/ui/mana-bar.png');
-  load.image('ui-star', 'assets/ui/star.png');
-  load.image('ui-speaker-on', 'assets/ui/SpeakerOn.png');
-  load.image('ui-speaker-off', 'assets/ui/SpeakerOff.png');
   load.image('ui-btn-green', 'assets/ui/buttons/greenButton.png');
   load.image('ui-btn-blue', 'assets/ui/buttons/blueButton.png');
   load.image('ui-btn-orange', 'assets/ui/buttons/OrangeButton.png');
   load.image('ui-influence', 'assets/ui/influence.png');
-  load.image('ui-achiev-box', 'assets/ui/achiev-box.png');
-  load.image('ui-achiev-box-pressed', 'assets/ui/achiev-box-pressed.png');
-  load.image('ui-item-slot', 'assets/ui/item-slot.png');
-  load.image('ui-stone', 'assets/ui/stone.png');
-  load.image('ui-scroll', 'assets/ui/scrollBar.png');
+  load.image('ui-pointer', 'assets/ui/pointer.png');
   load.image('ui-reward-star', 'assets/ui/reward-star.png');
   load.image('ui-reward-shop', 'assets/ui/reward-shop.png');
   load.image('ui-reward-notepad', 'assets/ui/reward-notepad.png');
   load.image('ui-reward-portal', 'assets/ui/reward-portal.png');
   load.image('ui-reward-trophy', 'assets/ui/reward-trophy.png');
-  load.image('ui-trophy-nav', 'assets/ui/trophy.png');
-  load.image('ui-portal-nav', 'assets/ui/Portal2.png');
-  load.image('ui-tomes-nav', 'assets/ui/Tomes.png');
-  load.image('ui-pointer', 'assets/ui/pointer.png');
-
   for (const h of helpersData.helpers as HelperDef[]) {
     load.image(`tome-${h.id}`, `assets/ui/tomes/${h.id}.png`);
   }

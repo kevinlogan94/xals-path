@@ -53,8 +53,8 @@ export class OutlookView {
       height: number;
     };
     if (!tex.width || !tex.height) return;
-    const scale = Math.max(width / tex.width, (height - NAV_H) / tex.height);
-    this.bg.setPosition(width / 2, (height - NAV_H) / 2);
+    const scale = Math.max(width / tex.width, height / tex.height);
+    this.bg.setPosition(width / 2, height / 2);
     this.bg.setScale(scale);
   }
 }

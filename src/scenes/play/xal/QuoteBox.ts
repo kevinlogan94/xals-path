@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { NAV_H } from '../ui/constants';
 import { darkText } from '../ui/textStyles';
 
 const QUOTE_PAD_X = 24;
@@ -24,10 +23,9 @@ export class QuoteBox {
   build(depth = 22, y?: number): void {
     const w = this.scene.scale.width;
     const h = this.scene.scale.height;
-    const playH = h - NAV_H;
     const boxW = w - QUOTE_PAD_X;
     const boxH = quoteBoxHeight(w);
-    const placedY = y ?? playH * QUOTE_Y_RATIO;
+    const placedY = y ?? h * QUOTE_Y_RATIO;
     const textWrap = boxW - 64;
     this.bubbleY = placedY;
     this.boxH = boxH;

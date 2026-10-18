@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import './hud/blighted-scroll.css';
 import { passInstallGate } from './installGate';
 import { TitleScene } from './scenes/TitleScene';
 import { PlayScene } from './scenes/PlayScene';

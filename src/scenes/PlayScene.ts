@@ -2,28 +2,14 @@ import Phaser from 'phaser';
 import { getContext } from '../game/GameContext';
 import { formatNumber } from '../utils/format';
 import type { RegionId, TabId } from '../types';
-import { HudView } from './play/hud/HudView';
-import { BottomNav } from './play/nav/BottomNav';
+import { HudOverlay } from '../hud/HudOverlay';
+import type { RewardId } from '../hud/panels';
 import { XalView } from './play/xal/XalView';
 import { NewsBanner } from './play/outlook/NewsBanner';
 import { PegasusFlyby } from './play/outlook/PegasusFlyby';
 import { BarlogView } from './play/outlook/BarlogView';
 import { OutlookView } from './play/outlook/OutlookView';
-import { renderRewardsPanel } from './play/rewards/RewardsPanel';
-import { showCreditsModal } from './play/settings/CreditsModal';
-import { renderSettingsPanel } from './play/settings/SettingsPanel';
-import { buildAchievementSplash } from './play/splash/achievementSplash';
-import { buildBuffSplash } from './play/splash/buffSplash';
-import { buildCreatureSplash } from './play/splash/creatureSplash';
-import { buildEndGameSplash } from './play/splash/endGameSplash';
-import { buildInfluenceOverTimeSplash } from './play/splash/influenceOverTimeSplash';
-import { buildLevelUpSplash } from './play/splash/levelUpSplash';
-import { buildNewGameSplash } from './play/splash/newGameSplash';
-import { buildPortalSplash } from './play/splash/portalSplash';
-import { createSplash } from './play/splash/SplashView';
-import { renderTomesPanel } from './play/tomes/TomesPanel';
-import { FONT, HUD_PAD, hudBottom, NAV_H } from './play/ui/constants';
-import { aimFinger, createFingerPointer } from './play/ui/FingerPointer';
+import { FONT } from './play/ui/constants';
 
 export class PlayScene extends Phaser.Scene {
   private ctx = getContext();
@@ -32,23 +18,16 @@ export class PlayScene extends Phaser.Scene {
   private tutorialReturnTab: TabId = 'scene';
   /** Tutorial line already shown. Leaving Settings must not advance it. */
   private tutorialLine: string | null = null;
-  private hud!: HudView;
-  private nav!: BottomNav;
+  private hud!: HudOverlay;
   private xal!: XalView;
   private outlook!: OutlookView;
   private news!: NewsBanner;
   private barlog!: BarlogView;
-  private panel!: Phaser.GameObjects.Container;
-  private toast!: Phaser.GameObjects.Container;
-  private toastBg!: Phaser.GameObjects.Graphics;
-  private toastText!: Phaser.GameObjects.Text;
   private lastBuff = 0;
   private levelJinglePlayed = false;
   private saveTimer = 0;
   private passiveSpawnTimer = 0;
   private ignoreCastUntil = 0;
-  private shopScroll = 0;
-  private rewardsScroll = 0;
   private banterTimer?: Phaser.Time.TimerEvent;
   private persistHidden!: () => void;
   private persistPageHide!: () => void;
@@ -57,10 +36,7 @@ export class PlayScene extends Phaser.Scene {
   private onResizeBound!: () => void;
   private layoutW = 0;
   private layoutH = 0;
-  private splash!: ReturnType<typeof createSplash>;
-  private finger!: Phaser.GameObjects.Container;
   private pegasus!: PegasusFlyby;
-  private natureRow?: Phaser.GameObjects.Container;
 
   constructor() {
     super('Play');
@@ -92,7 +68,6 @@ export class PlayScene extends Phaser.Scene {
         this.ignoreCastUntil = this.time.now + 50;
         this.onPortraitTap();
       },
-      () => this.onChapterButton(),
       () => this.onStoryBack(),
     );
     this.xal.build();
@@ -106,28 +81,26 @@ export class PlayScene extends Phaser.Scene {
       this.castAt(pointer.x, pointer.y);
     });
 
-    this.hud = new HudView(this, this.ctx, () => this.openLevelUpSplash());
-    this.hud.build();
-    this.toastText = this.add.text(0, 0, '', {
-      fontFamily: FONT,
-      fontStyle: 'bold',
-      fontSize: '18px',
-      color: '#ffe6a8',
-      align: 'center',
-      wordWrap: { width: width - 56 },
-    }).setOrigin(0.5);
-    this.toastBg = this.add.graphics();
-    this.toast = this.add
-      .container(width / 2, hudBottom() + 22, [this.toastBg, this.toastText])
-      .setDepth(30)
-      .setAlpha(0);
-    this.panel = this.add.container(0, 0).setDepth(25).setVisible(false);
-    this.nav = new BottomNav(this, this.ctx, (tab) => this.setTab(tab));
-    this.nav.build();
-    this.splash = createSplash(this, this.add.container(0, 0).setDepth(50), {
-      playPop: () => this.ctx.audio.playSfx('pop'),
+    this.hud = new HudOverlay(this.game.canvas.parentElement ?? document.getElementById('game')!, this.ctx, {
+      onTab: (tab) => this.setTab(tab),
+      onLevelTap: () => this.openLevelUpSplash(),
+      onNewGame: () => this.onNewGame(),
+      onJump: (state) => {
+        this.ctx.replace(state);
+        this.restartPlay();
+      },
+      onBuyHelper: (id) => this.buyHelper(id),
+      onClaimReward: (info) => {
+        this.hud.showAchievementSplash({
+          description: info.description,
+          iconKey: info.iconKey,
+          before: info.before,
+          after: info.after,
+        });
+      },
+      onChapter: () => this.onChapterButton(),
+      claimReward: (id) => this.claimReward(id),
     });
-    this.finger = createFingerPointer(this, 0, 0);
     this.ctx.tutorial.bootstrap(this.ctx.state, this.ctx.economy);
     this.applyNavLock();
 
@@ -157,7 +130,7 @@ export class PlayScene extends Phaser.Scene {
       document.removeEventListener('resume', this.onFrozenResume);
       window.removeEventListener('pageshow', this.onPageShow);
       this.scale.off('resize', this.onResizeBound);
-      this.splash.dismiss();
+      this.hud.destroy();
       this.pegasus.destroy();
       this.ctx.audio.attach(null);
       this.ctx.spawn.clear();
@@ -181,14 +154,12 @@ export class PlayScene extends Phaser.Scene {
   private openOfflineSplash(): void {
     const pending = Math.floor(this.ctx.offlineGained);
     if (pending <= 0) return;
-    this.splash.open('influenceOverTime', {
-      build: buildInfluenceOverTimeSplash(pending, () => {
-        this.ctx.economy.addInfluence(this.ctx.state, pending);
-        this.ctx.state.pendingOffline = 0;
-        this.ctx.offlineGained = 0;
-        this.ctx.persist();
-        this.refreshHud();
-      }),
+    this.hud.showInfluenceSplash(pending, () => {
+      this.ctx.economy.addInfluence(this.ctx.state, pending);
+      this.ctx.state.pendingOffline = 0;
+      this.ctx.offlineGained = 0;
+      this.ctx.persist();
+      this.refreshHud();
     });
   }
 
@@ -322,24 +293,17 @@ export class PlayScene extends Phaser.Scene {
         this.refreshChapterCard();
         const chId = result.finishedChapterId;
         if (chId === 7) {
-          this.splash.open('endGame', {
-            build: buildEndGameSplash(() =>
-              showCreditsModal(this, this.add.container(0, 0).setDepth(55)),
-            ),
-          });
+          this.hud.showEndGameSplash(() => this.hud.showCreditsSplash());
         } else if (chId != null && chId >= 2 && chId <= 4) {
           const lvl = this.ctx.state.manaLevel;
-          this.splash.open('achievement', {
-            build: buildAchievementSplash({
-              title: '2x Mana Increase',
-              description: 'Your maximum mana has doubled.',
-              iconKey: 'ui-mana-icon',
-              before: `${(lvl - 1) * 100}`,
-              after: `${lvl * 100}`,
-            }),
+          this.hud.showAchievementSplash({
+            description: 'Your maximum mana has doubled.',
+            iconKey: 'ui-mana-icon',
+            before: `${(lvl - 1) * 100}`,
+            after: `${lvl * 100}`,
           });
         } else if (result.portalJustUnlocked) {
-          this.splash.open('portal', { build: buildPortalSplash() });
+          this.hud.showPortalSplash();
         }
         if (finishingCh1) {
           this.ctx.tutorial.startAfterChapter1(this.ctx.state);
@@ -418,7 +382,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private blocked(): boolean {
-    return this.splash.isOpen() || this.barlog.active();
+    return this.hud.isSplashOpen() || this.barlog.active();
   }
 
   private chapterOnXal() {
@@ -437,7 +401,7 @@ export class PlayScene extends Phaser.Scene {
 
   private refreshChapterCard(): void {
     const { next, visible } = this.chapterOnXal();
-    this.xal.refreshChapterCard(
+    this.hud.setChapter(
       next,
       next ? !this.ctx.story.canStart(this.ctx.state, next.id) : false,
       visible,
@@ -460,7 +424,7 @@ export class PlayScene extends Phaser.Scene {
     if (!line) return;
     this.clearBanterTimer();
     this.xal.showQuote(line.text);
-    this.xal.hideChapterCard();
+    this.hud.setChapter(undefined, false, false);
     this.xal.refreshPortalBar(false, false, this.ctx.state.region);
     if (line.speaker !== 'barlog') {
       this.xal.setPortraitExpression(line.expression);
@@ -496,7 +460,7 @@ export class PlayScene extends Phaser.Scene {
       this.tutorialReturnTab = this.tab;
     }
 
-    if (this.splash.isOpen()) this.splash.dismiss();
+    if (this.hud.isSplashOpen()) this.hud.dismissSplash();
     if (tab === 'outlook' && this.ctx.tutorial.outlookTutorial) {
       this.ctx.tutorial.dismissOutlookTutorial(this.ctx.state);
       this.tutorialLine = null;
@@ -507,16 +471,15 @@ export class PlayScene extends Phaser.Scene {
     if (tab !== 'scene') this.xal.hideQuote();
 
     this.tab = tab;
-    this.nav.setActive(tab);
-    this.panel.removeAll(true);
-    this.panel.setVisible(tab === 'shop' || tab === 'achievements' || tab === 'settings');
+    this.hud.setActive(tab);
+    if (tab !== 'shop' && tab !== 'achievements' && tab !== 'settings') this.hud.clearStage();
     this.ctx.audio.playSfx('pop', 0.35);
 
     this.outlook.setVisible(tab !== 'scene');
     this.xal.setVisible(tab === 'scene');
 
     if (tab === 'outlook') {
-      this.xal.hideChapterCard();
+      this.hud.setChapter(undefined, false, false);
       this.xal.refreshPortalBar(false, false, this.ctx.state.region);
       this.maybeStartBarlog();
       if (!this.barlog.active()) {
@@ -544,46 +507,52 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
 
-    this.xal.hideChapterCard();
+    this.hud.setChapter(undefined, false, false);
     this.xal.refreshPortalBar(false, false, this.ctx.state.region);
     this.ctx.spawn.clear();
-    if (tab === 'shop') this.renderShop();
-    if (tab === 'achievements') this.renderAchievements();
-    if (tab === 'settings') this.renderSettings();
+    if (tab === 'shop') this.hud.showTomes();
+    if (tab === 'achievements') this.hud.showRewards();
+    if (tab === 'settings') this.hud.showSettings();
 
     this.applyNavLock();
     this.refreshTutorialPointers();
   }
 
-  private renderShop(): void {
-    this.natureRow = undefined;
-    renderTomesPanel({
-      scene: this,
-      panel: this.panel,
-      ctx: this.ctx,
-      shopScroll: this.shopScroll,
-      onScroll: (scroll) => {
-        this.shopScroll = scroll;
-      },
-      showToast: (message) => this.showToast(message),
-      onCreatureUnlock: (creatureId) => {
-        const creature = this.ctx.spawn.creatures.find((c) => c.id === creatureId);
+  private buyHelper(id: string): void {
+    if (this.ctx.economy.buyHelper(this.ctx.state, id)) {
+      this.ctx.audio.playSfx('coin');
+      const owned = this.ctx.state.helpers.find((hh) => hh.id === id);
+      this.ctx.tutorial.onNaturePurchased(this.ctx.state);
+      this.hud.showTomes();
+      if (owned?.amountOwned === 1) {
+        const def = this.ctx.economy.def(id);
+        const creature = def && this.ctx.spawn.creatures.find((c) => c.id === def.creatureId);
         if (creature) {
-          this.splash.open('creature', { build: buildCreatureSplash(creature), deferChrome: true });
+          this.hud.showCreatureSplash(creature);
         }
-      },
-      rerender: () => {
-        this.ctx.tutorial.onNaturePurchased(this.ctx.state);
-        this.setTab('shop', true);
-      },
-      onNatureRow: (card) => {
-        this.natureRow = card;
-      },
-    });
+      }
+    } else {
+      this.showToast('Not enough influence');
+    }
+  }
+
+  private claimReward(id: RewardId): boolean {
+    switch (id) {
+      case 'helper':
+        return this.ctx.economy.claimHelper(this.ctx.state);
+      case 'clicker':
+        return this.ctx.economy.claimClicker(this.ctx.state);
+      case 'meta':
+        return this.ctx.economy.claimMeta(this.ctx.state);
+      case 'login':
+        return this.ctx.economy.claimLogin(this.ctx.state);
+      case 'story':
+        return this.ctx.economy.claimStory(this.ctx.state);
+    }
   }
 
   private applyNavLock(): void {
-    this.nav.setTabAllowed((tab) =>
+    this.hud.setTabAllowed((tab) =>
       this.barlog.active() ? false : this.ctx.tutorial.isTabAllowed(this.ctx.state, tab),
     );
   }
@@ -623,7 +592,7 @@ export class PlayScene extends Phaser.Scene {
 
   private refreshTutorialPointers(): void {
     if (this.barlog.active()) {
-      this.finger.setVisible(false);
+      this.hud.setFinger(false, 0, 0, false);
       return;
     }
     const { visible: chapterVisible } = this.chapterOnXal();
@@ -635,7 +604,6 @@ export class PlayScene extends Phaser.Scene {
       this.tab === 'shop',
       onSettings ? false : chapterVisible,
     );
-    // Settings covers the play area. Point at the nav button for the step they left.
     if (onSettings) {
       if (target === 'natureRow') target = 'tomesNav';
       else if (target === 'cast') target = 'outlookNav';
@@ -650,7 +618,7 @@ export class PlayScene extends Phaser.Scene {
       }
     }
     if (target === 'xal' && this.xal.quoteVisible()) {
-      this.finger.setVisible(false);
+      this.hud.setFinger(false, 0, 0, false);
       return;
     }
 
@@ -659,37 +627,31 @@ export class PlayScene extends Phaser.Scene {
       const firstLevelUp =
         s.playerLevel === 1 &&
         !this.ctx.story.reading &&
-        !this.splash.isOpen() &&
+        !this.hud.isSplashOpen() &&
         this.ctx.economy.readyToLevelUp(s);
       if (!firstLevelUp) {
-        this.finger.setVisible(false);
+        this.hud.setFinger(false, 0, 0, false);
         return;
       }
-      // Right HUD chip (level + mana). Tip points up from just below it.
-      aimFinger(this.finger, false);
-      this.finger.setPosition(this.scale.width - HUD_PAD - 58, hudBottom() + 36);
-      this.finger.setVisible(true);
+      const p = this.hud.levelChipCenter();
+      this.hud.setFinger(true, p.x, p.y + 36, false);
       return;
     }
 
-    // Flip upside-down so the tip points at the target (nav buttons, Xal portrait).
     const pointDown =
       target === 'tomesNav' || target === 'outlookNav' || target === 'sceneNav' || target === 'xal';
-    aimFinger(this.finger, pointDown);
-
     let x = 0;
     let y = 0;
     switch (target) {
       case 'chapter': {
-        const p = this.xal.chapterCardCenter();
+        const p = this.hud.chapterCardCenter();
         x = p.x;
-        // Sit under the title so the glove doesn't cover Chapter / name.
         y = p.y + 28;
         break;
       }
       case 'tomesNav':
       case 'sceneNav': {
-        const p = this.nav.navButtonCenter(target === 'sceneNav' ? 'scene' : 'shop');
+        const p = this.hud.navButtonCenter(target === 'sceneNav' ? 'scene' : 'shop');
         if (p) {
           x = p.x;
           y = p.y - 56;
@@ -697,24 +659,21 @@ export class PlayScene extends Phaser.Scene {
         break;
       }
       case 'natureRow': {
-        if (this.natureRow) {
-          const m = this.natureRow.getWorldTransformMatrix();
-          x = m.tx;
-          // Sit on the lower half so the glove doesn't cover the tome name.
-          y = m.ty + 48;
+        const p = this.hud.natureRowCenter();
+        if (p) {
+          x = p.x;
+          y = p.y + 24;
         }
         break;
       }
       case 'xal': {
         const { width, height } = this.scale;
-        const playMid = (height - NAV_H) / 2;
         x = width / 2;
-        // Sit above the portrait so the flipped glove points down at Xal, not over his face.
-        y = playMid - 56;
+        y = height / 2 - 56;
         break;
       }
       case 'outlookNav': {
-        const p = this.nav.navButtonCenter('outlook');
+        const p = this.hud.navButtonCenter('outlook');
         if (p) {
           x = p.x;
           y = p.y - 56;
@@ -728,46 +687,7 @@ export class PlayScene extends Phaser.Scene {
         break;
       }
     }
-    this.finger.setPosition(x, y);
-    this.finger.setVisible(true);
-  }
-
-  private renderAchievements(): void {
-    renderRewardsPanel({
-      scene: this,
-      panel: this.panel,
-      ctx: this.ctx,
-      rewardsScroll: this.rewardsScroll,
-      onScroll: (scroll) => {
-        this.rewardsScroll = scroll;
-      },
-      onAchievementClaim: (info) => {
-        this.splash.open('achievement', {
-          build: buildAchievementSplash({
-            title: info.title,
-            description: info.description,
-            iconKey: info.iconKey,
-            before: info.before,
-            after: info.after,
-          }),
-        });
-      },
-      rerender: () => this.setTab('achievements', true),
-    });
-  }
-
-  private renderSettings(): void {
-    renderSettingsPanel({
-      scene: this,
-      panel: this.panel,
-      ctx: this.ctx,
-      onCredits: () => showCreditsModal(this, this.panel),
-      onNewGame: () => this.onNewGame(),
-      onJump: (state) => {
-        this.ctx.replace(state);
-        this.restartPlay();
-      },
-    });
+    this.hud.setFinger(true, x, y, pointDown);
   }
 
   private onPortalTravel(region: RegionId): void {
@@ -787,19 +707,17 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private openBuffSplash(): void {
-    this.splash.open('buff', {
-      build: buildBuffSplash(() => {
-        if (this.ctx.economy.acceptBuffOffer(this.ctx.state)) {
-          this.ctx.audio.playSfx('buff');
-          this.lastBuff = this.ctx.state.buffRemaining;
-        }
-        this.ctx.persist();
-      }),
+    this.hud.showBuffSplash(() => {
+      if (this.ctx.economy.acceptBuffOffer(this.ctx.state)) {
+        this.ctx.audio.playSfx('buff');
+        this.lastBuff = this.ctx.state.buffRemaining;
+      }
+      this.ctx.persist();
     });
   }
 
   private onNewGame(): void {
-    this.splash.open('newGame', { build: buildNewGameSplash(() => this.confirmNewGame()) });
+    this.hud.showNewGameSplash(() => this.confirmNewGame());
   }
 
   private confirmNewGame(): void {
@@ -812,35 +730,31 @@ export class PlayScene extends Phaser.Scene {
     this.news.hide();
     this.lastBuff = 0;
     this.levelJinglePlayed = false;
-    this.shopScroll = 0;
-    this.rewardsScroll = 0;
-    this.splash.dismiss();
+    this.hud.dismissSplash();
     this.outlook.applyRegionVisual();
     this.applyNavLock();
     this.setTab('scene', true);
   }
 
   private openLevelUpSplash(): void {
-    if (this.splash.isOpen()) return;
+    if (this.hud.isSplashOpen()) return;
     if (!this.ctx.economy.readyToLevelUp(this.ctx.state) || this.ctx.story.reading) return;
     this.ctx.audio.playSfx('levelup');
     const reward = this.ctx.economy.levelReward(this.ctx.state);
-    this.splash.open('levelUp', {
-      build: buildLevelUpSplash(reward, () => {
-        if (this.ctx.economy.levelUp(this.ctx.state)) {
-          this.refreshChapterCard();
-          this.ctx.persist();
-        }
-      }),
+    this.hud.showLevelUpSplash(reward, () => {
+      if (this.ctx.economy.levelUp(this.ctx.state)) {
+        this.refreshChapterCard();
+        this.ctx.persist();
+      }
     });
   }
 
   private refreshHud(): void {
-    this.hud.setLevelReady(
+    this.hud.refresh(
       this.ctx.economy.readyToLevelUp(this.ctx.state) && !this.ctx.story.reading,
+      this.ctx.story.reading,
+      this.chapterReady(),
     );
-    this.hud.refresh();
-    this.nav.refreshBadges(this.ctx.story.reading, this.chapterReady());
   }
 
   /** Unity SceneManager.ManageExclamationPoint — next unread chapter startable, not ch1. */
@@ -853,22 +767,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private showToast(msg: string): void {
-    this.toastText.setText(msg);
-    const padX = 10;
-    const padY = 6;
-    const w = this.toastText.width + padX * 2;
-    const h = this.toastText.height + padY * 2;
-    this.toastBg.clear();
-    this.toastBg.fillStyle(0x000000, 0.85);
-    this.toastBg.fillRoundedRect(-w / 2, -h / 2, w, h, 8);
-    this.tweens.killTweensOf(this.toast);
-    this.toast.setAlpha(1);
-    this.tweens.add({
-      targets: this.toast,
-      alpha: 0,
-      delay: 2200,
-      duration: 500,
-    });
+    this.hud.showToast(msg);
   }
 
   private onResize(): void {
