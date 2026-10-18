@@ -371,22 +371,27 @@
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.85);
 }
 
-.tome-row,
-.reward-row,
-.chapter-card {
+.hud-root .tome-row,
+.hud-root .reward-row,
+.hud-root .chapter-card {
   display: grid;
   grid-template-columns: 56px 1fr auto;
   gap: 10px;
   align-items: center;
   padding: 10px 12px;
   margin-bottom: 10px;
+  text-align: left;
 }
 
 .tome-row.is-locked {
-  opacity: 0.48;
+  opacity: 1;
 }
 
-.tome-row img,
+.tome-row.is-locked > :not(.tome-art) {
+  opacity: 0.5;
+}
+
+.tome-art,
 .reward-row img,
 .chapter-card img {
   width: 48px;
@@ -397,12 +402,26 @@
   padding: 4px;
 }
 
+.tome-copy,
+.tome-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tome-side {
+  text-align: right;
+}
+
 .tome-name,
 .reward-title,
 .chapter-kicker {
   font-family: 'Cormorant Garamond', serif;
   font-size: 18px;
   font-style: italic;
+  text-align: left;
 }
 
 .tome-meta,
@@ -417,7 +436,17 @@
 }
 
 .tome-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: #fde68a;
+  font-size: 12px;
+}
+
+.tome-cost img {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
 }
 
 .reward-bar {
@@ -669,18 +698,28 @@
   cursor: pointer;
 }
 
-.splash-lock {
-  overflow: hidden;
-  width: min(180px, 46vw);
-  height: min(300px, 42vh);
-  pointer-events: none;
+.story-back {
+  position: absolute;
+  left: 14px;
+  bottom: 96px;
+  z-index: 3;
+  min-width: 88px;
+  pointer-events: auto;
 }
 
-.splash-lock img {
-  display: block;
-  height: 100%;
-  width: auto;
-  max-width: none;
+.story-back[hidden] {
+  display: none;
+}
+
+.splash-lock {
+  width: min(200px, 52vw);
+  height: min(320px, 46vh);
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+  background-position: 0 0;
+  transform-origin: 50% 50%;
+  mix-blend-mode: screen;
+  pointer-events: none;
 }
 
 .splash-portrait {

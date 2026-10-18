@@ -40,6 +40,7 @@ export type HudOverlayHandlers = {
   onBuyHelper: (id: string) => void;
   onClaimReward: (info: AchievementClaimInfo) => void;
   onChapter: () => void;
+  onStoryBack: () => void;
   claimReward: (id: RewardId) => boolean;
 };
 
@@ -57,6 +58,7 @@ export class HudOverlay {
   private readonly toast: HTMLElement;
   private readonly finger: HTMLImageElement;
   private readonly splash: HTMLElement;
+  private readonly storyBack: HTMLButtonElement;
   private toastTimer = 0;
   private splashCleanup: (() => void) | null = null;
   private view: TabId | 'credits' | null = null;
@@ -91,6 +93,7 @@ export class HudOverlay {
         </button>
       </header>
       <div class="hud-stage" data-stage></div>
+      <button type="button" class="scroll-card back-btn story-back" data-story-back hidden>Back</button>
       <nav class="nav-dock">${NAV.map(
         (n) =>
           `<button type="button" class="nav-btn" data-tab="${n.id}"><img src="${n.icon}" alt="" /><span>${n.label}</span><span class="nav-dot" data-dot="${n.id}" hidden>!</span></button>`,
@@ -112,8 +115,15 @@ export class HudOverlay {
     this.toast = this.root.querySelector('[data-toast]')!;
     this.finger = this.root.querySelector('[data-finger]')!;
     this.splash = this.root.querySelector('[data-splash]')!;
+    this.storyBack = this.root.querySelector('[data-story-back]')!;
 
     this.root.querySelector('[data-level]')?.addEventListener('click', () => this.handlers.onLevelTap());
+    this.storyBack.addEventListener('pointerdown', (e) => e.stopPropagation());
+    this.storyBack.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.handlers.onStoryBack();
+    });
     this.root.querySelectorAll<HTMLElement>('[data-tab]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const tab = btn.dataset.tab as TabId;
@@ -130,6 +140,32 @@ export class HudOverlay {
 
   isSplashOpen(): boolean {
     return !this.splash.hidden;
+  }
+
+  setStoryBack(on: boolean): void {
+    this.storyBack.hidden = !on;
+  }
+
+  hitsStoryBack(pointer: { x: number; y: number; event?: Event }): boolean {
+    if (this.storyBack.hidden) return false;
+    const r = this.storyBack.getBoundingClientRect();
+    const ev = pointer.event as MouseEvent | TouchEvent | undefined;
+    let cx: number;
+    let cy: number;
+    if (ev && 'clientX' in ev) {
+      cx = ev.clientX;
+      cy = ev.clientY;
+    } else if (ev && 'changedTouches' in ev && ev.changedTouches[0]) {
+      cx = ev.changedTouches[0].clientX;
+      cy = ev.changedTouches[0].clientY;
+    } else {
+      const canvas = this.root.parentElement?.querySelector('canvas');
+      if (!canvas) return false;
+      const cr = canvas.getBoundingClientRect();
+      cx = cr.left + (pointer.x / canvas.clientWidth) * cr.width;
+      cy = cr.top + (pointer.y / canvas.clientHeight) * cr.height;
+    }
+    return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
   }
 
   dismissSplash(): void {

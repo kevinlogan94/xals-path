@@ -56,20 +56,12 @@ export class PlayScene extends Phaser.Scene {
     this.outlook.build();
     this.news = new NewsBanner(this);
     this.news.build();
-    this.barlog = new BarlogView(
-      this,
-      () => this.onBarlogTap(),
-      () => this.onStoryBack(),
-    );
+    this.barlog = new BarlogView(this, (pointer) => this.onBarlogTap(pointer));
     this.barlog.build();
-    this.xal = new XalView(
-      this,
-      () => {
-        this.ignoreCastUntil = this.time.now + 50;
-        this.onPortraitTap();
-      },
-      () => this.onStoryBack(),
-    );
+    this.xal = new XalView(this, (pointer) => {
+      this.ignoreCastUntil = this.time.now + 50;
+      this.onPortraitTap(pointer);
+    });
     this.xal.build();
     this.xal.setPortalTravelHandler((region) => this.onPortalTravel(region));
 
@@ -99,6 +91,7 @@ export class PlayScene extends Phaser.Scene {
         });
       },
       onChapter: () => this.onChapterButton(),
+      onStoryBack: () => this.onStoryBack(),
       claimReward: (id) => this.claimReward(id),
     });
     this.ctx.tutorial.bootstrap(this.ctx.state, this.ctx.economy);
@@ -277,7 +270,8 @@ export class PlayScene extends Phaser.Scene {
     });
   }
 
-  private onPortraitTap(): void {
+  private onPortraitTap(pointer?: Phaser.Input.Pointer): void {
+    if (pointer && this.hud.hitsStoryBack(pointer)) return;
     if (this.tab !== 'scene') return;
 
     if (this.ctx.story.reading) {
@@ -289,6 +283,7 @@ export class PlayScene extends Phaser.Scene {
       }
       if (result.finished) {
         this.xal.hideQuote();
+        this.syncStoryBack();
         this.xal.setPortraitExpression('generic');
         this.refreshChapterCard();
         const chId = result.finishedChapterId;
@@ -396,7 +391,7 @@ export class PlayScene extends Phaser.Scene {
   private showBarlogLine(): void {
     const line = this.ctx.story.currentLine();
     if (line) this.barlog.showQuote(line.text);
-    this.barlog.setBackVisible(this.ctx.story.quoteIndex > 0);
+    this.syncStoryBack();
   }
 
   private refreshChapterCard(): void {
@@ -429,7 +424,15 @@ export class PlayScene extends Phaser.Scene {
     if (line.speaker !== 'barlog') {
       this.xal.setPortraitExpression(line.expression);
     }
-    this.xal.setBackVisible(this.ctx.story.quoteIndex > 0);
+    this.syncStoryBack();
+  }
+
+  private syncStoryBack(): void {
+    this.hud.setStoryBack(
+      this.ctx.story.reading &&
+        this.ctx.story.quoteIndex > 0 &&
+        (this.barlog.active() || this.tab === 'scene'),
+    );
   }
 
   private showTutorialLine(line: string): void {
@@ -471,6 +474,7 @@ export class PlayScene extends Phaser.Scene {
     if (tab !== 'scene') this.xal.hideQuote();
 
     this.tab = tab;
+    this.syncStoryBack();
     this.hud.setActive(tab);
     if (tab !== 'shop' && tab !== 'achievements' && tab !== 'settings') this.hud.clearStage();
     this.ctx.audio.playSfx('pop', 0.35);
@@ -568,11 +572,13 @@ export class PlayScene extends Phaser.Scene {
     }
     this.ctx.spawn.clear();
     this.ctx.audio.playBgm('barlogs-theme');
+    this.hud.setStoryBack(false);
     this.barlog.begin(() => this.showBarlogLine());
     this.applyNavLock();
   }
 
-  private onBarlogTap(): void {
+  private onBarlogTap(pointer?: Phaser.Input.Pointer): void {
+    if (pointer && this.hud.hitsStoryBack(pointer)) return;
     if (!this.ctx.story.reading) return;
     const result = this.ctx.story.advance(this.ctx.state);
     if (result.regionChanged) {
@@ -581,6 +587,7 @@ export class PlayScene extends Phaser.Scene {
     }
     if (result.finished) {
       this.refreshChapterCard();
+      this.hud.setStoryBack(false);
       this.barlog.fadeOut(() => {
         this.applyNavLock();
         if (this.tab === 'outlook') this.ctx.audio.playRegion(this.ctx.state.region);

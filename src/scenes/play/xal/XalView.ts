@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { RegionId } from '../../../types';
 import { NAV_H } from '../ui/constants';
-import { createImageButton, createStoryBack, showButton } from '../ui/ImageButton';
+import { createImageButton } from '../ui/ImageButton';
 import { whiteText } from '../ui/textStyles';
 import { QuoteBox } from './QuoteBox';
 
@@ -58,14 +58,12 @@ export class XalView {
   private book!: Phaser.GameObjects.Sprite;
   private quoteBox: QuoteBox;
   private portalBar!: Phaser.GameObjects.Container;
-  private backBtn!: Phaser.GameObjects.Container;
   private onPortalTravel?: (region: RegionId) => void;
   private quoteOpen = false;
 
   constructor(
     private readonly scene: Phaser.Scene,
-    private readonly onPortraitTap: () => void,
-    private readonly onStoryBack: () => void,
+    private readonly onPortraitTap: (pointer: Phaser.Input.Pointer) => void,
   ) {
     this.quoteBox = new QuoteBox(scene);
   }
@@ -97,7 +95,6 @@ export class XalView {
       .setVisible(false);
     this.fitPortrait();
     this.portalBar = this.scene.add.container(width / 2, height - NAV_H - 36).setDepth(23).setVisible(false);
-    this.backBtn = createStoryBack(this.scene, this.onStoryBack, 24);
     this.quoteBox.build();
   }
 
@@ -114,7 +111,6 @@ export class XalView {
       this.stopIdle();
       this.book.setVisible(false);
       this.portalBar.setVisible(false);
-      this.setBackVisible(false);
     } else if (!this.quoteOpen) {
       this.playIdle();
     }
@@ -160,7 +156,6 @@ export class XalView {
   hideQuote(): void {
     this.quoteOpen = false;
     this.quoteBox.hide();
-    this.setBackVisible(false);
     if (this.portrait.visible) this.playIdle();
   }
 
@@ -181,10 +176,6 @@ export class XalView {
   private sitBook(): void {
     if (!this.portrait.visible) return;
     this.book.setVisible(true).stop().setFrame('book-0');
-  }
-
-  setBackVisible(visible: boolean): void {
-    showButton(this.backBtn, visible);
   }
 
   quoteVisible(): boolean {

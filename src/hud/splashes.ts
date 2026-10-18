@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 import { formatNumber } from '../utils/format';
-import { creatureFirstFrame } from '../scenes/play/splash/creatureSplash';
+import { creatureFirstFrame, creatureRun } from '../scenes/play/splash/creatureSplash';
 
 const ICONS: Record<string, string> = {
   'ui-influence': './assets/ui/influence.png',
@@ -12,8 +12,7 @@ const ICONS: Record<string, string> = {
   'ui-reward-portal': './assets/ui/reward-portal.png',
 };
 
-const LOCK_SRC = './assets/ui/lock-sheet.png';
-const LOCK_FRAME_X = [12, 362, 712, 1062, 1412].map((x) => x * 2);
+const LOCK_FRAMES = 5;
 
 function shell(kicker: string, title: string, inner: string): string {
   return `<section class="scroll-modal splash-modal"><p class="scroll-kicker">${kicker}</p><h2 class="scroll-title">${title}</h2><div class="scroll-body">${inner}</div></section>`;
@@ -135,22 +134,32 @@ function creaturePanel(creature: CreatureDef): string {
   );
 }
 
-function fitCreatureFrame(host: HTMLElement, id: string): void {
-  const frame = creatureFirstFrame(id);
+function playCreatureRun(host: HTMLElement, id: string): () => void {
+  const run = creatureRun(id);
   const img = host.querySelector<HTMLImageElement>('[data-creature-frame]');
   const box = host.querySelector<HTMLElement>('.splash-portrait');
-  if (!frame || !img || !box) return;
+  if (!run || !img || !box) return () => undefined;
+  let i = 0;
+  const max = Math.max(...run.frames.flatMap((f) => [f.w, f.h]));
+  const scale = 96 / max;
   const apply = () => {
-    const scale = 96 / Math.max(frame.w, frame.h);
-    box.style.width = `${Math.round(frame.w * scale)}px`;
-    box.style.height = `${Math.round(frame.h * scale)}px`;
+    const frame = run.frames[i];
     img.style.width = `${img.naturalWidth * scale}px`;
     img.style.height = `${img.naturalHeight * scale}px`;
-    img.style.marginLeft = `${-frame.x * scale}px`;
-    img.style.marginTop = `${-frame.y * scale}px`;
+    img.style.marginLeft = `${(96 - frame.w * scale) / 2 - frame.x * scale}px`;
+    img.style.marginTop = `${(96 - frame.h * scale) / 2 - frame.y * scale}px`;
   };
-  if (img.complete && img.naturalWidth) apply();
-  else img.addEventListener('load', apply, { once: true });
+  let tick = 0;
+  const start = () => {
+    apply();
+    tick = window.setInterval(() => {
+      i = (i + 1) % run.frames.length;
+      apply();
+    }, 1000 / run.fps);
+  };
+  if (img.complete && img.naturalWidth) start();
+  else img.addEventListener('load', start, { once: true });
+  return () => window.clearInterval(tick);
 }
 
 export type SplashBind = (host: HTMLElement, close: () => void) => () => void;
@@ -176,15 +185,15 @@ export function bindEndGame(onCredits: () => void): SplashBind {
 export function bindCreature(creature: CreatureDef): SplashBind {
   return (host, close) => {
     const timers: number[] = [];
+    let stopRun = () => undefined as void;
     const at = (ms: number, fn: () => void) => {
       timers.push(window.setTimeout(fn, ms));
     };
-    host.innerHTML = `<div class="splash-lock"><img src="${LOCK_SRC}" alt="" /></div>`;
-    const img = host.querySelector('img');
+    host.innerHTML =
+      '<div class="splash-lock" style="background-image:url(\'./assets/ui/lock-sheet.png\')"></div>';
     const lock = host.querySelector('.splash-lock') as HTMLElement | null;
     const showFrame = (i: number) => {
-      const h = lock?.clientHeight ?? 300;
-      if (img) img.style.marginLeft = `${-(LOCK_FRAME_X[i] / 1080) * h}px`;
+      if (lock) lock.style.backgroundPosition = `${(i / (LOCK_FRAMES - 1)) * 100}% 0`;
     };
     showFrame(0);
     [2000, 2050, 2100, 2150].forEach((ms, i) => at(ms, () => showFrame(i + 1)));
@@ -196,10 +205,13 @@ export function bindCreature(creature: CreatureDef): SplashBind {
     );
     at(3167, () => {
       host.innerHTML = creaturePanel(creature);
-      fitCreatureFrame(host, creature.id);
+      stopRun = playCreatureRun(host, creature.id);
       bindGo(host, close);
     });
-    return () => timers.forEach((id) => window.clearTimeout(id));
+    return () => {
+      timers.forEach((id) => window.clearTimeout(id));
+      stopRun();
+    };
   };
 }
 

@@ -1,19 +1,16 @@
 import Phaser from 'phaser';
 import { hudBottom, NAV_H } from '../ui/constants';
-import { createStoryBack, showButton } from '../ui/ImageButton';
 import { QuoteBox, quoteBoxHeight } from '../xal/QuoteBox';
 
 export class BarlogView {
   private root!: Phaser.GameObjects.Container;
-  private backBtn!: Phaser.GameObjects.Container;
   private quoteBox: QuoteBox;
   private open = false;
   private inputReady = false;
 
   constructor(
     private readonly scene: Phaser.Scene,
-    private readonly onTap: () => void,
-    private readonly onBack: () => void,
+    private readonly onTap: (pointer: Phaser.Input.Pointer) => void,
   ) {
     this.quoteBox = new QuoteBox(scene);
   }
@@ -39,11 +36,10 @@ export class BarlogView {
     const tap = this.scene.add
       .rectangle(width / 2, playBottom / 2, width, playBottom, 0x000000, 0)
       .setInteractive({ useHandCursor: true });
-    tap.on('pointerdown', () => {
-      if (this.inputReady) this.onTap();
+    tap.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (this.inputReady) this.onTap(pointer);
     });
     this.root = this.scene.add.container(0, 0, [under, portrait, tap]).setDepth(32).setVisible(false);
-    this.backBtn = createStoryBack(this.scene, this.onBack, 34);
     this.quoteBox.build(33, quoteY);
   }
 
@@ -55,7 +51,6 @@ export class BarlogView {
     this.open = true;
     this.inputReady = false;
     this.quoteBox.hide();
-    this.setBackVisible(false);
     this.root.setVisible(true).setAlpha(0);
     this.fade(1, () => {
       this.inputReady = true;
@@ -67,14 +62,9 @@ export class BarlogView {
     this.quoteBox.show(text);
   }
 
-  setBackVisible(visible: boolean): void {
-    showButton(this.backBtn, visible);
-  }
-
   hide(): void {
     this.scene.tweens.killTweensOf(this.root);
     this.quoteBox.hide();
-    this.setBackVisible(false);
     this.root.setVisible(false);
     this.open = false;
     this.inputReady = false;
@@ -83,7 +73,6 @@ export class BarlogView {
   fadeOut(onDone: () => void): void {
     this.inputReady = false;
     this.quoteBox.hide();
-    this.setBackVisible(false);
     this.fade(0, () => {
       this.root.setVisible(false);
       this.open = false;

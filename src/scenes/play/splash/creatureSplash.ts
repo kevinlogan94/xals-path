@@ -143,24 +143,29 @@ export function texKey(id: string): string {
   return `creature-${id}-run`;
 }
 
-export function creatureFirstFrame(id: string): {
+export function creatureRun(id: string): {
   src: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+  fps: number;
+  frames: { x: number; y: number; w: number; h: number }[];
 } | null {
   const sheet = CREATURE_RUN[id];
-  const frame = sheet?.frames[0];
-  if (!sheet || !frame) return null;
-  const [x, uy, w, h] = frame;
+  if (!sheet) return null;
   return {
     src: `./assets/creatures/${sheet.src}`,
-    x: x * 2,
-    y: (sheet.h - uy - h) * 2,
-    w: w * 2,
-    h: h * 2,
+    fps: sheet.fps ?? 10,
+    frames: sheet.frames.map(([x, uy, w, h]) => ({
+      x: x * 2,
+      y: (sheet.h - uy - h) * 2,
+      w: w * 2,
+      h: h * 2,
+    })),
   };
+}
+
+export function creatureFirstFrame(id: string) {
+  const run = creatureRun(id);
+  const frame = run?.frames[0];
+  return run && frame ? { src: run.src, ...frame } : null;
 }
 
 export function preloadCreatureSplashAssets(load: Phaser.Loader.LoaderPlugin): void {
