@@ -397,9 +397,31 @@
   width: 48px;
   height: 48px;
   object-fit: contain;
-  background: rgba(8, 6, 10, 0.55);
+  overflow: hidden;
+  background-color: rgba(8, 6, 10, 0.55);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-origin: content-box;
   border-radius: 10px;
   padding: 4px;
+}
+
+.tome-art.is-lock {
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  background-size: 0;
+}
+
+.tome-art.is-lock::after {
+  content: '';
+  height: 100%;
+  aspect-ratio: 7 / 11;
+  background-image: inherit;
+  background-repeat: no-repeat;
+  background-size: 500% 100%;
+  background-position: 0 50%;
 }
 
 .tome-copy,

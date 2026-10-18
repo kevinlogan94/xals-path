@@ -135,7 +135,7 @@ export function tomesHtml(ctx: GameContext): string {
       const canBuy = !locked && ctx.state.influence >= save.dynamicCost;
       const cls = `scroll-card tome-row${locked ? ' is-locked' : ''}${canBuy ? ' scroll-card-active' : ''}`;
       return `<button type="button" class="${cls}" data-tome="${def.id}" ${locked ? 'disabled' : ''}>
-        <img class="tome-art" src="${locked ? './assets/ui/lock.png' : `./assets/ui/tomes/${def.id}.png`}" alt="" />
+        <span class="tome-art${locked ? ' is-lock' : ''}" style="background-image:url('${locked ? './assets/ui/lock-sheet.png' : `./assets/ui/tomes/${def.id}.png`}')"></span>
         <div class="tome-copy">
           <div class="tome-name">${def.name}</div>
           <div class="tome-cost"><img src="./assets/ui/influence.png" alt="" /><span data-cost>${formatNumber(save.dynamicCost)}</span></div>
@@ -169,8 +169,11 @@ export function syncTomes(root: HTMLElement, ctx: GameContext): void {
     row.classList.toggle('is-locked', locked);
     row.classList.toggle('scroll-card-active', canBuy);
     row.toggleAttribute('disabled', locked);
-    const img = row.querySelector<HTMLImageElement>('.tome-art');
-    if (img) img.src = locked ? './assets/ui/lock.png' : `./assets/ui/tomes/${def.id}.png`;
+    const art = row.querySelector<HTMLElement>('.tome-art');
+    if (art) {
+      art.classList.toggle('is-lock', locked);
+      art.style.backgroundImage = `url('${locked ? './assets/ui/lock-sheet.png' : `./assets/ui/tomes/${def.id}.png`}')`;
+    }
     const cost = row.querySelector('[data-cost]');
     if (cost) cost.textContent = formatNumber(save.dynamicCost);
     const owned = row.querySelector('.tome-owned');
