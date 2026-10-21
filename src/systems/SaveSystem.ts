@@ -232,6 +232,35 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
         return save;
       },
     },
+    {
+      label: 'Unlock creatures',
+      save: () => {
+        const helpers = helpersData.helpers as HelperDef[];
+        const lastUnlock = Math.max(...helpers.map((h) => h.unlockLevel));
+        const influence = helpers.reduce((sum, h) => sum + h.cost, 0);
+        return devSave(
+          {
+            playerLevel: lastUnlock,
+            region: 'meadow',
+            unlockedRegions: ['meadow', 'river', 'altar'],
+            portalUnlocked: true,
+            influence,
+            buffEverCollected: true,
+            newsShown: [
+              'Outlook',
+              'Spells',
+              'Xal',
+              'Tomes',
+              'ClickerAchievement',
+              'LoginAchievement',
+              'TomeAchievement',
+            ],
+          },
+          [1, 2, 3, 4, 5, 6, 7],
+          {},
+        );
+      },
+    },
   ];
 }
 
