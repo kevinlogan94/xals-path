@@ -70,9 +70,9 @@ export class XalView {
 
   build(): void {
     const { width, height } = this.scene.scale;
-    // Full-scene tap target behind map UI + nav (depth order resolves hits).
+    const playH = height - NAV_H;
     this.tapZone = this.scene.add
-      .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
+      .rectangle(width / 2, playH / 2, width, playH, 0x000000, 0)
       .setDepth(1)
       .setInteractive({ useHandCursor: true });
     this.tapZone.on('pointerdown', this.onPortraitTap);
@@ -132,8 +132,9 @@ export class XalView {
     this.book
       .setScale(scale * BOOK_SX, scale)
       .setPosition(left + BOOK_X * scale, top + BOOK_Y * scale);
-    this.tapZone.setPosition(width / 2, height / 2);
-    this.tapZone.setSize(width, height);
+    const playH = height - NAV_H;
+    this.tapZone.setPosition(width / 2, playH / 2);
+    this.tapZone.setSize(width, playH);
   }
 
   setPortraitExpression(expr: string): void {

@@ -252,7 +252,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private onPortraitTap(pointer?: Phaser.Input.Pointer): void {
-    if (pointer && this.hud.hitsStoryBack(pointer)) return;
+    if (pointer && this.hud.hitsHud(pointer)) return;
     if (this.tab !== 'scene') return;
 
     if (this.ctx.story.reading) {
@@ -559,7 +559,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private onBarlogTap(pointer?: Phaser.Input.Pointer): void {
-    if (pointer && this.hud.hitsStoryBack(pointer)) return;
+    if (pointer && this.hud.hitsHud(pointer)) return;
     if (!this.ctx.story.reading) return;
     const result = this.ctx.story.advance(this.ctx.state);
     if (result.regionChanged) {

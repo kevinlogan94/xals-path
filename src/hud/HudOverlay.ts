@@ -148,9 +148,8 @@ export class HudOverlay {
     this.storyBack.hidden = !on;
   }
 
-  hitsStoryBack(pointer: { x: number; y: number; event?: Event }): boolean {
-    if (this.storyBack.hidden) return false;
-    const r = this.storyBack.getBoundingClientRect();
+  /** Phaser still sees pointer coords when the click landed on HTML HUD chrome. */
+  hitsHud(pointer: { x: number; y: number; event?: Event }): boolean {
     const ev = pointer.event as MouseEvent | TouchEvent | undefined;
     let cx: number;
     let cy: number;
@@ -167,7 +166,8 @@ export class HudOverlay {
       cx = cr.left + (pointer.x / canvas.clientWidth) * cr.width;
       cy = cr.top + (pointer.y / canvas.clientHeight) * cr.height;
     }
-    return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
+    const hit = document.elementFromPoint(cx, cy);
+    return !!hit && hit !== this.root && this.root.contains(hit);
   }
 
   dismissSplash(): void {
