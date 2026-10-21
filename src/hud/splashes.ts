@@ -144,10 +144,13 @@ function playCreatureRun(host: HTMLElement, id: string): () => void {
   const scale = 96 / max;
   const apply = () => {
     const frame = run.frames[i];
-    img.style.width = `${img.naturalWidth * scale}px`;
-    img.style.height = `${img.naturalHeight * scale}px`;
+    const sw = img.naturalWidth * scale;
+    const sh = img.naturalHeight * scale;
+    img.style.width = `${sw}px`;
+    img.style.height = `${sh}px`;
     img.style.marginLeft = `${(96 - frame.w * scale) / 2 - frame.x * scale}px`;
     img.style.marginTop = `${(96 - frame.h * scale) / 2 - frame.y * scale}px`;
+    img.style.clipPath = `inset(${frame.y * scale}px ${sw - (frame.x + frame.w) * scale}px ${sh - (frame.y + frame.h) * scale}px ${frame.x * scale}px)`;
   };
   let tick = 0;
   const start = () => {
