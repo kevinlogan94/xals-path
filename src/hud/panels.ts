@@ -50,7 +50,7 @@ const CREDITS: [string, string[]][] = [
 ];
 
 function devFlag(): boolean {
-  return new URLSearchParams(window.location.search).get('dev') === '1';
+  return true;
 }
 
 function openUrl(url: string): void {
