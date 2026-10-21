@@ -10,7 +10,6 @@ import { PegasusFlyby } from './play/outlook/PegasusFlyby';
 import { BarlogView } from './play/outlook/BarlogView';
 import { OutlookView } from './play/outlook/OutlookView';
 import { playCastBurst } from './play/outlook/creatureMagic';
-import { FONT } from './play/ui/constants';
 
 export class PlayScene extends Phaser.Scene {
   private ctx = getContext();
@@ -225,8 +224,8 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
     this.ctx.audio.playSfx('cast', 0.35);
-    playCastBurst(this, x, y);
-    this.floatText(x, y, `+${formatNumber(gained)}`);
+    playCastBurst(this, x, y, `+${formatNumber(gained)}`);
+    this.hud.pulseInfluence();
     this.ctx.spawn.schedule(this.ctx.state, { delay: 0 });
   }
 
@@ -248,28 +247,8 @@ export class PlayScene extends Phaser.Scene {
       hit.setMagic();
       this.time.delayedCall(500, () => hit.hideCreature());
     }
-    this.floatText(hit.sprite.x, hit.sprite.y - 20, `+${formatNumber(gained)}`);
-  }
-
-  private floatText(x: number, y: number, msg: string): void {
-    const floater = this.add
-      .text(x, y, msg, {
-        fontFamily: FONT,
-        fontStyle: 'bold',
-        fontSize: '26px',
-        color: '#fff4c8',
-        stroke: '#3a2a10',
-        strokeThickness: 1,
-      })
-      .setOrigin(0.5)
-      .setDepth(15);
-    this.tweens.add({
-      targets: floater,
-      y: y - 140,
-      alpha: 0,
-      duration: 900,
-      onComplete: () => floater.destroy(),
-    });
+    playCastBurst(this, hit.sprite.x, hit.sprite.y, `+${formatNumber(gained)}`);
+    this.hud.pulseInfluence();
   }
 
   private onPortraitTap(pointer?: Phaser.Input.Pointer): void {

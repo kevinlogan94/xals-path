@@ -1,16 +1,12 @@
 import Phaser from 'phaser';
 import type { CreatureDef, GameSave, RegionId } from '../types';
 import creaturesData from '../data/creatures.json';
-import {
-  MAGIC_EFFECT,
-  MAGIC_IDLE,
-  makeMagicSprite,
-} from '../scenes/play/outlook/creatureMagic';
+import { makeMagicAura } from '../scenes/play/outlook/creatureMagic';
 import { ensureRunAnim, texKey } from '../scenes/play/splash/creatureSplash';
 
 interface Spawned {
   sprite: Phaser.GameObjects.Sprite;
-  magicSprite: Phaser.GameObjects.Sprite | null;
+  magicAura: Phaser.GameObjects.Container;
   creatureId: string;
   magic: boolean;
   /** Cross-screen lifetime (~2.5s Unity MoveAcrossScreen). */
@@ -59,7 +55,7 @@ export class SpawnSystem {
   clear(): void {
     for (const s of this.spawned) {
       s.sprite.destroy();
-      s.magicSprite?.destroy();
+      s.magicAura.destroy();
     }
     this.spawned = [];
     this.pending = [];
@@ -69,7 +65,7 @@ export class SpawnSystem {
     return this.spawned.some(
       (s) =>
         s.sprite.getBounds().contains(x, y) ||
-        (s.magicSprite?.visible && s.magicSprite.getBounds().contains(x, y)),
+        (s.magicAura.visible && Phaser.Math.Distance.Between(x, y, s.magicAura.x, s.magicAura.y) <= 58),
     );
   }
 
@@ -124,16 +120,14 @@ export class SpawnSystem {
       const t = Math.min(1, s.age / s.duration);
       s.sprite.x = s.startX + (s.endX - s.startX) * t;
       s.sprite.y = s.y + Math.sin(s.age * 3) * 4;
-      if (s.magicSprite) {
-        s.magicSprite.x = s.sprite.x;
-        s.magicSprite.y = s.sprite.y;
-      }
+      s.magicAura.x = s.sprite.x;
+      s.magicAura.y = s.sprite.y;
     }
 
     this.spawned = this.spawned.filter((s) => {
       if (s.age >= s.duration) {
         s.sprite.destroy();
-        s.magicSprite?.destroy();
+        s.magicAura.destroy();
         return false;
       }
       return true;
@@ -174,15 +168,11 @@ export class SpawnSystem {
     sprite.setScale(Math.min(96 / sprite.width, 72 / sprite.height));
     sprite.play(runKey);
 
-    const magicSprite = makeMagicSprite(this.scene);
-    if (magicSprite) {
-      const size = Math.max(sprite.displayWidth, sprite.displayHeight) * 1.4;
-      magicSprite.setDisplaySize(size, size);
-    }
+    const magicAura = makeMagicAura(this.scene);
 
     const entry: Spawned = {
       sprite,
-      magicSprite,
+      magicAura,
       creatureId: pick.id,
       magic: false,
       age: 0,
@@ -198,11 +188,7 @@ export class SpawnSystem {
         magic: entry.magic,
         setMagic: () => {
           entry.magic = true;
-          if (!magicSprite) return;
-          magicSprite.setVisible(true).play(MAGIC_EFFECT);
-          magicSprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-            magicSprite.setScale(magicSprite.scale * 0.5).play(MAGIC_IDLE);
-          });
+          magicAura.setVisible(true);
         },
         hideCreature: () => {
           sprite.setVisible(false);
@@ -210,7 +196,10 @@ export class SpawnSystem {
       });
     };
     sprite.on('pointerdown', tap);
-    magicSprite?.setInteractive({ useHandCursor: true }).on('pointerdown', tap);
+    magicAura
+      .setInteractive(new Phaser.Geom.Circle(0, 0, 58), Phaser.Geom.Circle.Contains)
+      .on('pointerdown', tap);
+    magicAura.input!.cursor = 'pointer';
 
     this.spawned.push(entry);
   }

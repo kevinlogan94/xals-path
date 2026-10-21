@@ -105,6 +105,7 @@
   font-size: 15px;
   line-height: 1.1;
   color: #fff;
+  transform-origin: left center;
 }
 
 .hud-rate {

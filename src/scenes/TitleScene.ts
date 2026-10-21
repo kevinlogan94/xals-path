@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import helpersData from '../data/helpers.json';
 import { version } from '../../package.json';
 import { getContext } from '../game/GameContext';
-import { preloadCreatureMagic } from './play/outlook/creatureMagic';
 import { preloadCreatureSplashAssets } from './play/splash/creatureSplash';
 import { wordmarkText } from './play/ui/textStyles';
 import type { HelperDef } from '../types';
@@ -391,7 +390,6 @@ function queueGameAssets(load: Phaser.Loader.LoaderPlugin): void {
   });
 
   preloadCreatureSplashAssets(load);
-  preloadCreatureMagic(load);
   load.spritesheet('pegasus', 'assets/creatures/pegasus-animation.png', {
     frameWidth: 464,
     frameHeight: 228,

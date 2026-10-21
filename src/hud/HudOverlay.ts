@@ -46,6 +46,7 @@ export type HudOverlayHandlers = {
 
 export class HudOverlay {
   readonly root: HTMLElement;
+  private readonly hudCrystal: HTMLElement;
   private readonly hudAmt: HTMLElement;
   private readonly hudRate: HTMLElement;
   private readonly hudLvl: HTMLElement;
@@ -103,6 +104,7 @@ export class HudOverlay {
       <div class="splash-layer" data-splash hidden></div>
     `;
     parent.append(this.root);
+    this.hudCrystal = this.root.querySelector('.hud-crystal')!;
     this.hudAmt = this.root.querySelector('[data-amt]')!;
     this.hudRate = this.root.querySelector('[data-rate]')!;
     this.hudLvl = this.root.querySelector('[data-lvl]')!;
@@ -263,6 +265,13 @@ export class HudOverlay {
     this.toast.classList.add('is-on');
     window.clearTimeout(this.toastTimer);
     this.toastTimer = window.setTimeout(() => this.toast.classList.remove('is-on'), 2700);
+  }
+
+  pulseInfluence(): void {
+    const keyframes = [{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1)' }];
+    const opts: KeyframeAnimationOptions = { duration: 120, easing: 'ease-out' };
+    this.hudCrystal.animate(keyframes, opts);
+    this.hudAmt.animate(keyframes, opts);
   }
 
   clearStage(): void {
