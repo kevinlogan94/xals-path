@@ -1,4 +1,4 @@
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 
 const EXPLODE = 'magic-explode';
 const IDLE = 'magic-idle-sheet';
