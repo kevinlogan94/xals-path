@@ -50,3 +50,18 @@ export function makeMagicSprite(scene: Phaser.Scene): Phaser.GameObjects.Sprite 
   if (!ensureMagicAnims(scene)) return null;
   return scene.add.sprite(0, 0, EXPLODE, 'ex-3').setDepth(6).setVisible(false);
 }
+
+/** Empty-space burst: a bit under creature magic (96 × 1.4). */
+export const MAGIC_TAP_SIZE = 100;
+
+/** Empty-space cast: same explode+idle as creatures, then gone. */
+export function playCastBurst(scene: Phaser.Scene, x: number, y: number): void {
+  const sprite = makeMagicSprite(scene);
+  if (!sprite) return;
+  sprite
+    .setPosition(x, y)
+    .setDisplaySize(MAGIC_TAP_SIZE, MAGIC_TAP_SIZE)
+    .setVisible(true)
+    .play(MAGIC_EFFECT);
+  sprite.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => sprite.destroy());
+}

@@ -9,6 +9,7 @@ import { NewsBanner } from './play/outlook/NewsBanner';
 import { PegasusFlyby } from './play/outlook/PegasusFlyby';
 import { BarlogView } from './play/outlook/BarlogView';
 import { OutlookView } from './play/outlook/OutlookView';
+import { playCastBurst } from './play/outlook/creatureMagic';
 import { FONT } from './play/ui/constants';
 
 export class PlayScene extends Phaser.Scene {
@@ -224,6 +225,7 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
     this.ctx.audio.playSfx('cast', 0.35);
+    playCastBurst(this, x, y);
     this.floatText(x, y, `+${formatNumber(gained)}`);
     this.ctx.spawn.schedule(this.ctx.state, { delay: 0 });
   }
