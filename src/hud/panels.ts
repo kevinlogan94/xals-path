@@ -51,7 +51,7 @@ const CREDITS: [string, string[]][] = [
 ];
 
 function devFlag(): boolean {
-  return true;
+  return new URLSearchParams(window.location.search).get('dev') === '1';
 }
 
 function openUrl(url: string): void {
