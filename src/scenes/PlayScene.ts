@@ -732,6 +732,10 @@ export class PlayScene extends Phaser.Scene {
     this.hud.showLevelUpSplash(reward, () => {
       if (this.ctx.economy.levelUp(this.ctx.state)) {
         this.refreshChapterCard();
+        if (this.ctx.state.playerLevel === 11 && !this.ctx.state.feedbackShown) {
+          this.ctx.state.feedbackShown = true;
+          this.hud.showFeedbackSplash();
+        }
         this.ctx.persist();
       }
     });

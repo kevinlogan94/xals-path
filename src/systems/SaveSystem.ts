@@ -49,6 +49,7 @@ function createDefaultSave(): GameSave {
     unlockedRegions: ['meadow'],
     pendingOffline: 0,
     tutorialCompleted: false,
+    feedbackShown: false,
     newsShown: [],
     savedAt: new Date().toISOString(),
   };
@@ -113,6 +114,7 @@ function devSave(
   const experienceRequired = xpRequiredAt(patch.playerLevel);
   Object.assign(save, patch, {
     tutorialCompleted: true,
+    feedbackShown: patch.playerLevel >= 11,
     experienceRequired,
     chapters: chaptersViewed(viewed),
     totalInfluenceEarned: patch.totalInfluenceEarned ?? 0,
@@ -412,6 +414,7 @@ export class SaveSystem {
         : ['meadow']) as RegionId[],
       pendingOffline: finite(save.pendingOffline, fresh.pendingOffline),
       tutorialCompleted: inferTutorialCompleted(save, fresh),
+      feedbackShown: save.feedbackShown ?? fresh.feedbackShown,
       newsShown: Array.isArray(save.newsShown) ? save.newsShown : [],
       savedAt: typeof save.savedAt === 'string' ? save.savedAt : fresh.savedAt,
     };

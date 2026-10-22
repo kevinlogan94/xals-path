@@ -28,8 +28,8 @@ function back(): string {
 
 function bindGo(host: HTMLElement, close: () => void, go?: () => void): void {
   host.querySelector('[data-splash-go]')?.addEventListener('click', () => {
-    go?.();
     close();
+    go?.();
   });
   host.querySelector('[data-splash-close]')?.addEventListener('click', close);
 }
@@ -110,13 +110,27 @@ export function levelUpSplash(reward: number): string {
   );
 }
 
+export function feedbackSplash(): string {
+  return shell(
+    "Traveler's Counsel",
+    'Thanks for Playing',
+    `<img class="splash-icon" src="${ICONS['ui-reward-star']}" alt="" />
+    <p class="splash-copy">Enjoying Xal's Path so far? Take a quick survey to share what you think and what we can do better.</p>
+    <div class="splash-actions">
+      <button type="button" class="ritual-btn" data-splash-go>Share Feedback</button>
+      <button type="button" class="scroll-card back-btn" data-splash-close>Not Now</button>
+    </div>`,
+  );
+}
+
 export function endGameSplash(): string {
   return shell(
     'The Path Is Walked',
     'Congratulations',
-    `<p class="splash-copy">You have reached the end of Xal's Path.<br /><br />Thank you for playing.</p>
+    `<p class="splash-copy">You have reached the end of Xal's Path. You may keep tending the realm, or start a New Game anytime from Settings.<br /><br />If you enjoyed the journey, we'd love to hear your thoughts.</p>
     <div class="splash-actions">
-      <button type="button" class="ritual-btn" data-splash-go>Credits</button>
+      <button type="button" class="ritual-btn" data-splash-feedback>Share Feedback</button>
+      <button type="button" class="scroll-card back-btn" data-splash-go>Credits</button>
       <button type="button" class="scroll-card back-btn" data-splash-close>Back</button>
     </div>`,
   );
@@ -174,8 +188,12 @@ export function bindSimple(go?: () => void): SplashBind {
   };
 }
 
-export function bindEndGame(onCredits: () => void): SplashBind {
+export function bindEndGame(onCredits: () => void, onFeedback: () => void): SplashBind {
   return (host, close) => {
+    host.querySelector('[data-splash-feedback]')?.addEventListener('click', () => {
+      close();
+      onFeedback();
+    });
     host.querySelector('[data-splash-go]')?.addEventListener('click', () => {
       close();
       onCredits();
@@ -218,7 +236,10 @@ export function bindCreature(creature: CreatureDef): SplashBind {
   };
 }
 
-export function bindCredits(host: HTMLElement, close: () => void): () => void {
-  host.querySelector('[data-credits-close]')?.addEventListener('click', close);
-  return () => undefined;
+export function bindCredits(onFeedback: () => void): SplashBind {
+  return (host, close) => {
+    host.querySelector('[data-credits-feedback]')?.addEventListener('click', onFeedback);
+    host.querySelector('[data-credits-close]')?.addEventListener('click', close);
+    return () => undefined;
+  };
 }

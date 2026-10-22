@@ -10,6 +10,7 @@ import {
   chapterHtml,
   claimInfo,
   creditsHtml,
+  openFeedback,
   rewardsHtml,
   settingsHtml,
   syncTomes,
@@ -25,6 +26,7 @@ import {
   bindSimple,
   buffSplash,
   endGameSplash,
+  feedbackSplash,
   influenceSplash,
   levelUpSplash,
   newGameSplash,
@@ -217,8 +219,18 @@ export class HudOverlay {
     this.openSplash(levelUpSplash(reward), bindSimple(onContinue));
   }
 
+  showFeedbackSplash(): void {
+    this.openSplash(
+      feedbackSplash(),
+      bindSimple(() => openFeedback('level11', this.ctx.state.playerLevel)),
+    );
+  }
+
   showEndGameSplash(onCredits: () => void): void {
-    this.openSplash(endGameSplash(), bindEndGame(onCredits));
+    this.openSplash(
+      endGameSplash(),
+      bindEndGame(onCredits, () => openFeedback('endgame', this.ctx.state.playerLevel)),
+    );
   }
 
   showCreatureSplash(creature: CreatureDef): void {
@@ -226,7 +238,10 @@ export class HudOverlay {
   }
 
   showCreditsSplash(): void {
-    this.openSplash(creditsHtml(), bindCredits);
+    this.openSplash(
+      creditsHtml(),
+      bindCredits(() => openFeedback('credits', this.ctx.state.playerLevel)),
+    );
   }
 
   setTabAllowed(fn: (tab: TabId) => boolean): void {
@@ -309,6 +324,9 @@ export class HudOverlay {
   showCredits(): void {
     this.view = 'credits';
     this.stage.innerHTML = creditsHtml();
+    this.stage
+      .querySelector('[data-credits-feedback]')
+      ?.addEventListener('click', () => openFeedback('credits', this.ctx.state.playerLevel));
     this.stage.querySelector('[data-credits-close]')?.addEventListener('click', () => this.showSettings());
   }
 

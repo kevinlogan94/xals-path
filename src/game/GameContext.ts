@@ -30,8 +30,10 @@ export class GameContext {
   }
 
   reset(): void {
+    const feedbackShown = this.state.feedbackShown;
     this.save.clear();
     this.state = this.save.load();
+    this.state.feedbackShown = feedbackShown;
     this.offlineGained = 0;
     this.story.reset();
     this.spawn.clear();

@@ -6,6 +6,7 @@ import { devPresets } from '../systems/SaveSystem';
 const GITHUB = 'https://github.com/kevinlogan94/xals-path';
 const COFFEE = 'https://buymeacoffee.com/kevinmlogan';
 const SITE = 'https://kevinmlogan.com';
+const FEEDBACK = 'https://tally.so/r/jea951';
 
 export type RewardId = 'helper' | 'clicker' | 'meta' | 'login' | 'story';
 
@@ -55,6 +56,10 @@ function devFlag(): boolean {
 
 function openUrl(url: string): void {
   window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+export function openFeedback(source: string, level: number): void {
+  openUrl(`${FEEDBACK}?source=${source}&level=${level}`);
 }
 
 function modal(kicker: string, title: string, body: string): string {
@@ -332,7 +337,10 @@ export function creditsHtml(): string {
     `<p class="credits-wordmark">Xal's Path</p>
     <p class="scroll-kicker">Created By Kevin Logan</p>
     <div class="credits-list">${pairs}</div>
-    <button type="button" class="ritual-btn" data-credits-close>Close</button>`,
+    <div class="splash-actions">
+      <button type="button" class="ritual-btn" data-credits-feedback>Share Feedback</button>
+      <button type="button" class="scroll-card back-btn" data-credits-close>Close</button>
+    </div>`,
   );
 }
 
