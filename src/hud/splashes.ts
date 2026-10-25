@@ -123,6 +123,47 @@ export function feedbackSplash(): string {
   );
 }
 
+export function whatsNewSplash(
+  unlockedCount: number,
+  totalCount = 12,
+  canViewAchievements = true,
+): string {
+  const callout =
+    unlockedCount > 0
+      ? `<p class="whats-new-callout">✨ ${unlockedCount} / ${totalCount} Achievements already unlocked from your journey!</p>`
+      : '';
+  const viewBtn = canViewAchievements
+    ? `<button type="button" class="ritual-btn" data-splash-go>View Achievements</button>`
+    : '';
+  return shell(
+    'Sanctum Chronicle',
+    "What's New",
+    `<img class="splash-icon" src="${ICONS['ui-reward-trophy']}" alt="" />
+    <p class="splash-copy">Permanent Achievements have returned alongside repeatable Milestones in the Rewards sanctum.</p>
+    ${callout}
+    <div class="whats-new-list">
+      <div class="scroll-card whats-new-card">
+        <img src="./assets/ui/trophy.png" alt="" />
+        <div>
+          <div class="reward-title">12 Legacy Trophies</div>
+          <div class="reward-hint">Earn permanent badges for story chapters, spell mastery, and realm exploration.</div>
+        </div>
+      </div>
+      <div class="scroll-card whats-new-card">
+        <img src="./assets/ui/tomes/rebirth.png" alt="" />
+        <div>
+          <div class="reward-title">Cross-Run Progress</div>
+          <div class="reward-hint">Unlocked achievements and story completion counts persist across New Games.</div>
+        </div>
+      </div>
+    </div>
+    <div class="splash-actions">
+      ${viewBtn}
+      <button type="button" class="scroll-card back-btn" data-splash-close>Continue</button>
+    </div>`,
+  );
+}
+
 export function endGameSplash(): string {
   return shell(
     'The Path Is Walked',

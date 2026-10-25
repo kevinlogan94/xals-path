@@ -90,5 +90,7 @@ export interface GameSave {
   tutorialCompleted: boolean;
   feedbackShown: boolean;
   newsShown: string[];
+  unlockedAchievements: string[];
+  whatsNewSeen: string;
   savedAt: string;
 }

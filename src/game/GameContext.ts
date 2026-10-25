@@ -5,6 +5,7 @@ import { StorySystem } from '../systems/StorySystem';
 import { TutorialSystem } from '../systems/TutorialSystem';
 import { AudioSystem } from '../systems/AudioSystem';
 import { SpawnSystem } from '../systems/SpawnSystem';
+import { WHATS_NEW_VERSION, evaluateAchievements } from '../systems/AchievementSystem';
 
 /** Shared game context — systems live here, not as global singletons. */
 export class GameContext {
@@ -30,11 +31,26 @@ export class GameContext {
   }
 
   reset(): void {
-    const feedbackShown = this.state.feedbackShown;
+    const { feedbackShown, unlockedAchievements, whatsNewSeen } = this.state;
+    const { storyCount, storyGoal } = this.state.achievements;
     this.save.clear();
     this.state = this.save.load();
     this.state.feedbackShown = feedbackShown;
+    this.state.unlockedAchievements = [...unlockedAchievements];
+    this.state.whatsNewSeen = whatsNewSeen || WHATS_NEW_VERSION;
+    this.state.achievements.storyCount = storyCount;
+    this.state.achievements.storyGoal = storyGoal;
+    this.trackLogin();
+    if (
+      this.state.unlockedAchievements.length > 0 ||
+      storyCount > 0 ||
+      storyGoal > 2 ||
+      feedbackShown
+    ) {
+      this.save.saveMeta(this.state);
+    }
     this.offlineGained = 0;
+    this.economy.buffSessionClicks = 0;
     this.story.reset();
     this.spawn.clear();
     this.tutorial.reset();
@@ -43,7 +59,10 @@ export class GameContext {
   /** Swap the live save and persist it. Caller restarts play chrome. */
   replace(state: GameSave): void {
     this.state = state;
+    this.trackLogin();
+    evaluateAchievements(this.state);
     this.offlineGained = 0;
+    this.economy.buffSessionClicks = 0;
     this.story.reset();
     this.spawn.clear();
     this.tutorial.reset();

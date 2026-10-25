@@ -7,6 +7,7 @@ import { track } from '../utils/track';
 export class EconomySystem {
   readonly helpers: HelperDef[] = helpersData.helpers as HelperDef[];
   readonly costMultiplier = helpersData.costMultiplier;
+  buffSessionClicks = 0;
   private passiveAcc = 0;
 
   passivePerSecond(state: GameSave): number {
@@ -26,6 +27,7 @@ export class EconomySystem {
     if (!infinite && state.mana < cost) return 0;
 
     if (!infinite) state.mana = Math.max(0, state.mana - cost);
+    else this.buffSessionClicks += 1;
 
     const gained = state.clickerIncrement;
     this.addInfluence(state, gained);
@@ -43,6 +45,7 @@ export class EconomySystem {
     const cost = this.castCost(state);
     if (!infinite && state.mana < cost) return 0;
     if (!infinite) state.mana = Math.max(0, state.mana - cost);
+    else this.buffSessionClicks += 1;
 
     let mult = 1;
     if (!alreadyMagic) {
@@ -75,6 +78,7 @@ export class EconomySystem {
     state.buffOfferPending = false;
     state.buffEverCollected = true;
     state.buffRemaining = economy.buffDurationSeconds;
+    this.buffSessionClicks = 0;
     return true;
   }
 
@@ -100,6 +104,7 @@ export class EconomySystem {
 
     if (state.buffRemaining > 0) {
       state.buffRemaining = Math.max(0, state.buffRemaining - dt);
+      if (state.buffRemaining <= 0) this.buffSessionClicks = 0;
     }
   }
 
