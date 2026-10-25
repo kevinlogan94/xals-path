@@ -54,8 +54,6 @@ export class PlayScene extends Phaser.Scene {
 
     this.outlook = new OutlookView(this, this.ctx);
     this.outlook.build();
-    this.news = new NewsBanner(this);
-    this.news.build();
     this.barlog = new BarlogView(this, (pointer) => this.onBarlogTap(pointer));
     this.barlog.build();
     this.xal = new XalView(this, (pointer) => {
@@ -67,7 +65,7 @@ export class PlayScene extends Phaser.Scene {
 
     this.pegasus = new PegasusFlyby(this, () => this.onPegasusTap());
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      if (this.blocked() || this.tab !== 'outlook') return;
+      if (this.blocked() || this.tab !== 'outlook' || this.hud.hitsHud(pointer)) return;
       if (this.pegasus.hits(pointer.x, pointer.y)) return;
       if (!this.outlook.canCast(pointer, this.ignoreCastUntil)) return;
       this.castAt(pointer.x, pointer.y);
@@ -94,6 +92,11 @@ export class PlayScene extends Phaser.Scene {
       onStoryBack: () => this.onStoryBack(),
       claimReward: (id) => this.claimReward(id),
     });
+    this.news = new NewsBanner(() => {
+      this.ctx.audio.playSfx('pop', 0.35);
+      this.ctx.persist();
+    });
+    this.news.build(this.hud.root);
     this.ctx.tutorial.bootstrap(this.ctx.state, this.ctx.economy);
     this.applyNavLock();
 
