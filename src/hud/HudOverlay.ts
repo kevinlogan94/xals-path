@@ -17,6 +17,7 @@ import {
   tomesHtml,
   type AchievementClaimInfo,
   type RewardId,
+  type RewardsSubTab,
 } from './panels';
 import {
   achievementSplash,
@@ -31,11 +32,14 @@ import {
   levelUpSplash,
   newGameSplash,
   portalSplash,
+  whatsNewSplash,
   type SplashBind,
 } from './splashes';
+import { ACHIEVEMENTS, type AchievementDef } from '../systems/AchievementSystem';
 
 export type HudOverlayHandlers = {
   onTab: (tab: TabId) => void;
+  onOpenAchievements: () => void;
   onLevelTap: () => void;
   onNewGame: () => void;
   onJump: (state: GameSave) => void;
@@ -59,12 +63,19 @@ export class HudOverlay {
   private readonly buff: HTMLElement;
   private readonly stage: HTMLElement;
   private readonly toast: HTMLElement;
+  private readonly achBanner: HTMLButtonElement;
+  private readonly achBannerIcon: HTMLImageElement;
+  private readonly achBannerTitle: HTMLElement;
   private readonly finger: HTMLImageElement;
   private readonly splash: HTMLElement;
   private readonly storyBack: HTMLButtonElement;
   private toastTimer = 0;
+  private achBannerTimer = 0;
+  private achQueue: AchievementDef[] = [];
+  private achBannerActive = false;
   private splashCleanup: (() => void) | null = null;
   private view: TabId | 'credits' | null = null;
+  private rewardsSubTab: RewardsSubTab = 'milestones';
   private tabAllowed: (tab: TabId) => boolean = () => true;
 
   constructor(
@@ -102,6 +113,13 @@ export class HudOverlay {
           `<button type="button" class="nav-btn" data-tab="${n.id}"><img src="${n.icon}" alt="" /><span>${n.label}</span><span class="nav-dot" data-dot="${n.id}" hidden>!</span></button>`,
       ).join('')}</nav>
       <div class="hud-toast" data-toast></div>
+      <button type="button" class="ach-banner" data-ach-banner hidden>
+        <img class="ach-banner-icon" data-ach-banner-icon src="./assets/ui/trophy.png" alt="" />
+        <div class="ach-banner-copy">
+          <span class="ach-banner-kicker">Achievement Unlocked</span>
+          <span class="ach-banner-title" data-ach-banner-title></span>
+        </div>
+      </button>
       <img class="hud-finger" data-finger src="./assets/ui/pointer.png" alt="" hidden />
       <div class="splash-layer" data-splash hidden></div>
     `;
@@ -117,10 +135,21 @@ export class HudOverlay {
     this.buff = this.root.querySelector('[data-buff]')!;
     this.stage = this.root.querySelector('[data-stage]')!;
     this.toast = this.root.querySelector('[data-toast]')!;
+    this.achBanner = this.root.querySelector('[data-ach-banner]')!;
+    this.achBannerIcon = this.root.querySelector('[data-ach-banner-icon]')!;
+    this.achBannerTitle = this.root.querySelector('[data-ach-banner-title]')!;
     this.finger = this.root.querySelector('[data-finger]')!;
     this.splash = this.root.querySelector('[data-splash]')!;
     this.storyBack = this.root.querySelector('[data-story-back]')!;
 
+    this.achBanner.addEventListener('pointerdown', (e) => e.stopPropagation());
+    this.achBanner.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.clearAchBanner();
+      this.rewardsSubTab = 'achievements';
+      this.handlers.onOpenAchievements();
+    });
     this.root.querySelector('[data-level]')?.addEventListener('click', () => this.handlers.onLevelTap());
     this.storyBack.addEventListener('pointerdown', (e) => e.stopPropagation());
     this.storyBack.addEventListener('click', (e) => {
@@ -138,12 +167,18 @@ export class HudOverlay {
   }
 
   destroy(): void {
+    window.clearTimeout(this.toastTimer);
+    window.clearTimeout(this.achBannerTimer);
     this.dismissSplash();
     this.root.remove();
   }
 
   isSplashOpen(): boolean {
     return !this.splash.hidden;
+  }
+
+  isAchBannerOpen(): boolean {
+    return this.achBannerActive || this.achQueue.length > 0;
   }
 
   setStoryBack(on: boolean): void {
@@ -244,6 +279,69 @@ export class HudOverlay {
     );
   }
 
+  showWhatsNewSplash(onDismiss?: () => void): void {
+    const unlockedSet = new Set(this.ctx.state.unlockedAchievements);
+    const unlockedCount = ACHIEVEMENTS.filter((a) => unlockedSet.has(a.id)).length;
+    const canView = this.tabAllowed('achievements');
+    this.openSplash(
+      whatsNewSplash(unlockedCount, ACHIEVEMENTS.length, canView),
+      (host, close) => {
+        const closeAndMark = () => {
+          onDismiss?.();
+          close();
+        };
+        return bindSimple(() => {
+          this.rewardsSubTab = 'achievements';
+          this.handlers.onOpenAchievements();
+        })(host, closeAndMark);
+      },
+    );
+  }
+
+  clearAchBanner(): void {
+    this.achQueue.length = 0;
+    this.hideAchBanner();
+  }
+
+  enqueueAchievements(items: AchievementDef[]): void {
+    if (items.length === 0) return;
+    this.achQueue.push(...items);
+    if (this.view === 'achievements') {
+      this.showRewards(this.rewardsSubTab);
+    }
+    if (!this.achBannerActive) {
+      this.nextAchBanner();
+    }
+  }
+
+  private hideAchBanner(): void {
+    window.clearTimeout(this.achBannerTimer);
+    this.achBannerActive = false;
+    this.achBanner.classList.remove('is-on');
+    this.achBanner.hidden = true;
+  }
+
+  private nextAchBanner(): void {
+    window.clearTimeout(this.achBannerTimer);
+    const next = this.achQueue.shift();
+    if (!next) {
+      this.hideAchBanner();
+      return;
+    }
+    this.achBannerActive = true;
+    this.achBannerIcon.src = next.icon;
+    this.achBannerTitle.textContent = next.title;
+    this.achBanner.hidden = false;
+    requestAnimationFrame(() => {
+      if (this.achBannerActive) this.achBanner.classList.add('is-on');
+    });
+    this.ctx.audio.playSfx('levelup', 0.45);
+    this.achBannerTimer = window.setTimeout(() => {
+      this.achBanner.classList.remove('is-on');
+      this.achBannerTimer = window.setTimeout(() => this.nextAchBanner(), 260);
+    }, 2800);
+  }
+
   setTabAllowed(fn: (tab: TabId) => boolean): void {
     this.tabAllowed = fn;
     this.root.querySelectorAll<HTMLElement>('[data-tab]').forEach((btn) => {
@@ -298,6 +396,7 @@ export class HudOverlay {
     this.view = 'settings';
     this.stage.innerHTML = settingsHtml(this.ctx);
     bindSettings(this.stage, this.ctx, {
+      onWhatsNew: () => this.showWhatsNewSplash(),
       onCredits: () => this.showCredits(),
       onNewGame: this.handlers.onNewGame,
       onJump: this.handlers.onJump,
@@ -310,15 +409,24 @@ export class HudOverlay {
     bindTomes(this.stage, this.handlers.onBuyHelper);
   }
 
-  showRewards(): void {
+  showRewards(subTab?: RewardsSubTab): void {
+    if (subTab) this.rewardsSubTab = subTab;
     this.view = 'achievements';
-    this.stage.innerHTML = rewardsHtml(this.ctx);
-    bindRewards(this.stage, (id, meta) => {
-      if (!this.handlers.claimReward(id)) return;
-      this.ctx.audio.playSfx('levelup');
-      this.showRewards();
-      this.handlers.onClaimReward(claimInfo(id, this.ctx, meta));
-    });
+    this.stage.innerHTML = rewardsHtml(this.ctx, this.rewardsSubTab);
+    bindRewards(
+      this.stage,
+      (id, meta) => {
+        if (!this.handlers.claimReward(id)) return;
+        this.ctx.audio.playSfx('levelup');
+        this.showRewards();
+        this.handlers.onClaimReward(claimInfo(id, this.ctx, meta));
+      },
+      (nextSubTab) => {
+        if (this.rewardsSubTab === nextSubTab) return;
+        this.ctx.audio.playSfx('pop', 0.35);
+        this.showRewards(nextSubTab);
+      },
+    );
   }
 
   showCredits(): void {

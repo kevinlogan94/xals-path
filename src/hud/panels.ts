@@ -2,6 +2,7 @@ import type { GameContext } from '../game/GameContext';
 import type { ChapterDef, GameSave, TabId } from '../types';
 import { formatNumber } from '../utils/format';
 import { devPresets } from '../systems/SaveSystem';
+import { ACHIEVEMENTS } from '../systems/AchievementSystem';
 
 const GITHUB = 'https://github.com/kevinlogan94/xals-path';
 const COFFEE = 'https://buymeacoffee.com/kevinmlogan';
@@ -9,6 +10,7 @@ const SITE = 'https://kevinmlogan.com';
 const FEEDBACK = 'https://tally.so/r/jea951';
 
 export type RewardId = 'helper' | 'clicker' | 'meta' | 'login' | 'story';
+export type RewardsSubTab = 'milestones' | 'achievements';
 
 export type AchievementClaimInfo = {
   id: RewardId;
@@ -85,10 +87,10 @@ export function settingsHtml(ctx: GameContext): string {
     <button type="button" class="scroll-card audio-row" data-audio="sfx"><span>Effects</span>${toggle(sfxOn)}</button>
     <p class="scroll-section">About</p>
     <div class="about-grid">
+      <button type="button" class="scroll-card about-btn" data-about="whats-new">What's New</button>
       <button type="button" class="scroll-card about-btn" data-about="credits">Credits</button>
       <button type="button" class="scroll-card about-btn" data-about="github">GitHub</button>
       <button type="button" class="scroll-card about-btn" data-about="coffee">Coffee</button>
-      <button type="button" class="scroll-card about-btn" data-about="site">Site</button>
     </div>
     <button type="button" class="ritual-btn" data-new-game>New Game</button>
     ${extra}`,
@@ -99,6 +101,7 @@ export function bindSettings(
   root: HTMLElement,
   ctx: GameContext,
   handlers: {
+    onWhatsNew: () => void;
     onCredits: () => void;
     onNewGame: () => void;
     onJump: (state: GameSave) => void;
@@ -117,10 +120,10 @@ export function bindSettings(
   root.querySelectorAll<HTMLElement>('[data-about]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.about;
+      if (id === 'whats-new') handlers.onWhatsNew();
       if (id === 'credits') handlers.onCredits();
       if (id === 'github') openUrl(GITHUB);
       if (id === 'coffee') openUrl(COFFEE);
-      if (id === 'site') openUrl(SITE);
     });
   });
   root.querySelector('[data-new-game]')?.addEventListener('click', handlers.onNewGame);
@@ -251,7 +254,45 @@ function rewardRows(ctx: GameContext): RewardRow[] {
   return rows.sort((a, b) => Number(b.n >= b.goal) - Number(a.n >= a.goal));
 }
 
-export function rewardsHtml(ctx: GameContext): string {
+export function rewardsHtml(
+  ctx: GameContext,
+  subTab: RewardsSubTab = 'milestones',
+): string {
+  const unlockedSet = new Set(ctx.state.unlockedAchievements);
+  const unlockedCount = ACHIEVEMENTS.filter((a) => unlockedSet.has(a.id)).length;
+  const anyClaimable = ctx.economy.anyClaimable(ctx.state);
+  const tabs = `<div class="rewards-tabs" role="tablist">
+    <button type="button" class="rewards-tab${subTab === 'milestones' ? ' is-on' : ''}" data-rewards-tab="milestones">
+      <span>Milestones</span>
+      ${anyClaimable ? '<span class="rewards-tab-dot">!</span>' : ''}
+    </button>
+    <button type="button" class="rewards-tab${subTab === 'achievements' ? ' is-on' : ''}" data-rewards-tab="achievements">
+      <span>Achievements</span>
+      <span class="rewards-tab-count">${unlockedCount}/${ACHIEVEMENTS.length}</span>
+    </button>
+  </div>`;
+
+  if (subTab === 'achievements') {
+    const sorted = [...ACHIEVEMENTS].sort(
+      (a, b) => Number(unlockedSet.has(b.id)) - Number(unlockedSet.has(a.id)),
+    );
+    const rows = sorted
+      .map((ach) => {
+        const unlocked = unlockedSet.has(ach.id);
+        const cls = `scroll-card ach-row ${unlocked ? 'is-unlocked scroll-card-active' : 'is-locked'}`;
+        return `<div class="${cls}" data-ach="${ach.id}">
+          <img src="${ach.icon}" alt="" />
+          <div>
+            <div class="reward-title">${ach.title}</div>
+            <div class="reward-hint">${ach.description}</div>
+          </div>
+          <span class="ach-pill ${unlocked ? 'unlocked' : 'locked'}">${unlocked ? 'Unlocked' : 'Locked'}</span>
+        </div>`;
+      })
+      .join('');
+    return `<section class="scroll-modal"><p class="scroll-kicker">Hall of Trophies</p><h2 class="scroll-title">Achievements</h2>${tabs}<div class="scroll-body">${rows}</div></section>`;
+  }
+
   const body = rewardRows(ctx)
     .map((row) => {
       const ready = row.n >= row.goal;
@@ -273,13 +314,20 @@ export function rewardsHtml(ctx: GameContext): string {
       </div>`;
     })
     .join('');
-  return modal('Milestones', 'Rewards', body);
+  return `<section class="scroll-modal"><p class="scroll-kicker">Milestones</p><h2 class="scroll-title">Rewards</h2>${tabs}<div class="scroll-body">${body}</div></section>`;
 }
 
 export function bindRewards(
   root: HTMLElement,
   onClaim: (id: RewardId, meta: Pick<AchievementClaimInfo, 'title' | 'description' | 'iconKey'>) => void,
+  onSubTab: (subTab: RewardsSubTab) => void,
 ): void {
+  root.querySelectorAll<HTMLElement>('[data-rewards-tab]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const subTab = btn.dataset.rewardsTab as RewardsSubTab;
+      if (subTab) onSubTab(subTab);
+    });
+  });
   root.querySelectorAll<HTMLElement>('[data-claim]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.claim as RewardId;
@@ -335,7 +383,7 @@ export function creditsHtml(): string {
     'The Company of the Path',
     'Credits',
     `<p class="credits-wordmark">Xal's Path</p>
-    <p class="scroll-kicker">Created By Kevin Logan</p>
+    <p class="credits-author-wrap"><a href="${SITE}" target="_blank" rel="noopener noreferrer" class="scroll-kicker credits-author-link">Created By Kevin Logan ↗</a></p>
     <div class="credits-list">${pairs}</div>
     <div class="splash-actions">
       <button type="button" class="ritual-btn" data-credits-feedback>Share Feedback</button>

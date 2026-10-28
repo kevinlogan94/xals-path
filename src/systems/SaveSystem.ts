@@ -1,6 +1,7 @@
 import type { GameSave, HelperDef, RegionId } from '../types';
 import helpersData from '../data/helpers.json';
 import economy from '../data/economy.json';
+import { WHATS_NEW_VERSION, evaluateAchievements } from './AchievementSystem';
 
 const SAVE_KEY = 'xals-path-web-save-v1';
 
@@ -51,6 +52,8 @@ function createDefaultSave(): GameSave {
     tutorialCompleted: false,
     feedbackShown: false,
     newsShown: [],
+    unlockedAchievements: [],
+    whatsNewSeen: WHATS_NEW_VERSION,
     savedAt: new Date().toISOString(),
   };
 }
@@ -96,6 +99,7 @@ function claimClicker(save: GameSave, times: number, leftover: number): void {
     save.achievements.achievementCount += 1;
   }
   save.achievements.clickerCount = leftover;
+  evaluateAchievements(save);
 }
 
 function setMana(save: GameSave, level: number): void {
@@ -120,12 +124,17 @@ function devSave(
     totalInfluenceEarned: patch.totalInfluenceEarned ?? 0,
   });
   buyHelpers(save, owned);
+  evaluateAchievements(save);
   return save;
 }
 
 /** Dev jumps. tutorialCompleted so SaveSystem.save will persist them. */
 export function devPresets(): { label: string; save: () => GameSave }[] {
   return [
+    {
+      label: 'Fresh start',
+      save: () => createDefaultSave(),
+    },
     {
       label: 'First blessing',
       save: () => {
@@ -290,9 +299,25 @@ export class SaveSystem {
       if (parsed.version !== 1) return createDefaultSave();
       const merged = this.mergeDefaults(parsed);
       if (!merged.tutorialCompleted) {
+        const fresh = createDefaultSave();
+        if (
+          merged.unlockedAchievements.length > 0 ||
+          merged.achievements.storyCount > 0 ||
+          merged.achievements.storyGoal > 2 ||
+          merged.feedbackShown
+        ) {
+          fresh.feedbackShown = merged.feedbackShown;
+          fresh.unlockedAchievements = merged.unlockedAchievements;
+          fresh.whatsNewSeen = merged.whatsNewSeen || WHATS_NEW_VERSION;
+          fresh.achievements.storyCount = merged.achievements.storyCount;
+          fresh.achievements.storyGoal = merged.achievements.storyGoal;
+          this.writeRaw(fresh);
+          return fresh;
+        }
         this.clear();
-        return createDefaultSave();
+        return fresh;
       }
+      evaluateAchievements(merged);
       return merged;
     } catch {
       return createDefaultSave();
@@ -301,6 +326,14 @@ export class SaveSystem {
 
   save(state: GameSave): void {
     if (!state.tutorialCompleted) return;
+    this.writeRaw(state);
+  }
+
+  saveMeta(state: GameSave): void {
+    this.writeRaw(state);
+  }
+
+  private writeRaw(state: GameSave): void {
     state.savedAt = new Date().toISOString();
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(state));
@@ -416,6 +449,11 @@ export class SaveSystem {
       tutorialCompleted: inferTutorialCompleted(save, fresh),
       feedbackShown: save.feedbackShown ?? fresh.feedbackShown,
       newsShown: Array.isArray(save.newsShown) ? save.newsShown : [],
+      unlockedAchievements: Array.isArray(save.unlockedAchievements)
+        ? save.unlockedAchievements
+        : [],
+      whatsNewSeen:
+        typeof save.whatsNewSeen === 'string' ? save.whatsNewSeen : '',
       savedAt: typeof save.savedAt === 'string' ? save.savedAt : fresh.savedAt,
     };
   }

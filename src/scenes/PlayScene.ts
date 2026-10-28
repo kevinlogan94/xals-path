@@ -4,6 +4,13 @@ import { formatNumber } from '../utils/format';
 import type { RegionId, TabId } from '../types';
 import { HudOverlay } from '../hud/HudOverlay';
 import type { RewardId } from '../hud/panels';
+import {
+  WHATS_NEW_VERSION,
+  evaluateAchievements,
+  unlockAchievement,
+  type AchievementDef,
+  type AchievementId,
+} from '../systems/AchievementSystem';
 import { XalView } from './play/xal/XalView';
 import { NewsBanner } from './play/outlook/NewsBanner';
 import { PegasusFlyby } from './play/outlook/PegasusFlyby';
@@ -73,6 +80,12 @@ export class PlayScene extends Phaser.Scene {
 
     this.hud = new HudOverlay(this.game.canvas.parentElement ?? document.getElementById('game')!, this.ctx, {
       onTab: (tab) => this.setTab(tab),
+      onOpenAchievements: () => {
+        if (this.barlog.active() || !this.ctx.tutorial.isTabAllowed(this.ctx.state, 'achievements')) {
+          return;
+        }
+        this.setTab('achievements', true);
+      },
       onLevelTap: () => this.openLevelUpSplash(),
       onNewGame: () => this.onNewGame(),
       onJump: (state) => {
@@ -141,22 +154,53 @@ export class PlayScene extends Phaser.Scene {
       this.renderQuote();
     }
 
-    this.openOfflineSplash();
+    if (!this.openOfflineSplash()) {
+      this.maybeOpenWhatsNew();
+    }
 
     this.refreshHud();
     this.refreshTutorialPointers();
   }
 
-  private openOfflineSplash(): void {
+  private openOfflineSplash(): boolean {
     const pending = Math.floor(this.ctx.offlineGained);
-    if (pending <= 0) return;
+    if (pending <= 0) return false;
     this.hud.showInfluenceSplash(pending, () => {
       this.ctx.economy.addInfluence(this.ctx.state, pending);
       this.ctx.state.pendingOffline = 0;
       this.ctx.offlineGained = 0;
       this.ctx.persist();
       this.refreshHud();
+      this.maybeOpenWhatsNew();
     });
+    return true;
+  }
+
+  private maybeOpenWhatsNew(): void {
+    if (!this.ctx.state.tutorialCompleted) return;
+    if (this.ctx.state.whatsNewSeen === WHATS_NEW_VERSION) return;
+    this.hud.showWhatsNewSplash(() => {
+      this.ctx.state.whatsNewSeen = WHATS_NEW_VERSION;
+      this.ctx.persist();
+    });
+  }
+
+  private checkAchievements(extraId?: AchievementId): void {
+    const unlocked: AchievementDef[] = [];
+    if (extraId) {
+      const extra = unlockAchievement(this.ctx.state, extraId);
+      if (extra) unlocked.push(extra);
+    }
+    unlocked.push(
+      ...evaluateAchievements(
+        this.ctx.state,
+        this.ctx.economy.buffSessionClicks,
+      ),
+    );
+    if (unlocked.length > 0) {
+      this.ctx.persist();
+      this.hud.enqueueAchievements(unlocked);
+    }
   }
 
   update(_t: number, delta: number): void {
@@ -215,6 +259,7 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.state,
       this.tab === 'outlook' &&
         !this.blocked() &&
+        !this.hud.isAchBannerOpen() &&
         this.ctx.tutorial.isTabAllowed(this.ctx.state, 'outlook'),
       this.time.now,
     );
@@ -230,6 +275,7 @@ export class PlayScene extends Phaser.Scene {
     playCastBurst(this, x, y, `+${formatNumber(gained)}`);
     this.hud.pulseInfluence();
     this.ctx.spawn.schedule(this.ctx.state, { delay: 0 });
+    this.checkAchievements();
   }
 
   private onCreatureTap(hit: {
@@ -252,6 +298,7 @@ export class PlayScene extends Phaser.Scene {
     }
     playCastBurst(this, hit.sprite.x, hit.sprite.y, `+${formatNumber(gained)}`);
     this.hud.pulseInfluence();
+    this.checkAchievements();
   }
 
   private onPortraitTap(pointer?: Phaser.Input.Pointer): void {
@@ -270,6 +317,7 @@ export class PlayScene extends Phaser.Scene {
         this.syncStoryBack();
         this.xal.setPortraitExpression('generic');
         this.refreshChapterCard();
+        this.checkAchievements();
         const chId = result.finishedChapterId;
         if (chId === 7) {
           this.hud.showEndGameSplash(() => this.hud.showCreditsSplash());
@@ -447,11 +495,18 @@ export class PlayScene extends Phaser.Scene {
       this.tutorialReturnTab = this.tab;
     }
 
-    if (this.hud.isSplashOpen()) this.hud.dismissSplash();
+    if (this.hud.isSplashOpen()) {
+      if (this.ctx.state.tutorialCompleted && this.ctx.state.whatsNewSeen !== WHATS_NEW_VERSION) {
+        this.ctx.state.whatsNewSeen = WHATS_NEW_VERSION;
+        this.ctx.persist();
+      }
+      this.hud.dismissSplash();
+    }
     if (tab === 'outlook' && this.ctx.tutorial.outlookTutorial) {
       this.ctx.tutorial.dismissOutlookTutorial(this.ctx.state);
       this.tutorialLine = null;
       this.ctx.persist();
+      this.checkAchievements();
     }
 
     this.clearBanterTimer();
@@ -512,6 +567,7 @@ export class PlayScene extends Phaser.Scene {
       const owned = this.ctx.state.helpers.find((hh) => hh.id === id);
       this.ctx.tutorial.onNaturePurchased(this.ctx.state);
       this.hud.showTomes();
+      this.checkAchievements();
       if (owned?.amountOwned === 1) {
         const def = this.ctx.economy.def(id);
         const creature = def && this.ctx.spawn.creatures.find((c) => c.id === def.creatureId);
@@ -525,18 +581,26 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private claimReward(id: RewardId): boolean {
+    let ok = false;
     switch (id) {
       case 'helper':
-        return this.ctx.economy.claimHelper(this.ctx.state);
+        ok = this.ctx.economy.claimHelper(this.ctx.state);
+        break;
       case 'clicker':
-        return this.ctx.economy.claimClicker(this.ctx.state);
+        ok = this.ctx.economy.claimClicker(this.ctx.state);
+        break;
       case 'meta':
-        return this.ctx.economy.claimMeta(this.ctx.state);
+        ok = this.ctx.economy.claimMeta(this.ctx.state);
+        break;
       case 'login':
-        return this.ctx.economy.claimLogin(this.ctx.state);
+        ok = this.ctx.economy.claimLogin(this.ctx.state);
+        break;
       case 'story':
-        return this.ctx.economy.claimStory(this.ctx.state);
+        ok = this.ctx.economy.claimStory(this.ctx.state);
+        break;
     }
+    if (ok) this.checkAchievements();
+    return ok;
   }
 
   private applyNavLock(): void {
@@ -571,6 +635,7 @@ export class PlayScene extends Phaser.Scene {
     }
     if (result.finished) {
       this.refreshChapterCard();
+      this.checkAchievements();
       this.hud.setStoryBack(false);
       this.barlog.fadeOut(() => {
         this.applyNavLock();
@@ -582,7 +647,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private refreshTutorialPointers(): void {
-    if (this.barlog.active()) {
+    if (this.barlog.active() || this.hud.isSplashOpen()) {
       this.hud.setFinger(false, 0, 0, false);
       return;
     }
@@ -689,6 +754,7 @@ export class PlayScene extends Phaser.Scene {
     this.outlook.applyRegionVisual();
     this.ctx.audio.playSfx('cast');
     this.setTab('outlook', true);
+    this.checkAchievements('traveler');
   }
 
   private onPegasusTap(): void {
@@ -722,6 +788,7 @@ export class PlayScene extends Phaser.Scene {
     this.lastBuff = 0;
     this.levelJinglePlayed = false;
     this.hud.dismissSplash();
+    this.hud.clearAchBanner();
     this.outlook.applyRegionVisual();
     this.applyNavLock();
     this.setTab('scene', true);
