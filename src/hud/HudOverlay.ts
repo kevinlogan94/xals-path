@@ -177,6 +177,10 @@ export class HudOverlay {
     return !this.splash.hidden;
   }
 
+  isAchBannerOpen(): boolean {
+    return this.achBannerActive || this.achQueue.length > 0;
+  }
+
   setStoryBack(on: boolean): void {
     this.storyBack.hidden = !on;
   }

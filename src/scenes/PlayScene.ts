@@ -259,6 +259,7 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.state,
       this.tab === 'outlook' &&
         !this.blocked() &&
+        !this.hud.isAchBannerOpen() &&
         this.ctx.tutorial.isTabAllowed(this.ctx.state, 'outlook'),
       this.time.now,
     );
