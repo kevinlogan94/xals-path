@@ -192,18 +192,54 @@ function reveal() {
   return echo(out);
 }
 
-function magicSpark(root, dur, rise) {
+// True phase-integrated harmonic spell voice (warm fundamental + pure octave/fifth overtones + chorus).
+function arcaneVoice(f0, f1, dur, attack, decay) {
+  const out = buf(dur);
+  let p1 = 0, p2 = 0, p3 = 0;
+  for (let i = 0; i < out.length; i++) {
+    const t = i / SR;
+    const f = f0 + (f1 - f0) * (1 - Math.exp(-t / 0.08));
+    p1 += (2 * Math.PI * f) / SR;
+    p2 += (2 * Math.PI * f * 1.004) / SR;
+    p3 += (2 * Math.PI * f * 0.996) / SR;
+    const vib = Math.sin(2 * Math.PI * 6.5 * t) * 0.15;
+    const core = (Math.sin(p1 + vib) + Math.sin(p2) * 0.7 + Math.sin(p3) * 0.7) / 2.4;
+    const overtones = Math.sin(p1 * 2) * 0.35 + Math.sin(p1 * 3) * 0.14 + Math.sin(p1 * 4) * 0.06;
+    out[i] = (core + overtones) * env(t, attack, decay);
+  }
+  return out;
+}
+
+// Pure harmonic fairy/mana dust grain (no metallic beam partials).
+function shimmerGrain(freq, dur = 0.24) {
   const out = buf(dur);
   for (let i = 0; i < out.length; i++) {
     const t = i / SR;
-    const f = root * (1 + rise * (1 - Math.exp(-t / 0.07)));
-    const bloom = env(t, 0.02, dur * 0.5);
-    let s = 0;
-    PARTIALS.forEach((r, k) => {
-      s += Math.sin(2 * Math.PI * f * r * t) * Math.exp(-t * (7 + k * 4)) / (k + 1);
-    });
-    const breath = Math.sin(2 * Math.PI * root * 0.5 * t) * env(t, 0.012, 0.14) * 0.28;
-    out[i] = s * bloom + breath;
+    const a = env(t, 0.006, dur * 0.32);
+    const vib = Math.sin(2 * Math.PI * 9 * t) * 0.12;
+    const w =
+      Math.sin(2 * Math.PI * freq * t + vib) +
+      Math.sin(2 * Math.PI * freq * 2.002 * t) * 0.4 +
+      Math.sin(2 * Math.PI * freq * 3.0 * t) * 0.15;
+    out[i] = w * a * 0.65;
+  }
+  return out;
+}
+
+// Resonant band-pass arcane wind / spell breath.
+function spellBreath(dur, fStart, fEnd) {
+  const out = buf(dur);
+  let bp = 0, lp = 0;
+  for (let i = 0; i < out.length; i++) {
+    const t = i / SR;
+    const k = t / dur;
+    const f = fStart + (fEnd - fStart) * Math.pow(k, 0.7);
+    const alpha = Math.min(0.75, (2 * Math.PI * f) / SR);
+    const n = noise();
+    lp += (n - lp) * alpha;
+    bp += (lp - bp) * (alpha * 0.35);
+    const flutter = 0.72 + 0.28 * Math.sin(2 * Math.PI * 11 * t);
+    out[i] = (lp - bp) * env(t, 0.018, dur * 0.28) * flutter * 2.2;
   }
   return out;
 }
@@ -213,11 +249,19 @@ function burn(sec) {
 }
 
 function cast() {
-  const out = buf(0.46);
-  mix(out, magicSpark(A4, 0.4, 0.16), 0, 0.75);
-  mix(out, magicSpark(E5, 0.34, 0.4), 0.045, 0.5);
-  mix(out, magicSpark(C6, 0.26, 0.22), 0.09, 0.32);
-  // ponytail: keep the old click's random draws so the rest of the set does not shift.
+  const saved = seed;
+  const out = buf(0.56);
+  // 1. Airy arcane breath / scroll whoosh
+  mix(out, spellBreath(0.42, 260, 1400), 0, 0.55);
+  // 2. Warm A-minor rune bloom (A3 -> E4 swell + fifth/octave body)
+  mix(out, arcaneVoice(A3, C4, 0.44, 0.015, 0.14), 0, 0.65);
+  mix(out, arcaneVoice(E4, A4, 0.4, 0.025, 0.13), 0.02, 0.55);
+  // 3. Rising mana-spore shimmer dust
+  const dust = [E5, A5, B4 * 2, C6, E6, A6];
+  dust.forEach((f, k) => {
+    mix(out, shimmerGrain(f, 0.22), 0.03 + k * 0.042, 0.34 * (1 - k * 0.08));
+  });
+  seed = saved;
   burn(0.08);
   burn(0.26);
   burn(0.26);
@@ -226,9 +270,19 @@ function cast() {
 }
 
 function creatureTap() {
-  const out = buf(0.4);
-  mix(out, magicSpark(E5, 0.32, 0.55), 0, 0.4);
-  mix(out, magicSpark(A6, 0.3, 0.28), 0.035, 0.72);
+  const saved = seed;
+  const out = buf(0.62);
+  // 1. Enchanted sigil whoosh + warm harmonic chord swell
+  mix(out, spellBreath(0.46, 380, 2100), 0, 0.5);
+  mix(out, arcaneVoice(A3, E4, 0.45, 0.012, 0.16), 0, 0.55);
+  mix(out, arcaneVoice(E4, B4, 0.45, 0.018, 0.16), 0.015, 0.5);
+  mix(out, arcaneVoice(A4, C5, 0.42, 0.024, 0.15), 0.03, 0.48);
+  // 2. Celestial arcane harp/chime cascade (distinctly magical & rewarding)
+  const notes = [A5, B4 * 2, C6, E6, A6, E6 * 1.5];
+  notes.forEach((f, k) => {
+    mix(out, shimmerGrain(f, 0.28), 0.015 + k * 0.038, 0.42 * (1 - k * 0.06));
+  });
+  seed = saved;
   burn(0.32);
   return echo(out);
 }

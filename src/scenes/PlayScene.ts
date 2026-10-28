@@ -279,7 +279,7 @@ export class PlayScene extends Phaser.Scene {
       this.showToast('Not enough mana');
       return;
     }
-    this.ctx.audio.playSfx('cast', 0.26);
+    this.ctx.audio.playSfx('cast', 0.36);
     playCastBurst(this, x, y, `+${formatNumber(gained)}`);
     this.hud.pulseInfluence();
     this.ctx.spawn.schedule(this.ctx.state, { delay: 0 });
@@ -299,7 +299,7 @@ export class PlayScene extends Phaser.Scene {
       this.showToast('Not enough mana');
       return;
     }
-    this.ctx.audio.playSfx('creature-tap', 0.3, hit.magic ? 1.16 : 1);
+    this.ctx.audio.playSfx('creature-tap', 0.42, hit.magic ? 1.16 : 1);
     if (!hit.magic) {
       hit.setMagic();
       this.time.delayedCall(500, () => hit.hideCreature());
