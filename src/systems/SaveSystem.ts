@@ -132,6 +132,10 @@ function devSave(
 export function devPresets(): { label: string; save: () => GameSave }[] {
   return [
     {
+      label: 'Fresh start',
+      save: () => createDefaultSave(),
+    },
+    {
       label: 'First blessing',
       save: () => {
         const save = devSave(

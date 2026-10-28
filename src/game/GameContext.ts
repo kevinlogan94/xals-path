@@ -66,7 +66,11 @@ export class GameContext {
     this.story.reset();
     this.spawn.clear();
     this.tutorial.reset();
-    this.persist();
+    if (this.state.tutorialCompleted) {
+      this.persist();
+    } else {
+      this.save.clear();
+    }
   }
 
   private trackLogin(): void {
