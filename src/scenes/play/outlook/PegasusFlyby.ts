@@ -16,9 +16,12 @@ export class PegasusFlyby {
   private shown = false;
   private wait = 0;
 
+  private passPlayed = false;
+
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly onTap: () => void,
+    private readonly onPass: () => void,
   ) {}
 
   hits(x: number, y: number): boolean {
@@ -59,7 +62,11 @@ export class PegasusFlyby {
       this.wait = Math.max(0, this.wait - dt);
       s.setVisible(false);
       this.pointer?.setVisible(false);
-      return;
+      if (this.wait > 0) return;
+    }
+    if (!this.passPlayed) {
+      this.passPlayed = true;
+      this.onPass();
     }
     s.setVisible(true);
     if (this.pointer) this.pointer.setVisible(true);
@@ -75,11 +82,13 @@ export class PegasusFlyby {
       s.setFlipX(true);
       s.x = right + half;
       this.wait = GAP_SECONDS;
+      this.passPlayed = false;
     } else if (this.dir < 0 && s.x + half <= left) {
       this.dir = 1;
       s.setFlipX(false);
       s.x = left - half;
       this.wait = GAP_SECONDS;
+      this.passPlayed = false;
     }
     if (this.pointer?.visible) {
       this.pointer.setPosition(s.x, s.y + s.displayHeight / 2 + 36);
@@ -94,6 +103,7 @@ export class PegasusFlyby {
     this.dir = 1;
     this.shown = false;
     this.wait = 0;
+    this.passPlayed = false;
   }
 
   private ensure(bounds: Bounds, showPointer: boolean): boolean {

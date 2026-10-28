@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "sfx": "node scripts/sfx/generate.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0"

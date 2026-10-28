@@ -26,7 +26,7 @@ const CREDITS: [string, string[]][] = [
   ['Game Design', ['Kevin Logan']],
   ['Developer', ['Kevin Logan']],
   ['Music', ['Steven Logan']],
-  ['Sound Effects', ['freesound.org']],
+  ['Sound Effects', ['Kevin Logan']],
   ['Art', ['Kevin Logan', 'Shayne Gadd']],
   ['Story', ['Kevin Logan', 'Elliot Maynard']],
   ['Brand', ['Brock Johnson']],
@@ -109,9 +109,21 @@ export function bindSettings(
   },
 ): void {
   const presets = devPresets();
+  const tap = () => ctx.audio.playSfx('ui-tap', 0.22);
   root.querySelectorAll<HTMLElement>('[data-audio]').forEach((row) => {
     row.addEventListener('click', () => {
-      const muted = row.dataset.audio === 'bgm' ? ctx.audio.toggleMuteBgm() : ctx.audio.toggleMuteSfx();
+      const effects = row.dataset.audio === 'sfx';
+      if (effects && ctx.audio.muteSfx) {
+        ctx.audio.toggleMuteSfx();
+        const pill = row.querySelector('.audio-toggle');
+        if (!pill) return;
+        pill.textContent = 'ON';
+        pill.classList.remove('is-off');
+        tap();
+        return;
+      }
+      if (!effects) tap();
+      const muted = effects ? ctx.audio.toggleMuteSfx() : ctx.audio.toggleMuteBgm();
       const pill = row.querySelector('.audio-toggle');
       if (!pill) return;
       pill.textContent = muted ? 'OFF' : 'ON';
@@ -120,6 +132,7 @@ export function bindSettings(
   });
   root.querySelectorAll<HTMLElement>('[data-about]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      tap();
       const id = btn.dataset.about;
       if (id === 'whats-new') handlers.onWhatsNew();
       if (id === 'credits') handlers.onCredits();
@@ -127,9 +140,13 @@ export function bindSettings(
       if (id === 'coffee') openUrl(COFFEE);
     });
   });
-  root.querySelector('[data-new-game]')?.addEventListener('click', handlers.onNewGame);
+  root.querySelector('[data-new-game]')?.addEventListener('click', () => {
+    tap();
+    handlers.onNewGame();
+  });
   root.querySelectorAll<HTMLElement>('[data-dev]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      tap();
       const preset = presets[Number(btn.dataset.dev)];
       if (preset) handlers.onJump(preset.save());
     });

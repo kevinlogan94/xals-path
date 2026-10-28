@@ -1,3 +1,4 @@
+import type { Sfx } from '../systems/AudioSystem';
 import type { CreatureDef, RegionId } from '../types';
 import { formatNumber } from '../utils/format';
 import { creatureFirstFrame, creatureRun } from '../scenes/play/splash/creatureSplash';
@@ -32,12 +33,17 @@ function back(): string {
   return `<div class="splash-actions"><button type="button" class="scroll-card back-btn" data-splash-close>Back</button></div>`;
 }
 
-function bindGo(host: HTMLElement, close: () => void, go?: () => void): void {
+function bindGo(
+  host: HTMLElement,
+  close: (silent?: boolean) => void,
+  go?: () => void,
+  silentGo = false,
+): void {
   host.querySelector('[data-splash-go]')?.addEventListener('click', () => {
-    close();
+    close(silentGo);
     go?.();
   });
-  host.querySelector('[data-splash-close]')?.addEventListener('click', close);
+  host.querySelector('[data-splash-close]')?.addEventListener('click', () => close());
 }
 
 function splashDescription(raw: string): string {
@@ -290,11 +296,11 @@ function playCreatureRun(host: HTMLElement, id: string): () => void {
   return () => window.clearInterval(tick);
 }
 
-export type SplashBind = (host: HTMLElement, close: () => void) => () => void;
+export type SplashBind = (host: HTMLElement, close: (silent?: boolean) => void) => () => void;
 
-export function bindSimple(go?: () => void): SplashBind {
+export function bindSimple(go?: () => void, silentGo = false): SplashBind {
   return (host, close) => {
-    bindGo(host, close, go);
+    bindGo(host, close, go, silentGo);
     return () => undefined;
   };
 }
@@ -309,12 +315,15 @@ export function bindEndGame(onCredits: () => void, onFeedback: () => void): Spla
       close();
       onCredits();
     });
-    host.querySelector('[data-splash-close]')?.addEventListener('click', close);
+    host.querySelector('[data-splash-close]')?.addEventListener('click', () => close());
     return () => undefined;
   };
 }
 
-export function bindCreature(creature: CreatureDef): SplashBind {
+export function bindCreature(
+  creature: CreatureDef,
+  play: (key: Sfx, volume?: number) => void,
+): SplashBind {
   return (host, close) => {
     const timers: number[] = [];
     let stopRun = () => undefined as void;
@@ -329,6 +338,9 @@ export function bindCreature(creature: CreatureDef): SplashBind {
     };
     showFrame(0);
     [2000, 2050, 2100, 2150].forEach((ms, i) => at(ms, () => showFrame(i + 1)));
+    at(1000, () => play('lock-rattle', 0.38));
+    at(1400, () => play('lock-rattle', 0.38));
+    at(2000, () => play('lock-shatter', 0.46));
     const z = [0, -5, 5, -5, 5, 0, 0, -5, 5, -5, 5, 0];
     [1000, 1050, 1100, 1150, 1200, 1267, 1400, 1450, 1500, 1550, 1600, 1667].forEach((ms, i) =>
       at(ms, () => {
@@ -336,6 +348,7 @@ export function bindCreature(creature: CreatureDef): SplashBind {
       }),
     );
     at(3167, () => {
+      play('creature-reveal', 0.42);
       host.innerHTML = creaturePanel(creature);
       stopRun = playCreatureRun(host, creature.id);
       bindGo(host, close);
@@ -359,7 +372,7 @@ export function bindCreatureInspect(creature: CreatureDef, helperName: string): 
 export function bindCredits(onFeedback: () => void): SplashBind {
   return (host, close) => {
     host.querySelector('[data-credits-feedback]')?.addEventListener('click', onFeedback);
-    host.querySelector('[data-credits-close]')?.addEventListener('click', close);
+    host.querySelector('[data-credits-close]')?.addEventListener('click', () => close());
     return () => undefined;
   };
 }

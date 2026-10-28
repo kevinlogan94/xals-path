@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import helpersData from '../data/helpers.json';
 import { version } from '../../package.json';
 import { getContext } from '../game/GameContext';
+import { SFX, SFX_EXT } from '../systems/AudioSystem';
 import { preloadCreatureSplashAssets } from './play/splash/creatureSplash';
 import { wordmarkText } from './play/ui/textStyles';
 import type { HelperDef } from '../types';
@@ -77,6 +78,8 @@ export class TitleScene extends Phaser.Scene {
     audio.playBgm('xals-theme');
     this.input.on('pointerup', () => {
       audio.playBgm('xals-theme');
+      if (this.phase !== 'ready') return;
+      audio.playSfx('barrier', 0.4);
       this.closeTitle();
     });
   }
@@ -418,10 +421,5 @@ function queueGameAssets(load: Phaser.Loader.LoaderPlugin): void {
   load.audio('meadow', 'assets/audio/meadow.mp3');
   load.audio('river', 'assets/audio/river.mp3');
   load.audio('altar', 'assets/audio/altar.mp3');
-  load.audio('cast', 'assets/audio/cast.wav');
-  load.audio('pop', 'assets/audio/pop.wav');
-  load.audio('levelup', 'assets/audio/levelup.wav');
-  load.audio('buff', 'assets/audio/buff.wav');
-  load.audio('debuff', 'assets/audio/debuff.wav');
-  load.audio('coin', 'assets/audio/coin.mp3');
+  for (const key of SFX) load.audio(key, `assets/audio/${key}${SFX_EXT}`);
 }

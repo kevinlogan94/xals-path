@@ -82,6 +82,8 @@ export class HudOverlay {
   private achBannerTimer = 0;
   private achQueue: AchievementDef[] = [];
   private achBannerActive = false;
+  private achChimed = false;
+  private achGen = 0;
   private splashCleanup: (() => void) | null = null;
   private view: TabId | 'credits' | 'bestiary' | null = null;
   private rewardsSubTab: RewardsSubTab = 'milestones';
@@ -202,7 +204,8 @@ export class HudOverlay {
   destroy(): void {
     window.clearTimeout(this.toastTimer);
     window.clearTimeout(this.achBannerTimer);
-    this.dismissSplash();
+    this.achGen++;
+    this.clearSplash();
     this.root.remove();
   }
 
@@ -241,6 +244,12 @@ export class HudOverlay {
   }
 
   dismissSplash(): void {
+    const wasOpen = this.isSplashOpen();
+    this.clearSplash();
+    if (wasOpen) this.onSplashClosed();
+  }
+
+  private clearSplash(): void {
     this.splashCleanup?.();
     this.splashCleanup = null;
     this.splash.hidden = true;
@@ -248,18 +257,19 @@ export class HudOverlay {
   }
 
   private openSplash(html: string, bind: SplashBind): void {
-    this.dismissSplash();
+    this.clearSplash();
+    this.pauseAchBanner();
     this.splash.hidden = false;
     this.splash.innerHTML = html;
-    const close = () => {
+    const close = (silent?: boolean) => {
       this.dismissSplash();
-      this.ctx.audio.playSfx('pop', 0.35);
+      if (!silent) this.ctx.audio.playSfx('ui-tap', 0.22);
     };
     this.splashCleanup = bind(this.splash, close);
   }
 
   showInfluenceSplash(amount: number, onCollect: () => void): void {
-    this.openSplash(influenceSplash(amount), bindSimple(onCollect));
+    this.openSplash(influenceSplash(amount), bindSimple(onCollect, true));
   }
 
   showAchievementSplash(opts: {
@@ -272,7 +282,7 @@ export class HudOverlay {
   }
 
   showBuffSplash(onCollect: () => void): void {
-    this.openSplash(buffSplash(), bindSimple(onCollect));
+    this.openSplash(buffSplash(), bindSimple(onCollect, true));
   }
 
   showNewGameSplash(onConfirm: () => void): void {
@@ -280,11 +290,12 @@ export class HudOverlay {
   }
 
   showPortalSplash(): void {
+    this.ctx.audio.playSfx('portal', 0.4);
     this.openSplash(portalSplash(), bindSimple());
   }
 
   showLevelUpSplash(reward: number, onContinue: () => void): void {
-    this.openSplash(levelUpSplash(reward), bindSimple(onContinue));
+    this.openSplash(levelUpSplash(reward), bindSimple(onContinue, true));
   }
 
   showFeedbackSplash(): void {
@@ -302,7 +313,10 @@ export class HudOverlay {
   }
 
   showCreatureSplash(creature: CreatureDef): void {
-    this.openSplash('', bindCreature(creature));
+    this.openSplash(
+      '',
+      bindCreature(creature, (key, volume) => this.ctx.audio.playSfx(key, volume)),
+    );
   }
 
   showCreatureInspectSplash(creature: CreatureDef): void {
@@ -337,7 +351,7 @@ export class HudOverlay {
       this.stage,
       this.ctx,
       (creature) => {
-        this.ctx.audio.playSfx('pop', 0.35);
+        this.ctx.audio.playSfx('ui-tap', 0.22);
         this.showCreatureInspectSplash(creature);
       },
       () => this.handlers.onCloseBestiary(),
@@ -347,7 +361,10 @@ export class HudOverlay {
   showCreditsSplash(): void {
     this.openSplash(
       creditsHtml(),
-      bindCredits(() => openFeedback('credits', this.ctx.state.playerLevel)),
+      bindCredits(() => {
+        this.ctx.audio.playSfx('ui-tap', 0.22);
+        openFeedback('credits', this.ctx.state.playerLevel);
+      }),
     );
   }
 
@@ -368,12 +385,12 @@ export class HudOverlay {
         canViewAchievements: this.tabAllowed('achievements'),
       }),
       (host, close) => {
-        const closeAndMark = () => {
+        const closeAndMark = (silent = false) => {
           onDismiss?.();
-          close();
+          close(silent);
         };
         host.querySelector('[data-whats-new-bestiary]')?.addEventListener('click', () => {
-          closeAndMark();
+          closeAndMark(true);
           this.handlers.onOpenBestiary();
         });
         host.querySelector('[data-whats-new-achievements]')?.addEventListener('click', () => {
@@ -381,7 +398,7 @@ export class HudOverlay {
           this.rewardsSubTab = 'achievements';
           this.handlers.onOpenAchievements();
         });
-        host.querySelector('[data-splash-close]')?.addEventListener('click', closeAndMark);
+        host.querySelector('[data-splash-close]')?.addEventListener('click', () => closeAndMark());
         return () => undefined;
       },
     );
@@ -398,37 +415,61 @@ export class HudOverlay {
     if (this.view === 'achievements') {
       this.showRewards(this.rewardsSubTab);
     }
-    if (!this.achBannerActive) {
-      this.nextAchBanner();
-    }
+    if (!this.achBannerActive && !this.isSplashOpen()) this.nextAchBanner();
   }
 
   private hideAchBanner(): void {
+    this.achGen++;
     window.clearTimeout(this.achBannerTimer);
     this.achBannerActive = false;
+    this.achChimed = false;
     this.achBanner.classList.remove('is-on');
     this.achBanner.hidden = true;
   }
 
+  private pauseAchBanner(): void {
+    this.achGen++;
+    window.clearTimeout(this.achBannerTimer);
+  }
+
+  private onSplashClosed(): void {
+    if (this.achBannerActive) this.armAchBanner();
+    else if (this.achQueue.length > 0) this.nextAchBanner();
+  }
+
+  private armAchBanner(): void {
+    window.clearTimeout(this.achBannerTimer);
+    const gen = ++this.achGen;
+    requestAnimationFrame(() => {
+      if (gen !== this.achGen || !this.achBannerActive || this.isSplashOpen()) return;
+      if (!this.achChimed) {
+        this.achChimed = true;
+        this.ctx.audio.playSfx('achievement', 0.4);
+      }
+      this.achBannerTimer = window.setTimeout(() => {
+        this.achBanner.classList.remove('is-on');
+        this.achBannerTimer = window.setTimeout(() => this.nextAchBanner(), 260);
+      }, 2800);
+    });
+  }
+
   private nextAchBanner(): void {
     window.clearTimeout(this.achBannerTimer);
+    if (this.isSplashOpen()) return;
     const next = this.achQueue.shift();
     if (!next) {
       this.hideAchBanner();
       return;
     }
     this.achBannerActive = true;
+    this.achChimed = false;
     this.achBannerIcon.src = next.icon;
     this.achBannerTitle.textContent = next.title;
     this.achBanner.hidden = false;
     requestAnimationFrame(() => {
       if (this.achBannerActive) this.achBanner.classList.add('is-on');
     });
-    this.ctx.audio.playSfx('levelup', 0.45);
-    this.achBannerTimer = window.setTimeout(() => {
-      this.achBanner.classList.remove('is-on');
-      this.achBannerTimer = window.setTimeout(() => this.nextAchBanner(), 260);
-    }, 2800);
+    this.armAchBanner();
   }
 
   setTabAllowed(fn: (tab: TabId) => boolean): void {
@@ -506,13 +547,13 @@ export class HudOverlay {
       this.stage,
       (id, meta) => {
         if (!this.handlers.claimReward(id)) return;
-        this.ctx.audio.playSfx('levelup');
+        this.ctx.audio.playSfx('reward', 0.42);
         this.showRewards();
         this.handlers.onClaimReward(claimInfo(id, this.ctx, meta));
       },
       (nextSubTab) => {
         if (this.rewardsSubTab === nextSubTab) return;
-        this.ctx.audio.playSfx('pop', 0.35);
+        this.ctx.audio.playSfx('ui-tap', 0.22);
         this.showRewards(nextSubTab);
       },
     );
@@ -521,10 +562,14 @@ export class HudOverlay {
   showCredits(): void {
     this.view = 'credits';
     this.stage.innerHTML = creditsHtml();
-    this.stage
-      .querySelector('[data-credits-feedback]')
-      ?.addEventListener('click', () => openFeedback('credits', this.ctx.state.playerLevel));
-    this.stage.querySelector('[data-credits-close]')?.addEventListener('click', () => this.showSettings());
+    this.stage.querySelector('[data-credits-feedback]')?.addEventListener('click', () => {
+      this.ctx.audio.playSfx('ui-tap', 0.22);
+      openFeedback('credits', this.ctx.state.playerLevel);
+    });
+    this.stage.querySelector('[data-credits-close]')?.addEventListener('click', () => {
+      this.ctx.audio.playSfx('ui-tap', 0.22);
+      this.showSettings();
+    });
   }
 
   setChapter(chapter: ChapterDef | undefined, locked: boolean, visible: boolean): void {

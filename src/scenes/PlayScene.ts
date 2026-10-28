@@ -71,7 +71,11 @@ export class PlayScene extends Phaser.Scene {
     this.xal.build();
     this.xal.setPortalTravelHandler((region) => this.onPortalTravel(region));
 
-    this.pegasus = new PegasusFlyby(this, () => this.onPegasusTap());
+    this.pegasus = new PegasusFlyby(
+      this,
+      () => this.onPegasusTap(),
+      () => this.ctx.audio.playSfx('pegasus-enter', 0.28),
+    );
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       if (this.blocked() || this.tab !== 'outlook' || this.hud.hitsHud(pointer)) return;
       if (this.pegasus.hits(pointer.x, pointer.y)) return;
@@ -109,7 +113,7 @@ export class PlayScene extends Phaser.Scene {
       claimReward: (id) => this.claimReward(id),
     });
     this.news = new NewsBanner(() => {
-      this.ctx.audio.playSfx('pop', 0.35);
+      this.ctx.audio.playSfx('ui-tap', 0.22);
       this.ctx.persist();
     });
     this.news.build(this.hud.root);
@@ -169,6 +173,7 @@ export class PlayScene extends Phaser.Scene {
     const pending = Math.floor(this.ctx.offlineGained);
     if (pending <= 0) return false;
     this.hud.showInfluenceSplash(pending, () => {
+      this.ctx.audio.playSfx('collect', 0.4);
       this.ctx.economy.addInfluence(this.ctx.state, pending);
       this.ctx.state.pendingOffline = 0;
       this.ctx.offlineGained = 0;
@@ -231,7 +236,7 @@ export class PlayScene extends Phaser.Scene {
 
     const ready = this.ctx.economy.readyToLevelUp(this.ctx.state);
     if (ready && !this.ctx.story.reading && !this.levelJinglePlayed) {
-      this.ctx.audio.playSfx('levelup');
+      this.ctx.audio.playSfx('level-ready', 0.2);
       this.levelJinglePlayed = true;
     }
     if (!ready) this.levelJinglePlayed = false;
@@ -247,7 +252,7 @@ export class PlayScene extends Phaser.Scene {
     this.pegasus.tick(dt, bounds);
     this.maybeStartBarlog();
     if (this.lastBuff > 0 && this.ctx.state.buffRemaining <= 0) {
-      this.ctx.audio.playSfx('debuff');
+      this.ctx.audio.playSfx('blessing-off', 0.32);
     }
     this.lastBuff = this.ctx.state.buffRemaining;
 
@@ -274,7 +279,7 @@ export class PlayScene extends Phaser.Scene {
       this.showToast('Not enough mana');
       return;
     }
-    this.ctx.audio.playSfx('cast', 0.35);
+    this.ctx.audio.playSfx('cast', 0.26);
     playCastBurst(this, x, y, `+${formatNumber(gained)}`);
     this.hud.pulseInfluence();
     this.ctx.spawn.schedule(this.ctx.state, { delay: 0 });
@@ -294,7 +299,7 @@ export class PlayScene extends Phaser.Scene {
       this.showToast('Not enough mana');
       return;
     }
-    this.ctx.audio.playSfx('cast', 0.4);
+    this.ctx.audio.playSfx('creature-tap', 0.3, hit.magic ? 1.16 : 1);
     if (!hit.magic) {
       hit.setMagic();
       this.time.delayedCall(500, () => hit.hideCreature());
@@ -323,8 +328,10 @@ export class PlayScene extends Phaser.Scene {
         this.checkAchievements();
         const chId = result.finishedChapterId;
         if (chId === 7) {
+          this.ctx.audio.playSfx('end-game', 0.4);
           this.hud.showEndGameSplash(() => this.hud.showCreditsSplash());
         } else if (chId != null && chId >= 2 && chId <= 4) {
+          this.ctx.audio.playSfx('reward', 0.42);
           const lvl = this.ctx.state.manaLevel;
           this.hud.showAchievementSplash({
             description: 'Your maximum mana has doubled.',
@@ -334,6 +341,8 @@ export class PlayScene extends Phaser.Scene {
           });
         } else if (result.portalJustUnlocked) {
           this.hud.showPortalSplash();
+        } else {
+          this.ctx.audio.playSfx('page-turn', 0.28);
         }
         if (finishingCh1) {
           this.ctx.tutorial.startAfterChapter1(this.ctx.state);
@@ -343,6 +352,7 @@ export class PlayScene extends Phaser.Scene {
           this.refreshTutorialPointers();
         }
       } else {
+        this.ctx.audio.playSfx('page-turn', 0.28);
         this.renderQuote();
       }
       return;
@@ -358,6 +368,7 @@ export class PlayScene extends Phaser.Scene {
     if (this.ctx.tutorial.active) {
       const line = this.ctx.tutorial.advanceLine(this.ctx.state, this.ctx.economy);
       if (line) {
+        this.ctx.audio.playSfx('page-turn', 0.28);
         this.clearBanterTimer();
         this.showTutorialLine(line);
       } else if (!this.ctx.tutorial.waitingNature) {
@@ -373,6 +384,7 @@ export class PlayScene extends Phaser.Scene {
     if (!this.ctx.state.tutorialCompleted) return;
 
     this.clearBanterTimer();
+    this.ctx.audio.playSfx('page-turn', 0.28);
     this.xal.setPortraitExpression('angry');
     this.xal.showQuote(this.ctx.story.banterLine());
     this.banterTimer = this.time.delayedCall(5000, () => {
@@ -394,6 +406,7 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
     if (!this.ctx.story.start(this.ctx.state, next.id)) return;
+    this.ctx.audio.playSfx('chapter-start', 0.44);
     if (next.id >= 2 && next.id <= 4) {
       this.ctx.state.manaLevel += 1;
       this.ctx.state.manaMax = 100 * this.ctx.state.manaLevel;
@@ -452,14 +465,14 @@ export class PlayScene extends Phaser.Scene {
     this.clearBanterTimer();
     this.xal.hideQuote();
     this.xal.refreshPortalBar(false, false, this.ctx.state.region);
-    this.ctx.audio.playSfx('pop', 0.35);
+    this.ctx.audio.playSfx('ui-tap', 0.22);
     this.hud.showBestiary();
     this.refreshTutorialPointers();
   }
 
   private closeBestiary(): void {
     if (!this.hud.isBestiaryOpen()) return;
-    this.ctx.audio.playSfx('pop', 0.35);
+    this.ctx.audio.playSfx('ui-tap', 0.22);
     this.hud.clearStage();
     if (this.tab === 'scene' && !this.ctx.story.reading) {
       this.refreshChapterCard();
@@ -474,6 +487,7 @@ export class PlayScene extends Phaser.Scene {
 
   private onStoryBack(): void {
     if (!this.ctx.story.retreat()) return;
+    this.ctx.audio.playSfx('ui-tap', 0.22);
     if (this.barlog.active()) this.showBarlogLine();
     else this.renderQuote();
   }
@@ -552,7 +566,7 @@ export class PlayScene extends Phaser.Scene {
     this.syncStoryBack();
     this.hud.setActive(tab);
     if (tab !== 'shop' && tab !== 'achievements' && tab !== 'settings') this.hud.clearStage();
-    this.ctx.audio.playSfx('pop', 0.35);
+    if (!force) this.ctx.audio.playSfx('ui-tap', 0.22);
 
     this.outlook.setVisible(tab !== 'scene');
     this.xal.setVisible(tab === 'scene');
@@ -599,7 +613,7 @@ export class PlayScene extends Phaser.Scene {
 
   private buyHelper(id: string): void {
     if (this.ctx.economy.buyHelper(this.ctx.state, id)) {
-      this.ctx.audio.playSfx('coin');
+      this.ctx.audio.playSfx('tome-buy', 0.4);
       const owned = this.ctx.state.helpers.find((hh) => hh.id === id);
       this.ctx.tutorial.onNaturePurchased(this.ctx.state);
       this.hud.showTomes();
@@ -665,6 +679,7 @@ export class PlayScene extends Phaser.Scene {
     if (pointer && this.hud.hitsHud(pointer)) return;
     if (!this.ctx.story.reading) return;
     const result = this.ctx.story.advance(this.ctx.state);
+    this.ctx.audio.playSfx('page-turn', 0.28);
     if (result.regionChanged) {
       this.outlook.applyRegionVisual();
       this.ctx.spawn.clear();
@@ -788,7 +803,7 @@ export class PlayScene extends Phaser.Scene {
     this.ctx.economy.drainMana(this.ctx.state);
     this.ctx.spawn.clear();
     this.outlook.applyRegionVisual();
-    this.ctx.audio.playSfx('cast');
+    this.ctx.audio.playSfx('portal', 0.4);
     this.setTab('outlook', true);
     this.checkAchievements('traveler');
   }
@@ -796,13 +811,14 @@ export class PlayScene extends Phaser.Scene {
   private onPegasusTap(): void {
     if (this.blocked() || !this.ctx.state.buffOfferPending) return;
     this.ignoreCastUntil = this.time.now + 50;
+    this.ctx.audio.playSfx('pegasus-tap', 0.36);
     this.openBuffSplash();
   }
 
   private openBuffSplash(): void {
     this.hud.showBuffSplash(() => {
       if (this.ctx.economy.acceptBuffOffer(this.ctx.state)) {
-        this.ctx.audio.playSfx('buff');
+        this.ctx.audio.playSfx('blessing-on', 0.4);
         this.lastBuff = this.ctx.state.buffRemaining;
       }
       this.ctx.persist();
@@ -833,9 +849,10 @@ export class PlayScene extends Phaser.Scene {
   private openLevelUpSplash(): void {
     if (this.hud.isSplashOpen()) return;
     if (!this.ctx.economy.readyToLevelUp(this.ctx.state) || this.ctx.story.reading) return;
-    this.ctx.audio.playSfx('levelup');
+    this.ctx.audio.playSfx('level-up', 0.42);
     const reward = this.ctx.economy.levelReward(this.ctx.state);
     this.hud.showLevelUpSplash(reward, () => {
+      this.ctx.audio.playSfx('collect', 0.4);
       if (this.ctx.economy.levelUp(this.ctx.state)) {
         this.refreshChapterCard();
         if (this.ctx.state.playerLevel === 11 && !this.ctx.state.feedbackShown) {
@@ -870,6 +887,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private showToast(msg: string): void {
+    this.ctx.audio.playSfx('denied', 0.35);
     this.hud.showToast(msg);
   }
 
