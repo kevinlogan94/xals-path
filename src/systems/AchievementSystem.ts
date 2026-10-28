@@ -1,6 +1,20 @@
 import type { GameSave } from '../types';
 
-export const WHATS_NEW_VERSION = 'achievements-v1';
+export type WhatsNewId = 'bestiary-v1' | 'achievements-v1';
+
+export const WHATS_NEW_IDS: WhatsNewId[] = ['bestiary-v1', 'achievements-v1'];
+
+export function hasUnseenWhatsNew(seen: string[]): boolean {
+  return WHATS_NEW_IDS.some((id) => !seen.includes(id));
+}
+
+export function markAllWhatsNewSeen(state: GameSave): void {
+  for (const id of WHATS_NEW_IDS) {
+    if (!state.whatsNewSeen.includes(id)) {
+      state.whatsNewSeen.push(id);
+    }
+  }
+}
 
 export type AchievementId =
   | 'the_beginning'

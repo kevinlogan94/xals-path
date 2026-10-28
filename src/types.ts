@@ -91,6 +91,7 @@ export interface GameSave {
   feedbackShown: boolean;
   newsShown: string[];
   unlockedAchievements: string[];
-  whatsNewSeen: string;
+  whatsNewSeen: string[];
+  bestiarySeenCount: number;
   savedAt: string;
 }

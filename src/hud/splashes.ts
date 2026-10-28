@@ -1,6 +1,12 @@
-import type { CreatureDef } from '../types';
+import type { CreatureDef, RegionId } from '../types';
 import { formatNumber } from '../utils/format';
 import { creatureFirstFrame, creatureRun } from '../scenes/play/splash/creatureSplash';
+
+const REGION_NAMES: Record<RegionId, string> = {
+  meadow: 'The Meadows',
+  river: 'Galia River',
+  altar: 'Sci Nai Mountains',
+};
 
 const ICONS: Record<string, string> = {
   'ui-influence': './assets/ui/influence.png',
@@ -123,42 +129,100 @@ export function feedbackSplash(): string {
   );
 }
 
-export function whatsNewSplash(
-  unlockedCount: number,
-  totalCount = 12,
-  canViewAchievements = true,
-): string {
-  const callout =
-    unlockedCount > 0
-      ? `<p class="whats-new-callout">✨ ${unlockedCount} / ${totalCount} Achievements already unlocked from your journey!</p>`
+export type WhatsNewSplashOpts = {
+  unseenIds: string[];
+  creaturesUnlocked: number;
+  creaturesTotal: number;
+  achievementsUnlocked: number;
+  achievementsTotal: number;
+  canViewBestiary: boolean;
+  canViewAchievements: boolean;
+};
+
+export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
+  const showBestiary = opts.unseenIds.includes('bestiary-v1');
+  const showAchievements = opts.unseenIds.includes('achievements-v1');
+  const onlyBestiary = showBestiary && !showAchievements;
+
+  if (onlyBestiary) {
+    const callout =
+      opts.creaturesUnlocked > 0
+        ? `<p class="whats-new-callout">✨ ${opts.creaturesUnlocked} / ${opts.creaturesTotal} Creatures already recorded in your Bestiarum!</p>`
+        : '';
+    const viewBtn = opts.canViewBestiary
+      ? `<button type="button" class="ritual-btn" data-whats-new-bestiary>View Bestiarum</button>`
       : '';
-  const viewBtn = canViewAchievements
-    ? `<button type="button" class="ritual-btn" data-splash-go>View Achievements</button>`
-    : '';
-  return shell(
-    'Sanctum Chronicle',
-    "What's New",
-    `<img class="splash-icon" src="${ICONS['ui-reward-trophy']}" alt="" />
-    <p class="splash-copy">Permanent Achievements have returned alongside repeatable Milestones in the Rewards sanctum.</p>
-    ${callout}
-    <div class="whats-new-list">
-      <div class="scroll-card whats-new-card">
-        <img src="./assets/ui/trophy.png" alt="" />
-        <div>
-          <div class="reward-title">12 Legacy Trophies</div>
-          <div class="reward-hint">Earn permanent badges for story chapters, spell mastery, and realm exploration.</div>
+    return shell(
+      'Sanctum Chronicle',
+      "What's New",
+      `<img class="splash-icon" src="./assets/ui/Tomes.png" alt="" />
+      <p class="splash-copy">Xal has opened the shelves of his study. Inspect the Bestiarum anytime from his tower to revisit every creature you have cleansed.</p>
+      ${callout}
+      <div class="whats-new-list">
+        <div class="scroll-card whats-new-card">
+          <img src="./assets/ui/Tomes.png" alt="" />
+          <div>
+            <div class="reward-title">Sanctum Bestiarum</div>
+            <div class="reward-hint">Tap the glowing bookcase beside Xal to read creature lore and view their animated forms.</div>
+          </div>
         </div>
       </div>
+      <div class="splash-actions">
+        ${viewBtn}
+        <button type="button" class="scroll-card back-btn" data-splash-close>Continue</button>
+      </div>`,
+    );
+  }
+
+  const callouts: string[] = [];
+  if (showBestiary && opts.creaturesUnlocked > 0) {
+    callouts.push(`${opts.creaturesUnlocked}/${opts.creaturesTotal} Creatures`);
+  }
+  if (showAchievements && opts.achievementsUnlocked > 0) {
+    callouts.push(`${opts.achievementsUnlocked}/${opts.achievementsTotal} Achievements`);
+  }
+  const calloutHtml =
+    callouts.length > 0
+      ? `<p class="whats-new-callout">✨ ${callouts.join(' & ')} already recorded from your journey!</p>`
+      : '';
+
+  const bestiaryCard = showBestiary
+    ? `<button type="button" class="scroll-card whats-new-card whats-new-card-btn scroll-card-active" data-whats-new-bestiary ${opts.canViewBestiary ? '' : 'disabled'}>
+        <img src="./assets/ui/Tomes.png" alt="" />
+        <div>
+          <div class="reward-title">Sanctum Bestiarum (${opts.creaturesUnlocked}/${opts.creaturesTotal})</div>
+          <div class="reward-hint">Tap the glowing bookcase beside Xal to read creature lore and view their animated forms.</div>
+        </div>
+      </button>`
+    : '';
+
+  const achCards = showAchievements
+    ? `<button type="button" class="scroll-card whats-new-card whats-new-card-btn scroll-card-active" data-whats-new-achievements ${opts.canViewAchievements ? '' : 'disabled'}>
+        <img src="./assets/ui/trophy.png" alt="" />
+        <div>
+          <div class="reward-title">12 Legacy Trophies (${opts.achievementsUnlocked}/${opts.achievementsTotal})</div>
+          <div class="reward-hint">Earn permanent badges for story chapters, spell mastery, and realm exploration.</div>
+        </div>
+      </button>
       <div class="scroll-card whats-new-card">
         <img src="./assets/ui/tomes/rebirth.png" alt="" />
         <div>
           <div class="reward-title">Cross-Run Progress</div>
           <div class="reward-hint">Unlocked achievements and story completion counts persist across New Games.</div>
         </div>
-      </div>
+      </div>`
+    : '';
+
+  return shell(
+    'Sanctum Chronicle',
+    "What's New",
+    `<p class="splash-copy">Recent additions to Xal's Path. Tap a chronicle below to inspect it directly.</p>
+    ${calloutHtml}
+    <div class="whats-new-list">
+      ${bestiaryCard}
+      ${achCards}
     </div>
     <div class="splash-actions">
-      ${viewBtn}
       <button type="button" class="scroll-card back-btn" data-splash-close>Continue</button>
     </div>`,
   );
@@ -177,15 +241,21 @@ export function endGameSplash(): string {
   );
 }
 
-function creaturePanel(creature: CreatureDef): string {
+function creaturePanel(creature: CreatureDef, title = 'New Creature Unlocked', helperName?: string): string {
   const frame = creatureFirstFrame(creature.id);
   const portrait = frame
     ? `<div class="splash-portrait"><img data-creature-frame src="${frame.src}" alt="" /></div>`
     : '';
+  const pills = helperName
+    ? `<div class="splash-meta-pills">
+        <span class="splash-pill"><img src="./assets/ui/tomes/${creature.helperId}.png" alt="" />${helperName} Tome</span>
+        <span class="splash-pill amber">${REGION_NAMES[creature.region]}</span>
+      </div>`
+    : `<p class="splash-copy">${creature.name}</p>`;
   return shell(
     'Bestiarum',
-    'New Creature Unlocked',
-    `${portrait}<p class="splash-copy">${creature.name}</p><p class="splash-copy">${creature.description}</p>${back()}`,
+    title,
+    `${portrait}${pills}<p class="splash-copy">${creature.description}</p>${back()}`,
   );
 }
 
@@ -274,6 +344,15 @@ export function bindCreature(creature: CreatureDef): SplashBind {
       timers.forEach((id) => window.clearTimeout(id));
       stopRun();
     };
+  };
+}
+
+export function bindCreatureInspect(creature: CreatureDef, helperName: string): SplashBind {
+  return (host, close) => {
+    host.innerHTML = creaturePanel(creature, creature.name, helperName);
+    const stopRun = playCreatureRun(host, creature.id);
+    bindGo(host, close);
+    return () => stopRun();
   };
 }
 

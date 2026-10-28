@@ -4,6 +4,8 @@ import type { ChapterDef, CreatureDef, GameSave, TabId } from '../types';
 import { formatNumber } from '../utils/format';
 import {
   NAV,
+  bestiaryHtml,
+  bindBestiary,
   bindRewards,
   bindSettings,
   bindTomes,
@@ -15,6 +17,7 @@ import {
   settingsHtml,
   syncTomes,
   tomesHtml,
+  unlockedCreatureCount,
   type AchievementClaimInfo,
   type RewardId,
   type RewardsSubTab,
@@ -22,6 +25,7 @@ import {
 import {
   achievementSplash,
   bindCreature,
+  bindCreatureInspect,
   bindCredits,
   bindEndGame,
   bindSimple,
@@ -35,11 +39,13 @@ import {
   whatsNewSplash,
   type SplashBind,
 } from './splashes';
-import { ACHIEVEMENTS, type AchievementDef } from '../systems/AchievementSystem';
+import { ACHIEVEMENTS, WHATS_NEW_IDS, type AchievementDef } from '../systems/AchievementSystem';
 
 export type HudOverlayHandlers = {
   onTab: (tab: TabId) => void;
   onOpenAchievements: () => void;
+  onOpenBestiary: () => void;
+  onCloseBestiary: () => void;
   onLevelTap: () => void;
   onNewGame: () => void;
   onJump: (state: GameSave) => void;
@@ -69,12 +75,15 @@ export class HudOverlay {
   private readonly finger: HTMLImageElement;
   private readonly splash: HTMLElement;
   private readonly storyBack: HTMLButtonElement;
+  private readonly bookcase: HTMLButtonElement;
+  private readonly bookcaseCount: HTMLElement;
+  private readonly bookcaseDot: HTMLElement;
   private toastTimer = 0;
   private achBannerTimer = 0;
   private achQueue: AchievementDef[] = [];
   private achBannerActive = false;
   private splashCleanup: (() => void) | null = null;
-  private view: TabId | 'credits' | null = null;
+  private view: TabId | 'credits' | 'bestiary' | null = null;
   private rewardsSubTab: RewardsSubTab = 'milestones';
   private tabAllowed: (tab: TabId) => boolean = () => true;
 
@@ -107,6 +116,20 @@ export class HudOverlay {
         </button>
       </header>
       <div class="hud-stage" data-stage></div>
+      <button type="button" class="bookcase-hotspot" data-bookcase hidden aria-label="Open Bestiarum">
+        <span class="bookcase-shimmer-aura"></span>
+        <span class="glowing-spine-1"></span>
+        <span class="glowing-spine-2"></span>
+        <span class="bookcase-mote m1"></span>
+        <span class="bookcase-mote m2"></span>
+        <span class="bookcase-mote m3"></span>
+        <span class="bookcase-plaque">
+          <img src="./assets/ui/Tomes.png" alt="" />
+          <span class="bookcase-plaque-title">Bestiarum</span>
+          <span class="bookcase-plaque-count" data-bookcase-count>0/10</span>
+          <span class="bookcase-new-dot" data-bookcase-dot hidden>!</span>
+        </span>
+      </button>
       <button type="button" class="scroll-card back-btn story-back" data-story-back hidden>Back</button>
       <nav class="nav-dock">${NAV.map(
         (n) =>
@@ -141,6 +164,16 @@ export class HudOverlay {
     this.finger = this.root.querySelector('[data-finger]')!;
     this.splash = this.root.querySelector('[data-splash]')!;
     this.storyBack = this.root.querySelector('[data-story-back]')!;
+    this.bookcase = this.root.querySelector('[data-bookcase]')!;
+    this.bookcaseCount = this.root.querySelector('[data-bookcase-count]')!;
+    this.bookcaseDot = this.root.querySelector('[data-bookcase-dot]')!;
+
+    this.bookcase.addEventListener('pointerdown', (e) => e.stopPropagation());
+    this.bookcase.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.handlers.onOpenBestiary();
+    });
 
     this.achBanner.addEventListener('pointerdown', (e) => e.stopPropagation());
     this.achBanner.addEventListener('click', (e) => {
@@ -272,6 +305,45 @@ export class HudOverlay {
     this.openSplash('', bindCreature(creature));
   }
 
+  showCreatureInspectSplash(creature: CreatureDef): void {
+    const def = this.ctx.economy.def(creature.helperId);
+    this.openSplash('', bindCreatureInspect(creature, def?.name ?? creature.helperId));
+  }
+
+  isBestiaryOpen(): boolean {
+    return this.view === 'bestiary';
+  }
+
+  setBookcaseVisible(visible: boolean): void {
+    this.bookcase.hidden = !visible || this.view === 'bestiary';
+    if (!this.bookcase.hidden) {
+      const count = unlockedCreatureCount(this.ctx);
+      const total = this.ctx.spawn.creatures.length;
+      this.bookcaseCount.textContent = `${count}/${total}`;
+      this.bookcaseDot.hidden = count <= this.ctx.state.bestiarySeenCount;
+    }
+  }
+
+  showBestiary(): void {
+    this.view = 'bestiary';
+    this.bookcase.hidden = true;
+    const count = unlockedCreatureCount(this.ctx);
+    if (count > this.ctx.state.bestiarySeenCount) {
+      this.ctx.state.bestiarySeenCount = count;
+      this.ctx.persist();
+    }
+    this.stage.innerHTML = bestiaryHtml(this.ctx);
+    bindBestiary(
+      this.stage,
+      this.ctx,
+      (creature) => {
+        this.ctx.audio.playSfx('pop', 0.35);
+        this.showCreatureInspectSplash(creature);
+      },
+      () => this.handlers.onCloseBestiary(),
+    );
+  }
+
   showCreditsSplash(): void {
     this.openSplash(
       creditsHtml(),
@@ -279,21 +351,38 @@ export class HudOverlay {
     );
   }
 
-  showWhatsNewSplash(onDismiss?: () => void): void {
+  showWhatsNewSplash(unseenOnly = false, onDismiss?: () => void): void {
     const unlockedSet = new Set(this.ctx.state.unlockedAchievements);
-    const unlockedCount = ACHIEVEMENTS.filter((a) => unlockedSet.has(a.id)).length;
-    const canView = this.tabAllowed('achievements');
+    const achievementsUnlocked = ACHIEVEMENTS.filter((a) => unlockedSet.has(a.id)).length;
+    const creaturesUnlocked = unlockedCreatureCount(this.ctx);
+    const unseen = WHATS_NEW_IDS.filter((id) => !this.ctx.state.whatsNewSeen.includes(id));
+    const unseenIds = unseenOnly && unseen.length > 0 ? unseen : [...WHATS_NEW_IDS];
     this.openSplash(
-      whatsNewSplash(unlockedCount, ACHIEVEMENTS.length, canView),
+      whatsNewSplash({
+        unseenIds,
+        creaturesUnlocked,
+        creaturesTotal: this.ctx.spawn.creatures.length,
+        achievementsUnlocked,
+        achievementsTotal: ACHIEVEMENTS.length,
+        canViewBestiary: this.tabAllowed('scene'),
+        canViewAchievements: this.tabAllowed('achievements'),
+      }),
       (host, close) => {
         const closeAndMark = () => {
           onDismiss?.();
           close();
         };
-        return bindSimple(() => {
+        host.querySelector('[data-whats-new-bestiary]')?.addEventListener('click', () => {
+          closeAndMark();
+          this.handlers.onOpenBestiary();
+        });
+        host.querySelector('[data-whats-new-achievements]')?.addEventListener('click', () => {
+          closeAndMark();
           this.rewardsSubTab = 'achievements';
           this.handlers.onOpenAchievements();
-        })(host, closeAndMark);
+        });
+        host.querySelector('[data-splash-close]')?.addEventListener('click', closeAndMark);
+        return () => undefined;
       },
     );
   }
@@ -396,7 +485,7 @@ export class HudOverlay {
     this.view = 'settings';
     this.stage.innerHTML = settingsHtml(this.ctx);
     bindSettings(this.stage, this.ctx, {
-      onWhatsNew: () => this.showWhatsNewSplash(),
+      onWhatsNew: () => this.showWhatsNewSplash(false),
       onCredits: () => this.showCredits(),
       onNewGame: this.handlers.onNewGame,
       onJump: this.handlers.onJump,
@@ -439,7 +528,13 @@ export class HudOverlay {
   }
 
   setChapter(chapter: ChapterDef | undefined, locked: boolean, visible: boolean): void {
-    if (this.view === 'settings' || this.view === 'shop' || this.view === 'achievements' || this.view === 'credits') {
+    if (
+      this.view === 'settings' ||
+      this.view === 'shop' ||
+      this.view === 'achievements' ||
+      this.view === 'credits' ||
+      this.view === 'bestiary'
+    ) {
       return;
     }
     if (!visible || !chapter) {
