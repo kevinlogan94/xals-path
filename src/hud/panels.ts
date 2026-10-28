@@ -1,8 +1,9 @@
 import type { GameContext } from '../game/GameContext';
-import type { ChapterDef, GameSave, TabId } from '../types';
+import type { ChapterDef, CreatureDef, GameSave, RegionId, TabId } from '../types';
 import { formatNumber } from '../utils/format';
 import { devPresets } from '../systems/SaveSystem';
 import { ACHIEVEMENTS } from '../systems/AchievementSystem';
+import { creatureRun } from '../scenes/play/splash/creatureSplash';
 
 const GITHUB = 'https://github.com/kevinlogan94/xals-path';
 const COFFEE = 'https://buymeacoffee.com/kevinmlogan';
@@ -405,6 +406,120 @@ export function chapterHtml(chapter: ChapterDef, locked: boolean): string {
       ${mana ? '<div class="reward-hint">2x mana</div>' : ''}
     </div>
   </button>`;
+}
+
+const REGION_TITLES: Record<RegionId, string> = {
+  meadow: 'The Meadows',
+  river: 'Galia River',
+  altar: 'Sci Nai Mountains',
+};
+
+export function unlockedCreatureCount(ctx: GameContext): number {
+  return ctx.spawn.creatures.filter((c) => {
+    const h = ctx.state.helpers.find((x) => x.id === c.helperId);
+    return (h?.amountOwned ?? 0) > 0;
+  }).length;
+}
+
+export function bestiaryHtml(ctx: GameContext): string {
+  const regions: RegionId[] = ['meadow', 'river', 'altar'];
+  const total = ctx.spawn.creatures.length;
+  const cleansed = unlockedCreatureCount(ctx);
+
+  const sections = regions
+    .map((region) => {
+      const list = ctx.spawn.creatures.filter((c) => c.region === region);
+      const regionUnlocked = list.filter((c) => {
+        const h = ctx.state.helpers.find((x) => x.id === c.helperId);
+        return (h?.amountOwned ?? 0) > 0;
+      }).length;
+      const rows = list
+        .map((c) => {
+          const def = ctx.economy.def(c.helperId);
+          const save = ctx.state.helpers.find((h) => h.id === c.helperId);
+          const unlockLevel = def?.unlockLevel ?? 1;
+          const helperName = def?.name ?? c.helperId;
+          const isUnlocked = (save?.amountOwned ?? 0) > 0;
+          const isTomeUnlocked = ctx.state.playerLevel >= unlockLevel;
+          const cls = `scroll-card bestiary-row ${
+            isUnlocked ? 'is-unlocked scroll-card-active' : isTomeUnlocked ? 'is-silhouette' : 'is-locked'
+          }`;
+          const run = creatureRun(c.id);
+          const thumb =
+            (isUnlocked || isTomeUnlocked) && run
+              ? `<img data-bestiary-thumb="${c.id}" src="${run.src}" alt="" />`
+              : `<span class="tome-art is-lock" style="width:38px;height:38px;background-image:url('./assets/ui/lock-sheet.png')"></span>`;
+          const title = isUnlocked ? c.name : '???';
+          const sub = isUnlocked
+            ? `${helperName} Tome • Tap to read lore`
+            : isTomeUnlocked
+              ? `Summon via ${helperName} Tome`
+              : `Unlocks at Level ${unlockLevel}`;
+          const side = isUnlocked
+            ? `<img class="bestiary-tome-icon" src="./assets/ui/tomes/${c.helperId}.png" alt="" />`
+            : `<div class="tome-cost">${isTomeUnlocked ? 'Unsummoned' : `Lvl ${unlockLevel}`}</div>`;
+          return `<button type="button" class="${cls}" data-bestiary-creature="${c.id}" ${isUnlocked ? '' : 'disabled'}>
+            <div class="bestiary-thumb-box">${thumb}</div>
+            <div>
+              <div class="bestiary-name">${title}</div>
+              <div class="bestiary-sub">${sub}</div>
+            </div>
+            ${side}
+          </button>`;
+        })
+        .join('');
+      return `<p class="scroll-section">${REGION_TITLES[region]} (${regionUnlocked}/${list.length})</p>${rows}`;
+    })
+    .join('');
+
+  return `<section class="scroll-modal">
+    <p class="scroll-kicker">Sanctum Chronicles • ${cleansed} / ${total} Cleansed</p>
+    <h2 class="scroll-title">Bestiarum</h2>
+    <div class="scroll-body">${sections}</div>
+    <div class="splash-actions" style="margin-top:10px">
+      <button type="button" class="scroll-card back-btn" data-bestiary-close style="width:100%">Back</button>
+    </div>
+  </section>`;
+}
+
+export function bindBestiary(
+  root: HTMLElement,
+  ctx: GameContext,
+  onSelect: (creature: CreatureDef) => void,
+  onClose: () => void,
+): void {
+  root.querySelectorAll<HTMLImageElement>('[data-bestiary-thumb]').forEach((img) => {
+    const id = img.dataset.bestiaryThumb;
+    const run = id ? creatureRun(id) : null;
+    const frame = run?.frames[0];
+    if (!run || !frame) return;
+    const boxSize = 48;
+    const max = Math.max(...run.frames.flatMap((f) => [f.w, f.h]));
+    const scale = boxSize / max;
+    const apply = () => {
+      const sw = img.naturalWidth * scale;
+      const sh = img.naturalHeight * scale;
+      img.style.width = `${sw}px`;
+      img.style.height = `${sh}px`;
+      img.style.maxWidth = 'none';
+      img.style.position = 'absolute';
+      img.style.left = `${(boxSize - frame.w * scale) / 2 - frame.x * scale}px`;
+      img.style.top = `${(boxSize - frame.h * scale) / 2 - frame.y * scale}px`;
+      img.style.clipPath = `inset(${frame.y * scale}px ${sw - (frame.x + frame.w) * scale}px ${sh - (frame.y + frame.h) * scale}px ${frame.x * scale}px)`;
+    };
+    if (img.complete && img.naturalWidth) apply();
+    else img.addEventListener('load', apply, { once: true });
+  });
+
+  root.querySelectorAll<HTMLElement>('[data-bestiary-creature]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.bestiaryCreature;
+      const creature = id && ctx.spawn.creatures.find((c) => c.id === id);
+      if (creature) onSelect(creature);
+    });
+  });
+
+  root.querySelector('[data-bestiary-close]')?.addEventListener('click', onClose);
 }
 
 export const NAV: { id: TabId; label: string; icon: string }[] = [

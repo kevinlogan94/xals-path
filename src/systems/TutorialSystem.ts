@@ -6,6 +6,7 @@ import { track } from '../utils/track';
 const LINES = tutorialData.lines as string[];
 const SHOP_UNLOCK_STEP = 1;
 const WAIT_NATURE_STEP = 2;
+const BESTIARY_REVEAL_STEP = 6;
 const POINTER_DELAY = tutorialData.chapterPointerDelaySeconds as number;
 
 export type PointerTarget =
@@ -59,6 +60,11 @@ export class TutorialSystem {
   isEarlyMapLock(state: GameSave): boolean {
     const ch1 = state.chapters.find((c) => c.id === 1);
     return !ch1?.sceneViewed;
+  }
+
+  isBestiaryRevealed(state: GameSave): boolean {
+    if (state.tutorialCompleted || this.outlookTutorial) return true;
+    return this.active && this.stepIndex > BESTIARY_REVEAL_STEP;
   }
 
   isTabAllowed(state: GameSave, tab: TabId): boolean {

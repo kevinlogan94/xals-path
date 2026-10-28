@@ -5,8 +5,9 @@ import type { RegionId, TabId } from '../types';
 import { HudOverlay } from '../hud/HudOverlay';
 import type { RewardId } from '../hud/panels';
 import {
-  WHATS_NEW_VERSION,
-  evaluateAchievements,
+   evaluateAchievements,
+  hasUnseenWhatsNew,
+  markAllWhatsNewSeen,
   unlockAchievement,
   type AchievementDef,
   type AchievementId,
@@ -86,6 +87,8 @@ export class PlayScene extends Phaser.Scene {
         }
         this.setTab('achievements', true);
       },
+      onOpenBestiary: () => this.openBestiary(),
+      onCloseBestiary: () => this.closeBestiary(),
       onLevelTap: () => this.openLevelUpSplash(),
       onNewGame: () => this.onNewGame(),
       onJump: (state) => {
@@ -178,9 +181,9 @@ export class PlayScene extends Phaser.Scene {
 
   private maybeOpenWhatsNew(): void {
     if (!this.ctx.state.tutorialCompleted) return;
-    if (this.ctx.state.whatsNewSeen === WHATS_NEW_VERSION) return;
-    this.hud.showWhatsNewSplash(() => {
-      this.ctx.state.whatsNewSeen = WHATS_NEW_VERSION;
+    if (!hasUnseenWhatsNew(this.ctx.state.whatsNewSeen)) return;
+    this.hud.showWhatsNewSplash(true, () => {
+      markAllWhatsNewSeen(this.ctx.state);
       this.ctx.persist();
     });
   }
@@ -435,9 +438,38 @@ export class PlayScene extends Phaser.Scene {
     );
     this.xal.refreshPortalBar(
       this.ctx.state.portalUnlocked,
-      this.tab === 'scene' && !this.ctx.story.reading && !visible,
+      this.tab === 'scene' && !this.ctx.story.reading && !visible && !this.hud.isBestiaryOpen(),
       this.ctx.state.region,
     );
+  }
+
+  private openBestiary(): void {
+    if (this.barlog.active() || this.ctx.story.reading) return;
+    if (!this.ctx.tutorial.isBestiaryRevealed(this.ctx.state)) return;
+    if (this.tab !== 'scene') {
+      this.setTab('scene', true);
+    }
+    this.clearBanterTimer();
+    this.xal.hideQuote();
+    this.xal.refreshPortalBar(false, false, this.ctx.state.region);
+    this.ctx.audio.playSfx('pop', 0.35);
+    this.hud.showBestiary();
+    this.refreshTutorialPointers();
+  }
+
+  private closeBestiary(): void {
+    if (!this.hud.isBestiaryOpen()) return;
+    this.ctx.audio.playSfx('pop', 0.35);
+    this.hud.clearStage();
+    if (this.tab === 'scene' && !this.ctx.story.reading) {
+      this.refreshChapterCard();
+      if (this.tutorialLine && !this.ctx.state.tutorialCompleted) {
+        this.xal.showQuote(this.tutorialLine);
+        this.xal.setPortraitExpression('generic');
+      }
+    }
+    this.refreshHud();
+    this.refreshTutorialPointers();
   }
 
   private onStoryBack(): void {
@@ -483,6 +515,10 @@ export class PlayScene extends Phaser.Scene {
     }
 
     if (!force && this.tab === tab) {
+      if (tab === 'scene' && this.hud.isBestiaryOpen()) {
+        this.closeBestiary();
+        return;
+      }
       if (!this.ctx.state.tutorialCompleted) {
         if (tab !== 'settings') return;
         tab = this.tutorialReturnTab === 'settings' ? 'scene' : this.tutorialReturnTab;
@@ -496,8 +532,8 @@ export class PlayScene extends Phaser.Scene {
     }
 
     if (this.hud.isSplashOpen()) {
-      if (this.ctx.state.tutorialCompleted && this.ctx.state.whatsNewSeen !== WHATS_NEW_VERSION) {
-        this.ctx.state.whatsNewSeen = WHATS_NEW_VERSION;
+      if (this.ctx.state.tutorialCompleted && hasUnseenWhatsNew(this.ctx.state.whatsNewSeen)) {
+        markAllWhatsNewSeen(this.ctx.state);
         this.ctx.persist();
       }
       this.hud.dismissSplash();
@@ -647,7 +683,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private refreshTutorialPointers(): void {
-    if (this.barlog.active() || this.hud.isSplashOpen()) {
+    if (this.barlog.active() || this.hud.isSplashOpen() || this.hud.isBestiaryOpen()) {
       this.hud.setFinger(false, 0, 0, false);
       return;
     }
@@ -816,6 +852,11 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.economy.readyToLevelUp(this.ctx.state) && !this.ctx.story.reading,
       this.ctx.story.reading,
       this.chapterReady(),
+    );
+    this.hud.setBookcaseVisible(
+      this.tab === 'scene' &&
+        !this.ctx.story.reading &&
+        this.ctx.tutorial.isBestiaryRevealed(this.ctx.state),
     );
   }
 

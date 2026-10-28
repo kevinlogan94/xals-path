@@ -5,7 +5,7 @@ import { StorySystem } from '../systems/StorySystem';
 import { TutorialSystem } from '../systems/TutorialSystem';
 import { AudioSystem } from '../systems/AudioSystem';
 import { SpawnSystem } from '../systems/SpawnSystem';
-import { WHATS_NEW_VERSION, evaluateAchievements } from '../systems/AchievementSystem';
+import { WHATS_NEW_IDS, evaluateAchievements } from '../systems/AchievementSystem';
 
 /** Shared game context — systems live here, not as global singletons. */
 export class GameContext {
@@ -37,7 +37,8 @@ export class GameContext {
     this.state = this.save.load();
     this.state.feedbackShown = feedbackShown;
     this.state.unlockedAchievements = [...unlockedAchievements];
-    this.state.whatsNewSeen = whatsNewSeen || WHATS_NEW_VERSION;
+    this.state.whatsNewSeen =
+      whatsNewSeen.length > 0 ? [...whatsNewSeen] : [...WHATS_NEW_IDS];
     this.state.achievements.storyCount = storyCount;
     this.state.achievements.storyGoal = storyGoal;
     this.trackLogin();

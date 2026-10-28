@@ -1,7 +1,7 @@
 import type { GameSave, HelperDef, RegionId } from '../types';
 import helpersData from '../data/helpers.json';
 import economy from '../data/economy.json';
-import { WHATS_NEW_VERSION, evaluateAchievements } from './AchievementSystem';
+import { WHATS_NEW_IDS, evaluateAchievements } from './AchievementSystem';
 
 const SAVE_KEY = 'xals-path-web-save-v1';
 
@@ -53,7 +53,8 @@ function createDefaultSave(): GameSave {
     feedbackShown: false,
     newsShown: [],
     unlockedAchievements: [],
-    whatsNewSeen: WHATS_NEW_VERSION,
+    whatsNewSeen: [...WHATS_NEW_IDS],
+    bestiarySeenCount: 0,
     savedAt: new Date().toISOString(),
   };
 }
@@ -308,7 +309,8 @@ export class SaveSystem {
         ) {
           fresh.feedbackShown = merged.feedbackShown;
           fresh.unlockedAchievements = merged.unlockedAchievements;
-          fresh.whatsNewSeen = merged.whatsNewSeen || WHATS_NEW_VERSION;
+          fresh.whatsNewSeen =
+            merged.whatsNewSeen.length > 0 ? merged.whatsNewSeen : [...WHATS_NEW_IDS];
           fresh.achievements.storyCount = merged.achievements.storyCount;
           fresh.achievements.storyGoal = merged.achievements.storyGoal;
           this.writeRaw(fresh);
@@ -452,8 +454,8 @@ export class SaveSystem {
       unlockedAchievements: Array.isArray(save.unlockedAchievements)
         ? save.unlockedAchievements
         : [],
-      whatsNewSeen:
-        typeof save.whatsNewSeen === 'string' ? save.whatsNewSeen : '',
+      whatsNewSeen: Array.isArray(save.whatsNewSeen) ? save.whatsNewSeen : [],
+      bestiarySeenCount: finite(save.bestiarySeenCount, 0),
       savedAt: typeof save.savedAt === 'string' ? save.savedAt : fresh.savedAt,
     };
   }
