@@ -146,9 +146,32 @@ export type WhatsNewSplashOpts = {
 };
 
 export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
+  const showSound = opts.unseenIds.includes('sound-v1');
   const showBestiary = opts.unseenIds.includes('bestiary-v1');
   const showAchievements = opts.unseenIds.includes('achievements-v1');
-  const onlyBestiary = showBestiary && !showAchievements;
+  const onlySound = showSound && !showBestiary && !showAchievements;
+  const onlyBestiary = showBestiary && !showSound && !showAchievements;
+
+  if (onlySound) {
+    return shell(
+      'Sanctum Chronicle',
+      "What's New",
+      `<img class="splash-icon" src="./assets/ui/tomes/mystic.png" alt="" />
+      <p class="splash-copy">The sanctum now resonates with dark arcane sound effects across every ritual, spell cast, and creature awakening.</p>
+      <div class="whats-new-list">
+        <div class="scroll-card whats-new-card">
+          <img src="./assets/ui/tomes/mystic.png" alt="" />
+          <div>
+            <div class="reward-title">Arcane Soundscape</div>
+            <div class="reward-hint">New custom sound effects for creature unlocks, spell casting, story pages, and sanctum rewards.</div>
+          </div>
+        </div>
+      </div>
+      <div class="splash-actions">
+        <button type="button" class="scroll-card back-btn" data-splash-close>Continue</button>
+      </div>`,
+    );
+  }
 
   if (onlyBestiary) {
     const callout =
@@ -192,6 +215,16 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
       ? `<p class="whats-new-callout">✨ ${callouts.join(' & ')} already recorded from your journey!</p>`
       : '';
 
+  const soundCard = showSound
+    ? `<div class="scroll-card whats-new-card">
+        <img src="./assets/ui/tomes/mystic.png" alt="" />
+        <div>
+          <div class="reward-title">Arcane Soundscape</div>
+          <div class="reward-hint">New custom sound effects for creature unlocks, spell casting, story pages, and sanctum rewards.</div>
+        </div>
+      </div>`
+    : '';
+
   const bestiaryCard = showBestiary
     ? `<button type="button" class="scroll-card whats-new-card whats-new-card-btn scroll-card-active" data-whats-new-bestiary ${opts.canViewBestiary ? '' : 'disabled'}>
         <img src="./assets/ui/Tomes.png" alt="" />
@@ -225,6 +258,7 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
     `<p class="splash-copy">Recent additions to Xal's Path. Tap a chronicle below to inspect it directly.</p>
     ${calloutHtml}
     <div class="whats-new-list">
+      ${soundCard}
       ${bestiaryCard}
       ${achCards}
     </div>
