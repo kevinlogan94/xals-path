@@ -27,7 +27,7 @@ const BOOK_IDLE_FRAMES = [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
 function ensureXalAnims(scene: Phaser.Scene): void {
   const idleTex = scene.textures.get(IDLE_SHEET);
   if (!idleTex.has('idle-0')) {
-    for (let i = 0; i < 12; i++) idleTex.add(`idle-${i}`, 0, 90 + i * 920, 24, IDLE_W, IDLE_H);
+    for (let i = 0; i < 12; i++) idleTex.add(`idle-${i}`, 0, (i % 4) * IDLE_W, Math.floor(i / 4) * IDLE_H, IDLE_W, IDLE_H);
   }
   const bookTex = scene.textures.get(BOOK_SHEET);
   if (!bookTex.has('book-0')) {
