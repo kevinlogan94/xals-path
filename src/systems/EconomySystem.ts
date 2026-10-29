@@ -8,7 +8,22 @@ export class EconomySystem {
   readonly helpers: HelperDef[] = helpersData.helpers as HelperDef[];
   readonly costMultiplier = helpersData.costMultiplier;
   buffSessionClicks = 0;
+  comboCount = 0;
+  comboMultiplier = 1;
+  lastCastMultiplier = 1;
+  lastOvercharge = false;
+  lastVesselSummon = false;
+  private comboTimer = 0;
   private passiveAcc = 0;
+
+  resetCombo(): void {
+    this.comboCount = 0;
+    this.comboMultiplier = 1;
+    this.lastCastMultiplier = 1;
+    this.lastOvercharge = false;
+    this.lastVesselSummon = false;
+    this.comboTimer = 0;
+  }
 
   passivePerSecond(state: GameSave): number {
     return state.helpers.reduce((sum, h) => {
@@ -21,15 +36,65 @@ export class EconomySystem {
     return state.manaMax / (state.manaLevel * economy.manaCastDivisor);
   }
 
-  tryCast(state: GameSave): number {
+  /** Remaining combo window ratio (0..1) for the HUD combo decay bar. */
+  comboDecayRatio(): number {
+    return Math.max(0, Math.min(1, this.comboTimer / economy.comboWindowSeconds));
+  }
+
+  /** Current step (1..10) toward the 10-spell Arcane Surge burst. */
+  surgeSteps(): number {
+    if (this.comboCount <= 0) return 0;
+    const rem = this.comboCount % economy.overchargeEvery;
+    return rem === 0 ? economy.overchargeEvery : rem;
+  }
+
+  /**
+   * Spends mana when available to fuel Empowered combo progression.
+   * Never blocks clicking: if mana is depleted, casts still succeed at 1x base power.
+   */
+  private advanceCastState(state: GameSave): boolean {
     const infinite = state.buffRemaining > 0;
     const cost = this.castCost(state);
-    if (!infinite && state.mana < cost) return 0;
+    const empowered = infinite || state.mana >= cost;
 
-    if (!infinite) state.mana = Math.max(0, state.mana - cost);
-    else this.buffSessionClicks += 1;
+    if (infinite) {
+      this.buffSessionClicks += 1;
+    } else if (empowered) {
+      state.mana = Math.max(0, state.mana - cost);
+    }
 
-    const gained = state.clickerIncrement;
+    if (empowered) {
+      this.comboCount = this.comboTimer > 0 ? this.comboCount + 1 : 1;
+      this.comboTimer = economy.comboWindowSeconds;
+      this.comboMultiplier = infinite
+        ? economy.comboMaxMultiplier
+        : Math.min(
+            economy.comboMaxMultiplier,
+            1 + Math.floor((this.comboCount - 1) / 2),
+          );
+      this.lastCastMultiplier = this.comboMultiplier;
+      this.lastOvercharge =
+        this.comboCount > 0 &&
+        this.comboCount % economy.overchargeEvery === 0;
+      this.lastVesselSummon =
+        state.manaLevel >= 3 &&
+        this.comboCount > 0 &&
+        this.comboCount % economy.vesselSummonEvery === 0;
+    } else {
+      this.lastCastMultiplier = 1;
+      this.lastOvercharge = false;
+      this.lastVesselSummon = false;
+    }
+    return empowered;
+  }
+
+  tryCast(state: GameSave): number {
+    const empowered = this.advanceCastState(state);
+    const mult = empowered
+      ? this.comboMultiplier +
+        (this.lastOvercharge ? economy.overchargeBonusMultiplier : 0)
+      : 1;
+    const gained = state.clickerIncrement * mult;
     this.addInfluence(state, gained);
     state.achievements.clickerCount += 1;
     state.buffClickProgress += 1;
@@ -38,16 +103,15 @@ export class EconomySystem {
   }
 
   /**
-   * Unity CreatureRegion tap: mana-gated; ×5 / ×10 first tap; ×1 while magic active.
+   * Direct tap on a creature: ×5 / ×10 Cleansing Burst on first tap; combo mult while resonating.
    */
   tryCreatureTap(state: GameSave, alreadyMagic: boolean): number {
-    const infinite = state.buffRemaining > 0;
-    const cost = this.castCost(state);
-    if (!infinite && state.mana < cost) return 0;
-    if (!infinite) state.mana = Math.max(0, state.mana - cost);
-    else this.buffSessionClicks += 1;
+    const empowered = this.advanceCastState(state);
 
-    let mult = 1;
+    let mult = empowered
+      ? this.comboMultiplier +
+        (this.lastOvercharge ? economy.overchargeBonusMultiplier : 0)
+      : 1;
     if (!alreadyMagic) {
       mult =
         Math.random() < economy.creatureTapBonusChance
@@ -59,6 +123,46 @@ export class EconomySystem {
     state.achievements.clickerCount += 1;
     state.buffClickProgress += 1;
     this.afterClick(state);
+    return gained;
+  }
+
+  /**
+   * Tap on a Corrupted creature: 1x per shield crack, 20x when the 3rd tap draws out the corruption.
+   */
+  tryBlightedTap(state: GameSave, purified: boolean): number {
+    this.advanceCastState(state);
+
+    const mult = purified ? economy.blightedPurifyMultiplier : 1;
+    const gained = state.clickerIncrement * mult;
+    this.addInfluence(state, gained);
+    state.achievements.clickerCount += 1;
+    state.buffClickProgress += 1;
+    this.afterClick(state);
+    return gained;
+  }
+
+  /**
+   * Tap on an Ancient Vessel (unlocked Ch 3): 5x on dodges 1–2, 15x on 3rd tap full extraction.
+   */
+  tryVesselTap(state: GameSave, finalExtraction: boolean): number {
+    this.advanceCastState(state);
+
+    const mult = finalExtraction
+      ? economy.vesselFinalMultiplier
+      : economy.vesselTapMultiplier;
+    const gained = state.clickerIncrement * mult;
+    this.addInfluence(state, gained);
+    state.achievements.clickerCount += 1;
+    state.buffClickProgress += 1;
+    this.afterClick(state);
+    return gained;
+  }
+
+  /** Passive 1x clickerIncrement per second emitted by each resonating creature. */
+  addResonanceTick(state: GameSave, count = 1): number {
+    if (count <= 0) return 0;
+    const gained = state.clickerIncrement * count;
+    this.addInfluence(state, gained);
     return gained;
   }
 
@@ -83,11 +187,18 @@ export class EconomySystem {
   }
 
   tick(state: GameSave, dt: number, tutorial?: TutorialSystem): void {
+    if (this.comboTimer > 0) {
+      this.comboTimer = Math.max(0, this.comboTimer - dt);
+      if (this.comboTimer <= 0) {
+        this.resetCombo();
+      }
+    }
+
     if (state.buffRemaining <= 0 && state.mana < state.manaMax) {
-      const divisor = state.manaLevel > 1 ? state.manaLevel * 1.25 : 1;
+      const scale = 1 + (state.manaLevel - 1) * 0.65;
       state.mana = Math.min(
         state.manaMax,
-        state.mana + (economy.manaRegenBase / divisor) * dt * 75,
+        state.mana + economy.manaRegenBase * scale * dt * 75,
       );
     }
 
@@ -257,5 +368,6 @@ export class EconomySystem {
 
   drainMana(state: GameSave): void {
     state.mana = 0;
+    this.resetCombo();
   }
 }

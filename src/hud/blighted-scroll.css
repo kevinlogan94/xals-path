@@ -1346,3 +1346,128 @@
   height: 13px;
   object-fit: contain;
 }
+
+.outlook-pill {
+  position: absolute;
+  left: 50%;
+  bottom: 94px;
+  transform: translateX(-50%);
+  z-index: 2;
+  max-width: calc(100% - 24px);
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(12, 9, 15, 0.78);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.65);
+  color: #e5decf;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  transition: opacity 0.25s ease, border-color 0.25s ease;
+}
+
+.outlook-pill.is-blighted {
+  border-color: rgba(168, 85, 247, 0.75);
+  color: #e9d5ff;
+}
+
+.outlook-pill.is-vessel {
+  border-color: rgba(251, 191, 36, 0.85);
+  color: #fef08a;
+}
+
+.outlook-pill[hidden],
+.combo-hud[hidden] {
+  display: none;
+}
+
+.combo-hud {
+  position: absolute;
+  top: calc(var(--safe-top, 0px) + 72px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 12px 7px;
+  border-radius: 14px;
+  background: rgba(12, 9, 15, 0.84);
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  overflow: hidden;
+  transition: top 0.2s ease;
+}
+
+.combo-hud.has-banner {
+  top: calc(var(--safe-top, 0px) + 144px);
+}
+
+.combo-hud.is-max {
+  border-color: rgba(251, 191, 36, 0.8);
+}
+
+.combo-mult {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  color: #6ee7b7;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.combo-hud.is-max .combo-mult {
+  color: #fde68a;
+}
+
+.combo-right {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.combo-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.combo-pips {
+  display: grid;
+  grid-template-columns: repeat(10, 7px);
+  gap: 3px;
+}
+
+.combo-pip {
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.combo-pip.is-on {
+  background: #34d399;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.7);
+}
+
+.combo-hud.is-max .combo-pip.is-on {
+  background: #fbbf24;
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.8);
+}
+
+.combo-decay {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, #34d399, #fbbf24);
+  transform-origin: left center;
+}

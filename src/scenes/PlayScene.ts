@@ -17,7 +17,13 @@ import { NewsBanner } from './play/outlook/NewsBanner';
 import { PegasusFlyby } from './play/outlook/PegasusFlyby';
 import { BarlogView } from './play/outlook/BarlogView';
 import { OutlookView } from './play/outlook/OutlookView';
-import { playCastBurst } from './play/outlook/creatureMagic';
+import {
+  playCastBurst,
+  playLeylineArc,
+  playResonancePulse,
+  spawnHomingOrbs,
+} from './play/outlook/creatureMagic';
+import type { CreatureTapHit } from '../systems/SpawnSystem';
 
 export class PlayScene extends Phaser.Scene {
   private ctx = getContext();
@@ -45,6 +51,7 @@ export class PlayScene extends Phaser.Scene {
   private layoutW = 0;
   private layoutH = 0;
   private pegasus!: PegasusFlyby;
+  private lastCastPos: { x: number; y: number } | null = null;
 
   constructor() {
     super('Play');
@@ -58,6 +65,40 @@ export class PlayScene extends Phaser.Scene {
     this.ctx.audio.attach(this);
     this.ctx.spawn.attach(this);
     this.ctx.spawn.setTapHandler((hit) => this.onCreatureTap(hit));
+    this.ctx.spawn.setResonanceOrbHandler((rx, ry) => {
+      const gained = this.ctx.economy.addResonanceTick(this.ctx.state, 1);
+      this.ctx.audio.playSfx('collect', 0.16, 1.18);
+      playResonancePulse(this, rx, ry, `+${formatNumber(gained)}`);
+      spawnHomingOrbs(
+        this,
+        rx,
+        ry,
+        this.hud.crystalCenter(),
+        1,
+        () => this.hud.pulseInfluence(),
+        0x34d399,
+      );
+      this.checkAchievements();
+    });
+    this.ctx.spawn.setConvergenceHandler((cx, cy) => {
+      const gained = this.ctx.economy.addResonanceTick(this.ctx.state, 10);
+      this.ctx.audio.playSfx('reward', 0.38);
+      playCastBurst(this, cx, cy, `+${formatNumber(gained)}`, {
+        sublabel: 'THE GREAT WEAVE!',
+        overcharge: true,
+      });
+      spawnHomingOrbs(
+        this,
+        cx,
+        cy,
+        this.hud.crystalCenter(),
+        5,
+        () => this.hud.pulseInfluence(),
+        0xfbbf24,
+      );
+      this.hud.pulseInfluence();
+      this.checkAchievements();
+    });
     this.lastBuff = this.ctx.state.buffRemaining;
 
     this.outlook = new OutlookView(this, this.ctx);
@@ -261,50 +302,163 @@ export class PlayScene extends Phaser.Scene {
       this.saveTimer = 0;
       this.ctx.persist();
     }
-    this.refreshHud();
-    this.refreshTutorialPointers();
     this.news.tick(
       this.ctx.state,
+      this.tab === 'outlook',
+      this.time.now,
       this.tab === 'outlook' &&
         !this.blocked() &&
         !this.hud.isAchBannerOpen() &&
         this.ctx.tutorial.isTabAllowed(this.ctx.state, 'outlook'),
-      this.time.now,
     );
+    this.refreshHud();
+    this.refreshTutorialPointers();
   }
 
   private castAt(x: number, y: number): void {
     const gained = this.ctx.economy.tryCast(this.ctx.state);
-    if (gained <= 0) {
-      this.showToast('Not enough mana');
-      return;
+    const mult = this.ctx.economy.lastCastMultiplier;
+    const overcharge = this.ctx.economy.lastOvercharge;
+    const vesselSummon = this.ctx.economy.lastVesselSummon;
+    const surgeUnlocked =
+      this.ctx.state.manaLevel >= 2 || this.ctx.state.buffRemaining > 0;
+
+    if (this.ctx.economy.comboCount > 1 && this.lastCastPos) {
+      playLeylineArc(
+        this,
+        this.lastCastPos.x,
+        this.lastCastPos.y,
+        x,
+        y,
+        overcharge ? 0xfbbf24 : 0x38bdf8,
+      );
     }
-    this.ctx.audio.playSfx('cast', 0.36);
-    playCastBurst(this, x, y, `+${formatNumber(gained)}`);
+    this.lastCastPos = { x, y };
+
+    this.ctx.audio.playSfx('cast', 0.36, 1 + (mult - 1) * 0.04);
+    this.ctx.spawn.onGroundCast(this.ctx.state, x, y, overcharge);
+
+    const sublabel = overcharge
+      ? surgeUnlocked
+        ? 'ARCANE SURGE!'
+        : 'SPELL BURST!'
+      : mult > 1
+        ? `${mult}× COMBO`
+        : undefined;
+    playCastBurst(this, x, y, `+${formatNumber(gained)}`, {
+      sublabel,
+      overcharge,
+    });
+    if (overcharge) {
+      spawnHomingOrbs(
+        this,
+        x,
+        y,
+        this.hud.crystalCenter(),
+        2,
+        () => this.hud.pulseInfluence(),
+        0xfbbf24,
+      );
+    }
     this.hud.pulseInfluence();
-    this.ctx.spawn.schedule(this.ctx.state, { delay: 0 });
+    this.ctx.spawn.schedule(this.ctx.state, {
+      delay: vesselSummon || !this.ctx.spawn.hasActiveOrPending() ? 0 : undefined,
+      forceVessel: vesselSummon,
+    });
     this.checkAchievements();
   }
 
-  private onCreatureTap(hit: {
-    sprite: Phaser.GameObjects.Image;
-    magic: boolean;
-    setMagic: () => void;
-    hideCreature: () => void;
-  }): void {
+  private onCreatureTap(hit: CreatureTapHit): void {
     if (this.blocked()) return;
     this.ignoreCastUntil = this.time.now + 50;
-    const gained = this.ctx.economy.tryCreatureTap(this.ctx.state, hit.magic);
-    if (gained <= 0) {
-      this.showToast('Not enough mana');
+    const tapX = hit.sprite.x;
+    const tapY = hit.sprite.y;
+
+    if (hit.vessel) {
+      const willExtract = hit.shieldPips <= 1;
+      const gained = this.ctx.economy.tryVesselTap(this.ctx.state, willExtract);
+      hit.applyTap();
+      this.ctx.audio.playSfx(
+        willExtract ? 'reward' : 'creature-tap',
+        willExtract ? 0.45 : 0.42,
+        willExtract ? 1 : 1.14,
+      );
+      playCastBurst(this, tapX, tapY, `+${formatNumber(gained)}`, {
+        sublabel: willExtract
+          ? 'ESSENCE EXTRACTED!'
+          : `VESSEL ${hit.shieldPips - 1}/3`,
+        overcharge: true,
+      });
+      spawnHomingOrbs(
+        this,
+        tapX,
+        tapY,
+        this.hud.crystalCenter(),
+        willExtract ? 6 : 3,
+        () => this.hud.pulseInfluence(),
+        0xfbbf24,
+      );
+      this.finishCreatureTapCast(tapX, tapY);
       return;
     }
-    this.ctx.audio.playSfx('creature-tap', 0.42, hit.magic ? 1.16 : 1);
-    if (!hit.magic) {
-      hit.setMagic();
-      this.time.delayedCall(500, () => hit.hideCreature());
+
+    if (hit.blighted) {
+      const willPurify = hit.shieldPips <= 1;
+      const gained = this.ctx.economy.tryBlightedTap(this.ctx.state, willPurify);
+      hit.applyTap();
+      this.ctx.audio.playSfx(
+        willPurify ? 'lock-shatter' : 'lock-rattle',
+        willPurify ? 0.45 : 0.36,
+      );
+      playCastBurst(this, tapX, tapY, `+${formatNumber(gained)}`, {
+        sublabel: willPurify
+          ? 'CLEANSED!'
+          : `CORRUPTION ${hit.shieldPips - 1}/3`,
+        purified: willPurify,
+      });
+      spawnHomingOrbs(
+        this,
+        tapX,
+        tapY,
+        this.hud.crystalCenter(),
+        willPurify ? 6 : 1,
+        () => this.hud.pulseInfluence(),
+        willPurify ? 0x34d399 : 0xa855f7,
+      );
+      this.finishCreatureTapCast(tapX, tapY);
+      return;
     }
-    playCastBurst(this, hit.sprite.x, hit.sprite.y, `+${formatNumber(gained)}`);
+
+    const wasResonating = hit.resonating;
+    const gained = this.ctx.economy.tryCreatureTap(this.ctx.state, wasResonating);
+    hit.applyTap();
+    this.ctx.audio.playSfx('creature-tap', 0.42, wasResonating ? 1.16 : 1);
+    playCastBurst(this, tapX, tapY, `+${formatNumber(gained)}`, {
+      sublabel: wasResonating ? undefined : 'CLEANSED',
+    });
+    spawnHomingOrbs(
+      this,
+      tapX,
+      tapY,
+      this.hud.crystalCenter(),
+      wasResonating ? 1 : 4,
+      () => this.hud.pulseInfluence(),
+      0x34d399,
+    );
+    this.finishCreatureTapCast(tapX, tapY);
+  }
+
+  private finishCreatureTapCast(tapX: number, tapY: number): void {
+    this.lastCastPos = { x: tapX, y: tapY };
+    if (this.ctx.economy.lastOvercharge) {
+      this.ctx.spawn.triggerArcaneSurge(this.ctx.state, tapX, tapY);
+    }
+    if (this.ctx.economy.lastVesselSummon) {
+      this.ctx.spawn.schedule(this.ctx.state, {
+        delay: 0,
+        forceVessel: true,
+      });
+    }
     this.hud.pulseInfluence();
     this.checkAchievements();
   }
@@ -333,8 +487,14 @@ export class PlayScene extends Phaser.Scene {
         } else if (chId != null && chId >= 2 && chId <= 4) {
           this.ctx.audio.playSfx('reward', 0.42);
           const lvl = this.ctx.state.manaLevel;
+          const unlockCopy =
+            chId === 2
+              ? 'Your maximum mana has increased, and Arcane Surge is unlocked! Every 10th combo spell arcs lightning across all creatures in the valley.'
+              : chId === 3
+                ? 'Your maximum mana has increased, and Ancient Vessels are unlocked! A 25-spell combo draws out a golden vessel—tap it 3 times as it bounds across the valley.'
+                : 'Your maximum mana has increased, and Total Extraction is unlocked! Arcane Surge strikes twice and instantly cleanses Corrupted creatures.';
           this.hud.showAchievementSplash({
-            description: 'Your maximum mana has doubled.',
+            description: unlockCopy,
             iconKey: 'ui-mana-icon',
             before: `${(lvl - 1) * 100}`,
             after: `${lvl * 100}`,
@@ -875,6 +1035,33 @@ export class PlayScene extends Phaser.Scene {
         !this.ctx.story.reading &&
         this.ctx.tutorial.isBestiaryRevealed(this.ctx.state),
     );
+    const vesselActive = this.ctx.spawn.hasVessel();
+    const blightedActive = this.ctx.spawn.hasBlighted();
+    const showOutlookPill =
+      this.tab === 'outlook' &&
+      !this.blocked() &&
+      (vesselActive ||
+        blightedActive ||
+        (this.ctx.state.tutorialCompleted &&
+          this.ctx.state.achievements.clickerCount < 25));
+    const pillMode = vesselActive
+      ? 'vessel'
+      : blightedActive
+        ? 'corrupted'
+        : 'normal';
+    this.hud.setOutlookPill(showOutlookPill, pillMode);
+    this.hud.setComboHud({
+      visible:
+        this.tab === 'outlook' &&
+        !this.blocked() &&
+        this.ctx.economy.comboCount >= 2,
+      multiplier: this.ctx.economy.comboMultiplier,
+      steps: this.ctx.economy.surgeSteps(),
+      decayRatio: this.ctx.economy.comboDecayRatio(),
+      surgeUnlocked:
+        this.ctx.state.manaLevel >= 2 || this.ctx.state.buffRemaining > 0,
+      bannerOpen: this.hud.isAchBannerOpen() || this.news.isOpen(),
+    });
   }
 
   /** Unity SceneManager.ManageExclamationPoint — next unread chapter startable, not ch1. */

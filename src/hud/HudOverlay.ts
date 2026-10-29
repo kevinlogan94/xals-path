@@ -78,6 +78,12 @@ export class HudOverlay {
   private readonly bookcase: HTMLButtonElement;
   private readonly bookcaseCount: HTMLElement;
   private readonly bookcaseDot: HTMLElement;
+  private readonly outlookPill: HTMLElement;
+  private readonly comboHud: HTMLElement;
+  private readonly comboMult: HTMLElement;
+  private readonly comboLabel: HTMLElement;
+  private readonly comboPips: HTMLElement[];
+  private readonly comboDecay: HTMLElement;
   private toastTimer = 0;
   private achBannerTimer = 0;
   private achQueue: AchievementDef[] = [];
@@ -133,6 +139,15 @@ export class HudOverlay {
         </span>
       </button>
       <button type="button" class="scroll-card back-btn story-back" data-story-back hidden>Back</button>
+      <div class="combo-hud" data-combo-hud hidden>
+        <span class="combo-mult" data-combo-mult>2× COMBO</span>
+        <div class="combo-right">
+          <span class="combo-label" data-combo-label>NEXT SURGE 2/10</span>
+          <div class="combo-pips">${Array.from({ length: 10 }, () => '<span class="combo-pip" data-combo-pip></span>').join('')}</div>
+        </div>
+        <div class="combo-decay" data-combo-decay></div>
+      </div>
+      <div class="outlook-pill" data-outlook-pill hidden>Tap creatures to cleanse • Light up 3 for The Great Weave</div>
       <nav class="nav-dock">${NAV.map(
         (n) =>
           `<button type="button" class="nav-btn" data-tab="${n.id}"><img src="${n.icon}" alt="" /><span>${n.label}</span><span class="nav-dot" data-dot="${n.id}" hidden>!</span></button>`,
@@ -169,6 +184,12 @@ export class HudOverlay {
     this.bookcase = this.root.querySelector('[data-bookcase]')!;
     this.bookcaseCount = this.root.querySelector('[data-bookcase-count]')!;
     this.bookcaseDot = this.root.querySelector('[data-bookcase-dot]')!;
+    this.outlookPill = this.root.querySelector('[data-outlook-pill]')!;
+    this.comboHud = this.root.querySelector('[data-combo-hud]')!;
+    this.comboMult = this.root.querySelector('[data-combo-mult]')!;
+    this.comboLabel = this.root.querySelector('[data-combo-label]')!;
+    this.comboPips = Array.from(this.root.querySelectorAll<HTMLElement>('[data-combo-pip]'));
+    this.comboDecay = this.root.querySelector('[data-combo-decay]')!;
 
     this.bookcase.addEventListener('pointerdown', (e) => e.stopPropagation());
     this.bookcase.addEventListener('click', (e) => {
@@ -605,6 +626,52 @@ export class HudOverlay {
 
   levelChipCenter(): { x: number; y: number } {
     return this.centerOf('[data-level]') ?? { x: this.root.clientWidth - 70, y: 50 };
+  }
+
+  crystalCenter(): { x: number; y: number } {
+    return this.centerOf('.hud-crystal') ?? { x: 34, y: 38 };
+  }
+
+  setComboHud(opts: {
+    visible: boolean;
+    multiplier: number;
+    steps: number;
+    decayRatio: number;
+    surgeUnlocked: boolean;
+    bannerOpen?: boolean;
+  }): void {
+    this.comboHud.hidden = !opts.visible;
+    if (!opts.visible) return;
+    this.comboHud.classList.toggle('has-banner', !!opts.bannerOpen);
+    this.comboHud.classList.toggle('is-max', opts.multiplier >= 5 || opts.steps === 10);
+    this.comboMult.textContent = `${opts.multiplier}× COMBO`;
+    const burstName = opts.surgeUnlocked ? 'ARCANE SURGE' : 'SPELL BURST';
+    this.comboLabel.textContent =
+      opts.steps === 10 ? `${burstName}!` : `${burstName} ${opts.steps}/10`;
+    for (let i = 0; i < this.comboPips.length; i++) {
+      this.comboPips[i].classList.toggle('is-on', i < opts.steps);
+    }
+    this.comboDecay.style.transform = `scaleX(${opts.decayRatio.toFixed(3)})`;
+  }
+
+  setOutlookPill(
+    visible: boolean,
+    mode: 'normal' | 'corrupted' | 'vessel',
+  ): void {
+    this.outlookPill.hidden = !visible;
+    if (!visible) return;
+    this.outlookPill.classList.toggle('is-blighted', mode === 'corrupted');
+    this.outlookPill.classList.toggle('is-vessel', mode === 'vessel');
+    if (mode === 'vessel') {
+      this.outlookPill.textContent =
+        'Ancient Vessel • Catch it 3× before it escapes!';
+    } else if (mode === 'corrupted') {
+      this.outlookPill.textContent =
+        'Corrupted creature • Tap 3× to cleanse';
+    } else {
+      this.outlookPill.textContent =
+        'Tap creatures to cleanse • Light 3 for The Great Weave';
+    }
   }
 
   setFinger(visible: boolean, x: number, y: number, pointDown: boolean): void {

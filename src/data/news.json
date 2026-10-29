@@ -26,5 +26,17 @@
   {
     "id": "TomeAchievement",
     "message": "Your experience in Tomes has dramatically increased. Keep purchasing Tomes to increase their effectiveness."
+  },
+  {
+    "id": "Ch2Power",
+    "message": "Arcane Surge unlocked: Reach a 10-spell combo to unleash chain lightning across every creature in the valley."
+  },
+  {
+    "id": "Ch3Power",
+    "message": "Ancient Vessels unlocked: Reach a 25-spell combo to draw out a radiant golden vessel—catch it 3 times before it escapes."
+  },
+  {
+    "id": "Ch4Power",
+    "message": "Total Extraction unlocked: Your 10th-spell Arcane Surge now strikes twice and cleanses corrupted creatures in a single burst."
   }
 ]
