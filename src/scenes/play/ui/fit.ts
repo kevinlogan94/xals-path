@@ -28,7 +28,7 @@ export function lockedEmblem(
   lock.setScale(Math.max(1, Math.round((size * 0.4) / lock.height)));
   const offset = Math.round(size / 2 - lock.displayHeight * 0.6);
   return scene.add.container(0, 0, [
-    fitInBox(scene, key, size, size).setTintFill(0x4a4038).setAlpha(0.85),
+    fitInBox(scene, key, size, size).setTint(0x4a4038).setTintMode(Phaser.TintModes.FILL).setAlpha(0.85),
     lock.setPosition(offset, offset),
   ]);
 }
