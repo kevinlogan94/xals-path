@@ -310,10 +310,10 @@ function paintGlyph(g: Phaser.GameObjects.Graphics, color: number): void {
   g.fillStyle(color, 1);
   g.fillPoints(
     [
-      new Phaser.Geom.Point(0, -9),
-      new Phaser.Geom.Point(9, 0),
-      new Phaser.Geom.Point(0, 9),
-      new Phaser.Geom.Point(-9, 0),
+      new Phaser.Math.Vector2(0, -9),
+      new Phaser.Math.Vector2(9, 0),
+      new Phaser.Math.Vector2(0, 9),
+      new Phaser.Math.Vector2(-9, 0),
     ],
     true,
   );

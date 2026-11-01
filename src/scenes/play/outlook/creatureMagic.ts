@@ -17,19 +17,19 @@ function strokeOctagonRune(
   g.lineStyle(width, color, alpha);
   g.strokePoints(
     [
-      new Phaser.Geom.Point(0, -r),
-      new Phaser.Geom.Point(r, 0),
-      new Phaser.Geom.Point(0, r),
-      new Phaser.Geom.Point(-r, 0),
+      new Phaser.Math.Vector2(0, -r),
+      new Phaser.Math.Vector2(r, 0),
+      new Phaser.Math.Vector2(0, r),
+      new Phaser.Math.Vector2(-r, 0),
     ],
     true,
   );
   g.strokePoints(
     [
-      new Phaser.Geom.Point(-d, -d),
-      new Phaser.Geom.Point(d, -d),
-      new Phaser.Geom.Point(d, d),
-      new Phaser.Geom.Point(-d, d),
+      new Phaser.Math.Vector2(-d, -d),
+      new Phaser.Math.Vector2(d, -d),
+      new Phaser.Math.Vector2(d, d),
+      new Phaser.Math.Vector2(-d, d),
     ],
     true,
   );
@@ -53,10 +53,10 @@ export function makeMagicAura(scene: Phaser.Scene): Phaser.GameObjects.Container
   innerCore.fillStyle(PALE_CYAN, 0.92);
   innerCore.fillPoints(
     [
-      new Phaser.Geom.Point(0, -13),
-      new Phaser.Geom.Point(13, 0),
-      new Phaser.Geom.Point(0, 13),
-      new Phaser.Geom.Point(-13, 0),
+      new Phaser.Math.Vector2(0, -13),
+      new Phaser.Math.Vector2(13, 0),
+      new Phaser.Math.Vector2(0, 13),
+      new Phaser.Math.Vector2(-13, 0),
     ],
     true,
   );
@@ -96,10 +96,10 @@ export function playCastBurst(scene: Phaser.Scene, x: number, y: number, label: 
   flash.fillStyle(PALE_CYAN, 0.95);
   flash.fillPoints(
     [
-      new Phaser.Geom.Point(0, -20),
-      new Phaser.Geom.Point(20, 0),
-      new Phaser.Geom.Point(0, 20),
-      new Phaser.Geom.Point(-20, 0),
+      new Phaser.Math.Vector2(0, -20),
+      new Phaser.Math.Vector2(20, 0),
+      new Phaser.Math.Vector2(0, 20),
+      new Phaser.Math.Vector2(-20, 0),
     ],
     true,
   );
@@ -165,10 +165,10 @@ export function playCastBurst(scene: Phaser.Scene, x: number, y: number, label: 
       spore.strokeCircle(0, 0, pr);
     } else {
       const pts = [
-        new Phaser.Geom.Point(0, -pr * 1.25),
-        new Phaser.Geom.Point(pr * 1.25, 0),
-        new Phaser.Geom.Point(0, pr * 1.25),
-        new Phaser.Geom.Point(-pr * 1.25, 0),
+        new Phaser.Math.Vector2(0, -pr * 1.25),
+        new Phaser.Math.Vector2(pr * 1.25, 0),
+        new Phaser.Math.Vector2(0, pr * 1.25),
+        new Phaser.Math.Vector2(-pr * 1.25, 0),
       ];
       spore.fillPoints(pts, true);
       spore.strokePoints(pts, true);

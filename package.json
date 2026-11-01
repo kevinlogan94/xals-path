@@ -11,7 +11,7 @@
     "sfx": "node scripts/sfx/generate.mjs"
   },
   "dependencies": {
-    "phaser": "3.90.0"
+    "phaser": "4.2.1"
   },
   "devDependencies": {
     "typescript": "~6.0.3",
