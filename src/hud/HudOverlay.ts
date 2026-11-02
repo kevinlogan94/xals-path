@@ -406,6 +406,7 @@ export class HudOverlay {
         creaturesTotal: this.ctx.spawn.creatures.length,
         achievementsUnlocked,
         achievementsTotal: ACHIEVEMENTS.length,
+        canViewOutlook: this.tabAllowed('outlook'),
         canViewBestiary: this.tabAllowed('scene'),
         canViewAchievements: this.tabAllowed('achievements'),
       }),
@@ -414,6 +415,10 @@ export class HudOverlay {
           onDismiss?.();
           close(silent);
         };
+        host.querySelector('[data-whats-new-outlook]')?.addEventListener('click', () => {
+          closeAndMark();
+          this.handlers.onTab('outlook');
+        });
         host.querySelector('[data-whats-new-bestiary]')?.addEventListener('click', () => {
           closeAndMark(true);
           this.handlers.onOpenBestiary();

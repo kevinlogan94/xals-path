@@ -1,8 +1,13 @@
 import type { GameSave } from '../types';
 
-export type WhatsNewId = 'sound-v1' | 'bestiary-v1' | 'achievements-v1';
+export type WhatsNewId = 'outlook-v1' | 'sound-v1' | 'bestiary-v1' | 'achievements-v1';
 
-export const WHATS_NEW_IDS: WhatsNewId[] = ['sound-v1', 'bestiary-v1', 'achievements-v1'];
+export const WHATS_NEW_IDS: WhatsNewId[] = [
+  'outlook-v1',
+  'sound-v1',
+  'bestiary-v1',
+  'achievements-v1',
+];
 
 export function hasUnseenWhatsNew(seen: string[]): boolean {
   return WHATS_NEW_IDS.some((id) => !seen.includes(id));
