@@ -19,19 +19,19 @@ function strokeOctagonRune(
   g.lineStyle(width, color, alpha);
   g.strokePoints(
     [
-      new Phaser.Geom.Point(0, -r),
-      new Phaser.Geom.Point(r, 0),
-      new Phaser.Geom.Point(0, r),
-      new Phaser.Geom.Point(-r, 0),
+      new Phaser.Math.Vector2(0, -r),
+      new Phaser.Math.Vector2(r, 0),
+      new Phaser.Math.Vector2(0, r),
+      new Phaser.Math.Vector2(-r, 0),
     ],
     true,
   );
   g.strokePoints(
     [
-      new Phaser.Geom.Point(-d, -d),
-      new Phaser.Geom.Point(d, -d),
-      new Phaser.Geom.Point(d, d),
-      new Phaser.Geom.Point(-d, d),
+      new Phaser.Math.Vector2(-d, -d),
+      new Phaser.Math.Vector2(d, -d),
+      new Phaser.Math.Vector2(d, d),
+      new Phaser.Math.Vector2(-d, d),
     ],
     true,
   );
@@ -55,10 +55,10 @@ export function makeMagicAura(scene: Phaser.Scene): Phaser.GameObjects.Container
   innerCore.fillStyle(PALE_CYAN, 0.92);
   innerCore.fillPoints(
     [
-      new Phaser.Geom.Point(0, -13),
-      new Phaser.Geom.Point(13, 0),
-      new Phaser.Geom.Point(0, 13),
-      new Phaser.Geom.Point(-13, 0),
+      new Phaser.Math.Vector2(0, -13),
+      new Phaser.Math.Vector2(13, 0),
+      new Phaser.Math.Vector2(0, 13),
+      new Phaser.Math.Vector2(-13, 0),
     ],
     true,
   );
@@ -282,18 +282,18 @@ export function playLeylineArc(
   const nx = -(y2 - y1) / dist;
   const ny = (x2 - x1) / dist;
 
-  const pts: Phaser.Geom.Point[] = [new Phaser.Geom.Point(x1, y1)];
+  const pts: Phaser.Math.Vector2[] = [new Phaser.Math.Vector2(x1, y1)];
   for (let i = 1; i < steps; i++) {
     const t = i / steps;
     const jitter = Phaser.Math.FloatBetween(-14, 14);
     pts.push(
-      new Phaser.Geom.Point(
+      new Phaser.Math.Vector2(
         x1 + (x2 - x1) * t + nx * jitter,
         y1 + (y2 - y1) * t + ny * jitter,
       ),
     );
   }
-  pts.push(new Phaser.Geom.Point(x2, y2));
+  pts.push(new Phaser.Math.Vector2(x2, y2));
 
   g.lineStyle(6, DARK_BACKING, 0.75);
   g.strokePoints(pts, false);
@@ -467,10 +467,10 @@ export function playCastBurst(
   flash.fillStyle(PALE_CYAN, 0.95);
   flash.fillPoints(
     [
-      new Phaser.Geom.Point(0, -20),
-      new Phaser.Geom.Point(20, 0),
-      new Phaser.Geom.Point(0, 20),
-      new Phaser.Geom.Point(-20, 0),
+      new Phaser.Math.Vector2(0, -20),
+      new Phaser.Math.Vector2(20, 0),
+      new Phaser.Math.Vector2(0, 20),
+      new Phaser.Math.Vector2(-20, 0),
     ],
     true,
   );
@@ -536,10 +536,10 @@ export function playCastBurst(
       spore.strokeCircle(0, 0, pr);
     } else {
       const pts = [
-        new Phaser.Geom.Point(0, -pr * 1.25),
-        new Phaser.Geom.Point(pr * 1.25, 0),
-        new Phaser.Geom.Point(0, pr * 1.25),
-        new Phaser.Geom.Point(-pr * 1.25, 0),
+        new Phaser.Math.Vector2(0, -pr * 1.25),
+        new Phaser.Math.Vector2(pr * 1.25, 0),
+        new Phaser.Math.Vector2(0, pr * 1.25),
+        new Phaser.Math.Vector2(-pr * 1.25, 0),
       ];
       spore.fillPoints(pts, true);
       spore.strokePoints(pts, true);

@@ -669,12 +669,23 @@
   line-height: 1;
 }
 
+.hud-finger-clip {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.hud-finger-clip.is-clipped {
+  overflow: hidden;
+}
+
 .hud-finger {
   position: absolute;
   width: 64px;
   height: 64px;
   margin: -32px 0 0 -32px;
-  z-index: 6;
   pointer-events: none;
   animation: finger-up 0.55s ease-in-out infinite alternate;
 }
