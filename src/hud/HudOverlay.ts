@@ -73,6 +73,7 @@ export class HudOverlay {
   private readonly achBannerIcon: HTMLImageElement;
   private readonly achBannerTitle: HTMLElement;
   private readonly finger: HTMLImageElement;
+  private readonly fingerClip: HTMLElement;
   private readonly splash: HTMLElement;
   private readonly storyBack: HTMLButtonElement;
   private readonly bookcase: HTMLButtonElement;
@@ -145,7 +146,9 @@ export class HudOverlay {
           <span class="ach-banner-title" data-ach-banner-title></span>
         </div>
       </button>
-      <img class="hud-finger" data-finger src="./assets/ui/pointer.png" alt="" hidden />
+      <div class="hud-finger-clip" data-finger-clip>
+        <img class="hud-finger" data-finger src="./assets/ui/pointer.png" alt="" hidden />
+      </div>
       <div class="splash-layer" data-splash hidden></div>
     `;
     parent.append(this.root);
@@ -164,6 +167,7 @@ export class HudOverlay {
     this.achBannerIcon = this.root.querySelector('[data-ach-banner-icon]')!;
     this.achBannerTitle = this.root.querySelector('[data-ach-banner-title]')!;
     this.finger = this.root.querySelector('[data-finger]')!;
+    this.fingerClip = this.root.querySelector('[data-finger-clip]')!;
     this.splash = this.root.querySelector('[data-splash]')!;
     this.storyBack = this.root.querySelector('[data-story-back]')!;
     this.bookcase = this.root.querySelector('[data-bookcase]')!;
@@ -607,11 +611,29 @@ export class HudOverlay {
     return this.centerOf('[data-level]') ?? { x: this.root.clientWidth - 70, y: 50 };
   }
 
-  setFinger(visible: boolean, x: number, y: number, pointDown: boolean): void {
+  setFinger(visible: boolean, x: number, y: number, pointDown: boolean, clipSel?: string): void {
     this.finger.hidden = !visible;
-    if (!visible) return;
-    this.finger.style.left = `${x}px`;
-    this.finger.style.top = `${y}px`;
+    if (!visible) {
+      this.fingerClip.classList.remove('is-clipped');
+      this.fingerClip.style.inset = '0';
+      return;
+    }
+    const clipEl = clipSel ? this.root.querySelector<HTMLElement>(clipSel) : null;
+    const root = this.root.getBoundingClientRect();
+    let ox = 0;
+    let oy = 0;
+    if (clipEl) {
+      const clip = clipEl.getBoundingClientRect();
+      ox = clip.left - root.left;
+      oy = clip.top - root.top;
+      this.fingerClip.style.inset = `${oy}px ${root.right - clip.right}px ${root.bottom - clip.bottom}px ${ox}px`;
+      this.fingerClip.classList.add('is-clipped');
+    } else {
+      this.fingerClip.classList.remove('is-clipped');
+      this.fingerClip.style.inset = '0';
+    }
+    this.finger.style.left = `${x - ox}px`;
+    this.finger.style.top = `${y - oy}px`;
     this.finger.classList.toggle('is-down', pointDown);
   }
 

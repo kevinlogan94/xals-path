@@ -767,10 +767,12 @@ export class PlayScene extends Phaser.Scene {
       }
       case 'natureRow': {
         const p = this.hud.natureRowCenter();
-        if (p) {
-          x = p.x;
-          y = p.y + 24;
+        if (!p) {
+          this.hud.setFinger(false, 0, 0, false);
+          return;
         }
+        x = p.x;
+        y = p.y + 24;
         break;
       }
       case 'xal': {
@@ -794,7 +796,7 @@ export class PlayScene extends Phaser.Scene {
         break;
       }
     }
-    this.hud.setFinger(true, x, y, pointDown);
+    this.hud.setFinger(true, x, y, pointDown, target === 'natureRow' ? '.scroll-body' : undefined);
   }
 
   private onPortalTravel(region: RegionId): void {
