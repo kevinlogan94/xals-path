@@ -4,12 +4,26 @@ import { formatNumber } from '../utils/format';
 import type { RegionId, TabId } from '../types';
 import { HudOverlay } from '../hud/HudOverlay';
 import type { RewardId } from '../hud/panels';
+import {
+   evaluateAchievements,
+  hasUnseenWhatsNew,
+  markAllWhatsNewSeen,
+  unlockAchievement,
+  type AchievementDef,
+  type AchievementId,
+} from '../systems/AchievementSystem';
 import { XalView } from './play/xal/XalView';
 import { NewsBanner } from './play/outlook/NewsBanner';
 import { PegasusFlyby } from './play/outlook/PegasusFlyby';
 import { BarlogView } from './play/outlook/BarlogView';
 import { OutlookView } from './play/outlook/OutlookView';
-import { FONT } from './play/ui/constants';
+import {
+  playCastBurst,
+  playLeylineArc,
+  playResonancePulse,
+  spawnHomingOrbs,
+} from './play/outlook/creatureMagic';
+import type { CreatureTapHit } from '../systems/SpawnSystem';
 
 export class PlayScene extends Phaser.Scene {
   private ctx = getContext();
@@ -37,6 +51,7 @@ export class PlayScene extends Phaser.Scene {
   private layoutW = 0;
   private layoutH = 0;
   private pegasus!: PegasusFlyby;
+  private lastCastPos: { x: number; y: number } | null = null;
 
   constructor() {
     super('Play');
@@ -50,12 +65,44 @@ export class PlayScene extends Phaser.Scene {
     this.ctx.audio.attach(this);
     this.ctx.spawn.attach(this);
     this.ctx.spawn.setTapHandler((hit) => this.onCreatureTap(hit));
+    this.ctx.spawn.setResonanceOrbHandler((rx, ry) => {
+      const gained = this.ctx.economy.addResonanceTick(this.ctx.state, 1);
+      this.ctx.audio.playSfx('collect', 0.16, 1.18);
+      playResonancePulse(this, rx, ry, `+${formatNumber(gained)}`);
+      spawnHomingOrbs(
+        this,
+        rx,
+        ry,
+        this.hud.crystalCenter(),
+        1,
+        () => this.hud.pulseInfluence(),
+        0x34d399,
+      );
+      this.checkAchievements();
+    });
+    this.ctx.spawn.setConvergenceHandler((cx, cy) => {
+      const gained = this.ctx.economy.addResonanceTick(this.ctx.state, 10);
+      this.ctx.audio.playSfx('reward', 0.38);
+      playCastBurst(this, cx, cy, `+${formatNumber(gained)}`, {
+        sublabel: 'THE GREAT WEAVE!',
+        overcharge: true,
+      });
+      spawnHomingOrbs(
+        this,
+        cx,
+        cy,
+        this.hud.crystalCenter(),
+        5,
+        () => this.hud.pulseInfluence(),
+        0xfbbf24,
+      );
+      this.hud.pulseInfluence();
+      this.checkAchievements();
+    });
     this.lastBuff = this.ctx.state.buffRemaining;
 
     this.outlook = new OutlookView(this, this.ctx);
     this.outlook.build();
-    this.news = new NewsBanner(this);
-    this.news.build();
     this.barlog = new BarlogView(this, (pointer) => this.onBarlogTap(pointer));
     this.barlog.build();
     this.xal = new XalView(this, (pointer) => {
@@ -65,9 +112,13 @@ export class PlayScene extends Phaser.Scene {
     this.xal.build();
     this.xal.setPortalTravelHandler((region) => this.onPortalTravel(region));
 
-    this.pegasus = new PegasusFlyby(this, () => this.onPegasusTap());
+    this.pegasus = new PegasusFlyby(
+      this,
+      () => this.onPegasusTap(),
+      () => this.ctx.audio.playSfx('pegasus-enter', 0.28),
+    );
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      if (this.blocked() || this.tab !== 'outlook') return;
+      if (this.blocked() || this.tab !== 'outlook' || this.hud.hitsHud(pointer)) return;
       if (this.pegasus.hits(pointer.x, pointer.y)) return;
       if (!this.outlook.canCast(pointer, this.ignoreCastUntil)) return;
       this.castAt(pointer.x, pointer.y);
@@ -75,6 +126,14 @@ export class PlayScene extends Phaser.Scene {
 
     this.hud = new HudOverlay(this.game.canvas.parentElement ?? document.getElementById('game')!, this.ctx, {
       onTab: (tab) => this.setTab(tab),
+      onOpenAchievements: () => {
+        if (this.barlog.active() || !this.ctx.tutorial.isTabAllowed(this.ctx.state, 'achievements')) {
+          return;
+        }
+        this.setTab('achievements', true);
+      },
+      onOpenBestiary: () => this.openBestiary(),
+      onCloseBestiary: () => this.closeBestiary(),
       onLevelTap: () => this.openLevelUpSplash(),
       onNewGame: () => this.onNewGame(),
       onJump: (state) => {
@@ -94,6 +153,11 @@ export class PlayScene extends Phaser.Scene {
       onStoryBack: () => this.onStoryBack(),
       claimReward: (id) => this.claimReward(id),
     });
+    this.news = new NewsBanner(() => {
+      this.ctx.audio.playSfx('ui-tap', 0.22);
+      this.ctx.persist();
+    });
+    this.news.build(this.hud.root);
     this.ctx.tutorial.bootstrap(this.ctx.state, this.ctx.economy);
     this.applyNavLock();
 
@@ -138,22 +202,54 @@ export class PlayScene extends Phaser.Scene {
       this.renderQuote();
     }
 
-    this.openOfflineSplash();
+    if (!this.openOfflineSplash()) {
+      this.maybeOpenWhatsNew();
+    }
 
     this.refreshHud();
     this.refreshTutorialPointers();
   }
 
-  private openOfflineSplash(): void {
+  private openOfflineSplash(): boolean {
     const pending = Math.floor(this.ctx.offlineGained);
-    if (pending <= 0) return;
+    if (pending <= 0) return false;
     this.hud.showInfluenceSplash(pending, () => {
+      this.ctx.audio.playSfx('collect', 0.4);
       this.ctx.economy.addInfluence(this.ctx.state, pending);
       this.ctx.state.pendingOffline = 0;
       this.ctx.offlineGained = 0;
       this.ctx.persist();
       this.refreshHud();
+      this.maybeOpenWhatsNew();
     });
+    return true;
+  }
+
+  private maybeOpenWhatsNew(): void {
+    if (!this.ctx.state.tutorialCompleted) return;
+    if (!hasUnseenWhatsNew(this.ctx.state.whatsNewSeen)) return;
+    this.hud.showWhatsNewSplash(true, () => {
+      markAllWhatsNewSeen(this.ctx.state);
+      this.ctx.persist();
+    });
+  }
+
+  private checkAchievements(extraId?: AchievementId): void {
+    const unlocked: AchievementDef[] = [];
+    if (extraId) {
+      const extra = unlockAchievement(this.ctx.state, extraId);
+      if (extra) unlocked.push(extra);
+    }
+    unlocked.push(
+      ...evaluateAchievements(
+        this.ctx.state,
+        this.ctx.economy.buffSessionClicks,
+      ),
+    );
+    if (unlocked.length > 0) {
+      this.ctx.persist();
+      this.hud.enqueueAchievements(unlocked);
+    }
   }
 
   update(_t: number, delta: number): void {
@@ -181,7 +277,7 @@ export class PlayScene extends Phaser.Scene {
 
     const ready = this.ctx.economy.readyToLevelUp(this.ctx.state);
     if (ready && !this.ctx.story.reading && !this.levelJinglePlayed) {
-      this.ctx.audio.playSfx('levelup');
+      this.ctx.audio.playSfx('level-ready', 0.2);
       this.levelJinglePlayed = true;
     }
     if (!ready) this.levelJinglePlayed = false;
@@ -197,7 +293,7 @@ export class PlayScene extends Phaser.Scene {
     this.pegasus.tick(dt, bounds);
     this.maybeStartBarlog();
     if (this.lastBuff > 0 && this.ctx.state.buffRemaining <= 0) {
-      this.ctx.audio.playSfx('debuff');
+      this.ctx.audio.playSfx('blessing-off', 0.32);
     }
     this.lastBuff = this.ctx.state.buffRemaining;
 
@@ -206,72 +302,148 @@ export class PlayScene extends Phaser.Scene {
       this.saveTimer = 0;
       this.ctx.persist();
     }
-    this.refreshHud();
-    this.refreshTutorialPointers();
     this.news.tick(
       this.ctx.state,
+      this.tab === 'outlook',
+      this.time.now,
       this.tab === 'outlook' &&
         !this.blocked() &&
+        !this.hud.isAchBannerOpen() &&
         this.ctx.tutorial.isTabAllowed(this.ctx.state, 'outlook'),
-      this.time.now,
     );
+    this.refreshHud();
+    this.refreshTutorialPointers();
   }
 
   private castAt(x: number, y: number): void {
     const gained = this.ctx.economy.tryCast(this.ctx.state);
-    if (gained <= 0) {
-      this.showToast('Not enough mana');
-      return;
+    const mult = this.ctx.economy.lastCastMultiplier;
+    const overcharge = this.ctx.economy.lastOvercharge;
+    const vesselSummon = this.ctx.economy.lastVesselSummon;
+    const surgeUnlocked =
+      this.ctx.state.manaLevel >= 2 || this.ctx.state.buffRemaining > 0;
+
+    if (this.ctx.economy.comboCount > 1 && this.lastCastPos) {
+      playLeylineArc(
+        this,
+        this.lastCastPos.x,
+        this.lastCastPos.y,
+        x,
+        y,
+        overcharge ? 0xfbbf24 : 0x38bdf8,
+      );
     }
-    this.ctx.audio.playSfx('cast', 0.35);
-    this.floatText(x, y, `+${formatNumber(gained)}`);
-    this.ctx.spawn.schedule(this.ctx.state, { delay: 0 });
+    this.lastCastPos = { x, y };
+
+    this.ctx.audio.playSfx('cast', 0.36, 1 + (mult - 1) * 0.04);
+    this.ctx.spawn.onGroundCast(this.ctx.state, x, y, overcharge);
+
+    const sublabel = overcharge
+      ? surgeUnlocked
+        ? 'ARCANE SURGE!'
+        : 'SPELL BURST!'
+      : mult > 1
+        ? `${mult}× COMBO`
+        : undefined;
+    playCastBurst(this, x, y, `+${formatNumber(gained)}`, {
+      sublabel,
+      overcharge,
+    });
+    if (overcharge) {
+      spawnHomingOrbs(
+        this,
+        x,
+        y,
+        this.hud.crystalCenter(),
+        2,
+        () => this.hud.pulseInfluence(),
+        0xfbbf24,
+      );
+    }
+    this.hud.pulseInfluence();
+    this.ctx.spawn.schedule(this.ctx.state, {
+      delay: vesselSummon || !this.ctx.spawn.hasActiveOrPending() ? 0 : undefined,
+      forceVessel: vesselSummon,
+    });
+    this.checkAchievements();
   }
 
-  private onCreatureTap(hit: {
-    sprite: Phaser.GameObjects.Image;
-    magic: boolean;
-    setMagic: () => void;
-    hideCreature: () => void;
-  }): void {
+  private onCreatureTap(hit: CreatureTapHit): void {
     if (this.blocked()) return;
     this.ignoreCastUntil = this.time.now + 50;
-    const gained = this.ctx.economy.tryCreatureTap(this.ctx.state, hit.magic);
-    if (gained <= 0) {
-      this.showToast('Not enough mana');
-      return;
-    }
-    this.ctx.audio.playSfx('cast', 0.4);
-    if (!hit.magic) {
-      hit.setMagic();
-      this.time.delayedCall(500, () => hit.hideCreature());
-    }
-    this.floatText(hit.sprite.x, hit.sprite.y - 20, `+${formatNumber(gained)}`);
-  }
+    const tapX = hit.sprite.x;
+    const tapY = hit.sprite.y;
 
-  private floatText(x: number, y: number, msg: string): void {
-    const floater = this.add
-      .text(x, y, msg, {
-        fontFamily: FONT,
-        fontStyle: 'bold',
-        fontSize: '26px',
-        color: '#fff4c8',
-        stroke: '#3a2a10',
-        strokeThickness: 1,
-      })
-      .setOrigin(0.5)
-      .setDepth(15);
-    this.tweens.add({
-      targets: floater,
-      y: y - 140,
-      alpha: 0,
-      duration: 900,
-      onComplete: () => floater.destroy(),
+    let gained: number;
+    let sfx: Parameters<typeof this.ctx.audio.playSfx>[0];
+    let vol = 0.42;
+    let rate = 1;
+    let sublabel: string | undefined;
+    let overcharge = false;
+    let purified = false;
+    let orbCount: number;
+    let orbColor = 0x34d399;
+
+    if (hit.vessel) {
+      const willExtract = hit.shieldPips <= 1;
+      gained = this.ctx.economy.tryVesselTap(this.ctx.state, willExtract);
+      sfx = willExtract ? 'reward' : 'creature-tap';
+      vol = willExtract ? 0.45 : 0.42;
+      rate = willExtract ? 1 : 1.14;
+      sublabel = willExtract ? 'ESSENCE EXTRACTED!' : `VESSEL ${hit.shieldPips - 1}/3`;
+      overcharge = true;
+      orbCount = willExtract ? 6 : 3;
+      orbColor = 0xfbbf24;
+    } else if (hit.blighted) {
+      const willPurify = hit.shieldPips <= 1;
+      gained = this.ctx.economy.tryBlightedTap(this.ctx.state, willPurify);
+      sfx = willPurify ? 'lock-shatter' : 'lock-rattle';
+      vol = willPurify ? 0.45 : 0.36;
+      sublabel = willPurify ? 'CLEANSED!' : `CORRUPTION ${hit.shieldPips - 1}/3`;
+      purified = willPurify;
+      orbCount = willPurify ? 6 : 1;
+      orbColor = willPurify ? 0x34d399 : 0xa855f7;
+    } else {
+      gained = this.ctx.economy.tryCreatureTap(this.ctx.state, hit.resonating);
+      sfx = 'creature-tap';
+      rate = hit.resonating ? 1.16 : 1;
+      sublabel = hit.resonating ? undefined : 'CLEANSED';
+      orbCount = hit.resonating ? 1 : 4;
+    }
+
+    hit.applyTap();
+    this.ctx.audio.playSfx(sfx, vol, rate);
+    playCastBurst(this, tapX, tapY, `+${formatNumber(gained)}`, {
+      sublabel,
+      overcharge,
+      purified,
     });
+    spawnHomingOrbs(
+      this,
+      tapX,
+      tapY,
+      this.hud.crystalCenter(),
+      orbCount,
+      () => this.hud.pulseInfluence(),
+      orbColor,
+    );
+
+    this.lastCastPos = { x: tapX, y: tapY };
+    if (this.ctx.economy.lastOvercharge) {
+      this.ctx.spawn.triggerArcaneSurge(this.ctx.state, tapX, tapY);
+    }
+    if (this.ctx.economy.lastVesselSummon) {
+      this.ctx.spawn.schedule(this.ctx.state, {
+        delay: 0,
+        forceVessel: true,
+      });
+    }
+    this.hud.pulseInfluence();
+    this.checkAchievements();
   }
 
   private onPortraitTap(pointer?: Phaser.Input.Pointer): void {
-    if (pointer && this.hud.hitsStoryBack(pointer)) return;
+    if (pointer && this.hud.hitsHud(pointer)) return;
     if (this.tab !== 'scene') return;
 
     if (this.ctx.story.reading) {
@@ -286,19 +458,30 @@ export class PlayScene extends Phaser.Scene {
         this.syncStoryBack();
         this.xal.setPortraitExpression('generic');
         this.refreshChapterCard();
+        this.checkAchievements();
         const chId = result.finishedChapterId;
         if (chId === 7) {
+          this.ctx.audio.playSfx('end-game', 0.4);
           this.hud.showEndGameSplash(() => this.hud.showCreditsSplash());
         } else if (chId != null && chId >= 2 && chId <= 4) {
+          this.ctx.audio.playSfx('reward', 0.42);
           const lvl = this.ctx.state.manaLevel;
+          const unlockCopy =
+            chId === 2
+              ? 'Your maximum mana has increased, and Arcane Surge is unlocked! Every 10th combo spell arcs lightning across all creatures in the valley.'
+              : chId === 3
+                ? 'Your maximum mana has increased, and Ancient Vessels are unlocked! A 25-spell combo draws out a golden vessel—tap it 3 times as it bounds across the valley.'
+                : 'Your maximum mana has increased, and Total Extraction is unlocked! Arcane Surge strikes twice and instantly cleanses Corrupted creatures.';
           this.hud.showAchievementSplash({
-            description: 'Your maximum mana has doubled.',
+            description: unlockCopy,
             iconKey: 'ui-mana-icon',
             before: `${(lvl - 1) * 100}`,
             after: `${lvl * 100}`,
           });
         } else if (result.portalJustUnlocked) {
           this.hud.showPortalSplash();
+        } else {
+          this.ctx.audio.playSfx('page-turn', 0.28);
         }
         if (finishingCh1) {
           this.ctx.tutorial.startAfterChapter1(this.ctx.state);
@@ -308,6 +491,7 @@ export class PlayScene extends Phaser.Scene {
           this.refreshTutorialPointers();
         }
       } else {
+        this.ctx.audio.playSfx('page-turn', 0.28);
         this.renderQuote();
       }
       return;
@@ -323,6 +507,7 @@ export class PlayScene extends Phaser.Scene {
     if (this.ctx.tutorial.active) {
       const line = this.ctx.tutorial.advanceLine(this.ctx.state, this.ctx.economy);
       if (line) {
+        this.ctx.audio.playSfx('page-turn', 0.28);
         this.clearBanterTimer();
         this.showTutorialLine(line);
       } else if (!this.ctx.tutorial.waitingNature) {
@@ -338,6 +523,7 @@ export class PlayScene extends Phaser.Scene {
     if (!this.ctx.state.tutorialCompleted) return;
 
     this.clearBanterTimer();
+    this.ctx.audio.playSfx('page-turn', 0.28);
     this.xal.setPortraitExpression('angry');
     this.xal.showQuote(this.ctx.story.banterLine());
     this.banterTimer = this.time.delayedCall(5000, () => {
@@ -359,6 +545,7 @@ export class PlayScene extends Phaser.Scene {
       return;
     }
     if (!this.ctx.story.start(this.ctx.state, next.id)) return;
+    this.ctx.audio.playSfx('chapter-start', 0.44);
     if (next.id >= 2 && next.id <= 4) {
       this.ctx.state.manaLevel += 1;
       this.ctx.state.manaMax = 100 * this.ctx.state.manaLevel;
@@ -403,13 +590,43 @@ export class PlayScene extends Phaser.Scene {
     );
     this.xal.refreshPortalBar(
       this.ctx.state.portalUnlocked,
-      this.tab === 'scene' && !this.ctx.story.reading && !visible,
+      this.tab === 'scene' && !this.ctx.story.reading && !visible && !this.hud.isBestiaryOpen(),
       this.ctx.state.region,
     );
   }
 
+  private openBestiary(): void {
+    if (this.barlog.active() || this.ctx.story.reading) return;
+    if (!this.ctx.tutorial.isBestiaryRevealed(this.ctx.state)) return;
+    if (this.tab !== 'scene') {
+      this.setTab('scene', true);
+    }
+    this.clearBanterTimer();
+    this.xal.hideQuote();
+    this.xal.refreshPortalBar(false, false, this.ctx.state.region);
+    this.ctx.audio.playSfx('ui-tap', 0.22);
+    this.hud.showBestiary();
+    this.refreshTutorialPointers();
+  }
+
+  private closeBestiary(): void {
+    if (!this.hud.isBestiaryOpen()) return;
+    this.ctx.audio.playSfx('ui-tap', 0.22);
+    this.hud.clearStage();
+    if (this.tab === 'scene' && !this.ctx.story.reading) {
+      this.refreshChapterCard();
+      if (this.tutorialLine && !this.ctx.state.tutorialCompleted) {
+        this.xal.showQuote(this.tutorialLine);
+        this.xal.setPortraitExpression('generic');
+      }
+    }
+    this.refreshHud();
+    this.refreshTutorialPointers();
+  }
+
   private onStoryBack(): void {
     if (!this.ctx.story.retreat()) return;
+    this.ctx.audio.playSfx('ui-tap', 0.22);
     if (this.barlog.active()) this.showBarlogLine();
     else this.renderQuote();
   }
@@ -451,6 +668,10 @@ export class PlayScene extends Phaser.Scene {
     }
 
     if (!force && this.tab === tab) {
+      if (tab === 'scene' && this.hud.isBestiaryOpen()) {
+        this.closeBestiary();
+        return;
+      }
       if (!this.ctx.state.tutorialCompleted) {
         if (tab !== 'settings') return;
         tab = this.tutorialReturnTab === 'settings' ? 'scene' : this.tutorialReturnTab;
@@ -463,11 +684,18 @@ export class PlayScene extends Phaser.Scene {
       this.tutorialReturnTab = this.tab;
     }
 
-    if (this.hud.isSplashOpen()) this.hud.dismissSplash();
+    if (this.hud.isSplashOpen()) {
+      if (this.ctx.state.tutorialCompleted && hasUnseenWhatsNew(this.ctx.state.whatsNewSeen)) {
+        markAllWhatsNewSeen(this.ctx.state);
+        this.ctx.persist();
+      }
+      this.hud.dismissSplash();
+    }
     if (tab === 'outlook' && this.ctx.tutorial.outlookTutorial) {
       this.ctx.tutorial.dismissOutlookTutorial(this.ctx.state);
       this.tutorialLine = null;
       this.ctx.persist();
+      this.checkAchievements();
     }
 
     this.clearBanterTimer();
@@ -477,7 +705,7 @@ export class PlayScene extends Phaser.Scene {
     this.syncStoryBack();
     this.hud.setActive(tab);
     if (tab !== 'shop' && tab !== 'achievements' && tab !== 'settings') this.hud.clearStage();
-    this.ctx.audio.playSfx('pop', 0.35);
+    if (!force) this.ctx.audio.playSfx('ui-tap', 0.22);
 
     this.outlook.setVisible(tab !== 'scene');
     this.xal.setVisible(tab === 'scene');
@@ -524,10 +752,11 @@ export class PlayScene extends Phaser.Scene {
 
   private buyHelper(id: string): void {
     if (this.ctx.economy.buyHelper(this.ctx.state, id)) {
-      this.ctx.audio.playSfx('coin');
+      this.ctx.audio.playSfx('tome-buy', 0.4);
       const owned = this.ctx.state.helpers.find((hh) => hh.id === id);
       this.ctx.tutorial.onNaturePurchased(this.ctx.state);
       this.hud.showTomes();
+      this.checkAchievements();
       if (owned?.amountOwned === 1) {
         const def = this.ctx.economy.def(id);
         const creature = def && this.ctx.spawn.creatures.find((c) => c.id === def.creatureId);
@@ -541,18 +770,26 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private claimReward(id: RewardId): boolean {
+    let ok = false;
     switch (id) {
       case 'helper':
-        return this.ctx.economy.claimHelper(this.ctx.state);
+        ok = this.ctx.economy.claimHelper(this.ctx.state);
+        break;
       case 'clicker':
-        return this.ctx.economy.claimClicker(this.ctx.state);
+        ok = this.ctx.economy.claimClicker(this.ctx.state);
+        break;
       case 'meta':
-        return this.ctx.economy.claimMeta(this.ctx.state);
+        ok = this.ctx.economy.claimMeta(this.ctx.state);
+        break;
       case 'login':
-        return this.ctx.economy.claimLogin(this.ctx.state);
+        ok = this.ctx.economy.claimLogin(this.ctx.state);
+        break;
       case 'story':
-        return this.ctx.economy.claimStory(this.ctx.state);
+        ok = this.ctx.economy.claimStory(this.ctx.state);
+        break;
     }
+    if (ok) this.checkAchievements();
+    return ok;
   }
 
   private applyNavLock(): void {
@@ -578,15 +815,17 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private onBarlogTap(pointer?: Phaser.Input.Pointer): void {
-    if (pointer && this.hud.hitsStoryBack(pointer)) return;
+    if (pointer && this.hud.hitsHud(pointer)) return;
     if (!this.ctx.story.reading) return;
     const result = this.ctx.story.advance(this.ctx.state);
+    this.ctx.audio.playSfx('page-turn', 0.28);
     if (result.regionChanged) {
       this.outlook.applyRegionVisual();
       this.ctx.spawn.clear();
     }
     if (result.finished) {
       this.refreshChapterCard();
+      this.checkAchievements();
       this.hud.setStoryBack(false);
       this.barlog.fadeOut(() => {
         this.applyNavLock();
@@ -598,7 +837,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private refreshTutorialPointers(): void {
-    if (this.barlog.active()) {
+    if (this.barlog.active() || this.hud.isSplashOpen() || this.hud.isBestiaryOpen()) {
       this.hud.setFinger(false, 0, 0, false);
       return;
     }
@@ -667,10 +906,12 @@ export class PlayScene extends Phaser.Scene {
       }
       case 'natureRow': {
         const p = this.hud.natureRowCenter();
-        if (p) {
-          x = p.x;
-          y = p.y + 24;
+        if (!p) {
+          this.hud.setFinger(false, 0, 0, false);
+          return;
         }
+        x = p.x;
+        y = p.y + 24;
         break;
       }
       case 'xal': {
@@ -694,7 +935,7 @@ export class PlayScene extends Phaser.Scene {
         break;
       }
     }
-    this.hud.setFinger(true, x, y, pointDown);
+    this.hud.setFinger(true, x, y, pointDown, target === 'natureRow' ? '.scroll-body' : undefined);
   }
 
   private onPortalTravel(region: RegionId): void {
@@ -703,20 +944,22 @@ export class PlayScene extends Phaser.Scene {
     this.ctx.economy.drainMana(this.ctx.state);
     this.ctx.spawn.clear();
     this.outlook.applyRegionVisual();
-    this.ctx.audio.playSfx('cast');
+    this.ctx.audio.playSfx('portal', 0.4);
     this.setTab('outlook', true);
+    this.checkAchievements('traveler');
   }
 
   private onPegasusTap(): void {
     if (this.blocked() || !this.ctx.state.buffOfferPending) return;
     this.ignoreCastUntil = this.time.now + 50;
+    this.ctx.audio.playSfx('pegasus-tap', 0.36);
     this.openBuffSplash();
   }
 
   private openBuffSplash(): void {
     this.hud.showBuffSplash(() => {
       if (this.ctx.economy.acceptBuffOffer(this.ctx.state)) {
-        this.ctx.audio.playSfx('buff');
+        this.ctx.audio.playSfx('blessing-on', 0.4);
         this.lastBuff = this.ctx.state.buffRemaining;
       }
       this.ctx.persist();
@@ -738,6 +981,7 @@ export class PlayScene extends Phaser.Scene {
     this.lastBuff = 0;
     this.levelJinglePlayed = false;
     this.hud.dismissSplash();
+    this.hud.clearAchBanner();
     this.outlook.applyRegionVisual();
     this.applyNavLock();
     this.setTab('scene', true);
@@ -746,11 +990,16 @@ export class PlayScene extends Phaser.Scene {
   private openLevelUpSplash(): void {
     if (this.hud.isSplashOpen()) return;
     if (!this.ctx.economy.readyToLevelUp(this.ctx.state) || this.ctx.story.reading) return;
-    this.ctx.audio.playSfx('levelup');
+    this.ctx.audio.playSfx('level-up', 0.42);
     const reward = this.ctx.economy.levelReward(this.ctx.state);
     this.hud.showLevelUpSplash(reward, () => {
+      this.ctx.audio.playSfx('collect', 0.4);
       if (this.ctx.economy.levelUp(this.ctx.state)) {
         this.refreshChapterCard();
+        if (this.ctx.state.playerLevel === 11 && !this.ctx.state.feedbackShown) {
+          this.ctx.state.feedbackShown = true;
+          this.hud.showFeedbackSplash();
+        }
         this.ctx.persist();
       }
     });
@@ -762,6 +1011,38 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.story.reading,
       this.chapterReady(),
     );
+    this.hud.setBookcaseVisible(
+      this.tab === 'scene' &&
+        !this.ctx.story.reading &&
+        this.ctx.tutorial.isBestiaryRevealed(this.ctx.state),
+    );
+    const vesselActive = this.ctx.spawn.hasVessel();
+    const blightedActive = this.ctx.spawn.hasBlighted();
+    const showOutlookPill =
+      this.tab === 'outlook' &&
+      !this.blocked() &&
+      (vesselActive ||
+        blightedActive ||
+        (this.ctx.state.tutorialCompleted &&
+          this.ctx.state.achievements.clickerCount < 25));
+    const pillMode = vesselActive
+      ? 'vessel'
+      : blightedActive
+        ? 'corrupted'
+        : 'normal';
+    this.hud.setOutlookPill(showOutlookPill, pillMode);
+    this.hud.setComboHud({
+      visible:
+        this.tab === 'outlook' &&
+        !this.blocked() &&
+        this.ctx.economy.comboCount >= 2,
+      multiplier: this.ctx.economy.comboMultiplier,
+      steps: this.ctx.economy.surgeSteps(),
+      decayRatio: this.ctx.economy.comboDecayRatio(),
+      surgeUnlocked:
+        this.ctx.state.manaLevel >= 2 || this.ctx.state.buffRemaining > 0,
+      bannerOpen: this.hud.isAchBannerOpen() || this.news.isOpen(),
+    });
   }
 
   /** Unity SceneManager.ManageExclamationPoint — next unread chapter startable, not ch1. */
@@ -774,6 +1055,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private showToast(msg: string): void {
+    this.ctx.audio.playSfx('denied', 0.35);
     this.hud.showToast(msg);
   }
 

@@ -162,5 +162,18 @@
       "Confirm he does not appear during the tutorial or on any other chapter"
     ],
     "passes": true
+  },
+  {
+    "category": "functional",
+    "description": "Buying the first copy of a tome plays a lock rattle while the lock shakes, a shatter when it breaks, and a chime when the creature card appears. Closing the splash early stops the later sounds.",
+    "steps": [
+      "Buy a tome you do not own yet",
+      "Confirm a rattle plays as the lock shakes, around 1 second and again around 1.4 seconds",
+      "Confirm a shatter plays as the lock breaks, around 2 seconds",
+      "Confirm a chime plays as the creature card appears, around 3 seconds",
+      "Buy another first tome and close the splash during the lock shake",
+      "Confirm the later sounds do not play"
+    ],
+    "passes": false
   }
 ]

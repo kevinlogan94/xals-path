@@ -1,6 +1,13 @@
-import type { CreatureDef } from '../types';
+import type { Sfx } from '../systems/AudioSystem';
+import type { CreatureDef, RegionId } from '../types';
 import { formatNumber } from '../utils/format';
 import { creatureFirstFrame, creatureRun } from '../scenes/play/splash/creatureSplash';
+
+const REGION_NAMES: Record<RegionId, string> = {
+  meadow: 'The Meadows',
+  river: 'Galia River',
+  altar: 'Sci Nai Mountains',
+};
 
 const ICONS: Record<string, string> = {
   'ui-influence': './assets/ui/influence.png',
@@ -26,12 +33,17 @@ function back(): string {
   return `<div class="splash-actions"><button type="button" class="scroll-card back-btn" data-splash-close>Back</button></div>`;
 }
 
-function bindGo(host: HTMLElement, close: () => void, go?: () => void): void {
+function bindGo(
+  host: HTMLElement,
+  close: (silent?: boolean) => void,
+  go?: () => void,
+  silentGo = false,
+): void {
   host.querySelector('[data-splash-go]')?.addEventListener('click', () => {
+    close(silentGo);
     go?.();
-    close();
   });
-  host.querySelector('[data-splash-close]')?.addEventListener('click', close);
+  host.querySelector('[data-splash-close]')?.addEventListener('click', () => close());
 }
 
 function splashDescription(raw: string): string {
@@ -110,27 +122,252 @@ export function levelUpSplash(reward: number): string {
   );
 }
 
+export function feedbackSplash(): string {
+  return shell(
+    "Traveler's Counsel",
+    'Thanks for Playing',
+    `<img class="splash-icon" src="${ICONS['ui-reward-star']}" alt="" />
+    <p class="splash-copy">Enjoying Xal's Path so far? Take a quick survey to share what you think and what we can do better.</p>
+    <div class="splash-actions">
+      <button type="button" class="ritual-btn" data-splash-go>Share Feedback</button>
+      <button type="button" class="scroll-card back-btn" data-splash-close>Not Now</button>
+    </div>`,
+  );
+}
+
+export type WhatsNewSplashOpts = {
+  unseenIds: string[];
+  creaturesUnlocked: number;
+  creaturesTotal: number;
+  achievementsUnlocked: number;
+  achievementsTotal: number;
+  canViewOutlook: boolean;
+  canViewBestiary: boolean;
+  canViewAchievements: boolean;
+};
+
+type WhatsNewCardSpec = {
+  icon: string;
+  title: string;
+  hint: string;
+  actionAttr?: string;
+  enabled?: boolean;
+};
+
+type WhatsNewEntrySpec = {
+  id: string;
+  heroIcon?: string;
+  intro: string;
+  callout?: string;
+  cta?: { label: string; attr: string };
+  cards: WhatsNewCardSpec[];
+  listSummaryCard?: WhatsNewCardSpec;
+};
+
+function renderWhatsNewCard(c: WhatsNewCardSpec, clickable = true): string {
+  const inner = `<img src="${c.icon}" alt="" /><div><div class="reward-title">${c.title}</div><div class="reward-hint">${c.hint}</div></div>`;
+  if (clickable && c.actionAttr) {
+    return `<button type="button" class="scroll-card whats-new-card whats-new-card-btn scroll-card-active" ${c.actionAttr} ${c.enabled === false ? 'disabled' : ''}>${inner}</button>`;
+  }
+  return `<div class="scroll-card whats-new-card">${inner}</div>`;
+}
+
+export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
+  const entries: WhatsNewEntrySpec[] = [
+    {
+      id: 'fold-v1',
+      heroIcon: './assets/ui/Portal2.png',
+      intro:
+        'The sanctum now unfolds cleanly across foldable displays, keeping cards, scrolls, and dialogue framed while the realm fills the screen.',
+      cards: [
+        {
+          icon: './assets/ui/Portal2.png',
+          title: 'Foldable Display Support',
+          hint: 'Tailored layout for unfolded screens—full-bleed realm art with centered chapter cards, scrolls, and dialogue.',
+        },
+      ],
+    },
+    {
+      id: 'outlook-v1',
+      intro:
+        'The valley is alive with running creatures, spell combos, and cleansing magic.',
+      cta: opts.canViewOutlook
+        ? { label: 'Enter the Valley', attr: 'data-whats-new-outlook' }
+        : undefined,
+      cards: [
+        {
+          icon: './assets/ui/manaIcon.png',
+          title: 'Empowered Spell Combos',
+          hint: 'Low mana never stops your casting! Cast while mana is charged to build up to a 5× Combo and trigger 10-spell Bursts.',
+        },
+        {
+          icon: './assets/ui/OutlookFlower.png',
+          title: 'Cleansing & The Great Weave',
+          hint: 'Tap running creatures or plant Bloom Runes in their path to cleanse them. Light up 3 at once to link The Great Weave (+10× burst!).',
+        },
+        {
+          icon: './assets/ui/tomes/lightning.png',
+          title: 'Corrupted Beasts & Chapter Powers',
+          hint: "Tap purple Corrupted creatures 3× to shatter their blight, and unlock new spell surges as Xal's story unfolds.",
+        },
+      ],
+      listSummaryCard: {
+        icon: './assets/ui/OutlookFlower.png',
+        title: 'Living Valley & Spell Weaving',
+        hint: 'Build 5× spell combos, cleanse running & corrupted beasts, link 3 for The Great Weave, and unlock chapter mana powers.',
+        actionAttr: 'data-whats-new-outlook',
+        enabled: opts.canViewOutlook,
+      },
+    },
+    {
+      id: 'sound-v1',
+      heroIcon: './assets/ui/tomes/mystic.png',
+      intro:
+        'The sanctum now resonates with dark arcane sound effects across every ritual, spell cast, and creature awakening.',
+      cards: [
+        {
+          icon: './assets/ui/tomes/mystic.png',
+          title: 'Arcane Soundscape',
+          hint: 'New custom sound effects for creature unlocks, spell casting, story pages, and sanctum rewards.',
+        },
+      ],
+    },
+    {
+      id: 'bestiary-v1',
+      heroIcon: './assets/ui/Tomes.png',
+      intro:
+        'Xal has opened the shelves of his study. Inspect the Bestiarum anytime from his tower to revisit every creature you have cleansed.',
+      callout:
+        opts.creaturesUnlocked > 0
+          ? `${opts.creaturesUnlocked} / ${opts.creaturesTotal} Creatures already recorded in your Bestiarum!`
+          : undefined,
+      cta: opts.canViewBestiary
+        ? { label: 'View Bestiarum', attr: 'data-whats-new-bestiary' }
+        : undefined,
+      cards: [
+        {
+          icon: './assets/ui/Tomes.png',
+          title: 'Sanctum Bestiarum',
+          hint: 'Tap the glowing bookcase beside Xal to read creature lore and view their animated forms.',
+          actionAttr: 'data-whats-new-bestiary',
+          enabled: opts.canViewBestiary,
+        },
+      ],
+    },
+    {
+      id: 'achievements-v1',
+      intro:
+        "Recent additions to Xal's Path. Tap a chronicle below to inspect it directly.",
+      callout:
+        opts.achievementsUnlocked > 0
+          ? `${opts.achievementsUnlocked}/${opts.achievementsTotal} Achievements already recorded from your journey!`
+          : undefined,
+      cta: opts.canViewAchievements
+        ? { label: 'View Trophies', attr: 'data-whats-new-achievements' }
+        : undefined,
+      cards: [
+        {
+          icon: './assets/ui/trophy.png',
+          title: `12 Legacy Trophies (${opts.achievementsUnlocked}/${opts.achievementsTotal})`,
+          hint: 'Earn permanent badges for story chapters, spell mastery, and realm exploration.',
+          actionAttr: 'data-whats-new-achievements',
+          enabled: opts.canViewAchievements,
+        },
+        {
+          icon: './assets/ui/tomes/rebirth.png',
+          title: 'Cross-Run Progress',
+          hint: 'Unlocked achievements and story completion counts persist across New Games.',
+        },
+      ],
+    },
+  ];
+
+  const active = entries.filter((e) => opts.unseenIds.includes(e.id));
+
+  if (active.length === 1) {
+    const entry = active[0];
+    const heroHtml = entry.heroIcon
+      ? `<img class="splash-icon" src="${entry.heroIcon}" alt="" />`
+      : '';
+    const calloutHtml = entry.callout
+      ? `<p class="whats-new-callout">✨ ${entry.callout}</p>`
+      : '';
+    const ctaHtml = entry.cta
+      ? `<button type="button" class="ritual-btn" ${entry.cta.attr}>${entry.cta.label}</button>`
+      : '';
+    return shell(
+      'Sanctum Chronicle',
+      "What's New",
+      `${heroHtml}
+      <p class="splash-copy">${entry.intro}</p>
+      ${calloutHtml}
+      <div class="whats-new-list">
+        ${entry.cards.map((c) => renderWhatsNewCard(c, !entry.cta)).join('')}
+      </div>
+      <div class="splash-actions">
+        ${ctaHtml}
+        <button type="button" class="scroll-card back-btn" data-splash-close>Continue</button>
+      </div>`,
+    );
+  }
+
+  const callouts: string[] = [];
+  if (opts.unseenIds.includes('bestiary-v1') && opts.creaturesUnlocked > 0) {
+    callouts.push(`${opts.creaturesUnlocked}/${opts.creaturesTotal} Creatures`);
+  }
+  if (opts.unseenIds.includes('achievements-v1') && opts.achievementsUnlocked > 0) {
+    callouts.push(`${opts.achievementsUnlocked}/${opts.achievementsTotal} Achievements`);
+  }
+  const calloutHtml =
+    callouts.length > 0
+      ? `<p class="whats-new-callout">✨ ${callouts.join(' & ')} already recorded from your journey!</p>`
+      : '';
+
+  return shell(
+    'Sanctum Chronicle',
+    "What's New",
+    `<p class="splash-copy">Recent additions to Xal's Path. Tap a chronicle below to inspect it directly.</p>
+    ${calloutHtml}
+    <div class="whats-new-list">
+      ${active
+        .flatMap((e) => (e.listSummaryCard ? [e.listSummaryCard] : e.cards))
+        .map((c) => renderWhatsNewCard(c, true))
+        .join('')}
+    </div>
+    <div class="splash-actions">
+      <button type="button" class="scroll-card back-btn" data-splash-close>Continue</button>
+    </div>`,
+  );
+}
+
 export function endGameSplash(): string {
   return shell(
     'The Path Is Walked',
     'Congratulations',
-    `<p class="splash-copy">You have reached the end of Xal's Path.<br /><br />Thank you for playing.</p>
+    `<p class="splash-copy">You have reached the end of Xal's Path. You may keep tending the realm, or start a New Game anytime from Settings.<br /><br />If you enjoyed the journey, we'd love to hear your thoughts.</p>
     <div class="splash-actions">
-      <button type="button" class="ritual-btn" data-splash-go>Credits</button>
+      <button type="button" class="ritual-btn" data-splash-feedback>Share Feedback</button>
+      <button type="button" class="scroll-card back-btn" data-splash-go>Credits</button>
       <button type="button" class="scroll-card back-btn" data-splash-close>Back</button>
     </div>`,
   );
 }
 
-function creaturePanel(creature: CreatureDef): string {
+function creaturePanel(creature: CreatureDef, title = 'New Creature Unlocked', helperName?: string): string {
   const frame = creatureFirstFrame(creature.id);
   const portrait = frame
     ? `<div class="splash-portrait"><img data-creature-frame src="${frame.src}" alt="" /></div>`
     : '';
+  const pills = helperName
+    ? `<div class="splash-meta-pills">
+        <span class="splash-pill"><img src="./assets/ui/tomes/${creature.helperId}.png" alt="" />${helperName} Tome</span>
+        <span class="splash-pill amber">${REGION_NAMES[creature.region]}</span>
+      </div>`
+    : `<p class="splash-copy">${creature.name}</p>`;
   return shell(
     'Bestiarum',
-    'New Creature Unlocked',
-    `${portrait}<p class="splash-copy">${creature.name}</p><p class="splash-copy">${creature.description}</p>${back()}`,
+    title,
+    `${portrait}${pills}<p class="splash-copy">${creature.description}</p>${back()}`,
   );
 }
 
@@ -144,10 +381,13 @@ function playCreatureRun(host: HTMLElement, id: string): () => void {
   const scale = 96 / max;
   const apply = () => {
     const frame = run.frames[i];
-    img.style.width = `${img.naturalWidth * scale}px`;
-    img.style.height = `${img.naturalHeight * scale}px`;
+    const sw = img.naturalWidth * scale;
+    const sh = img.naturalHeight * scale;
+    img.style.width = `${sw}px`;
+    img.style.height = `${sh}px`;
     img.style.marginLeft = `${(96 - frame.w * scale) / 2 - frame.x * scale}px`;
     img.style.marginTop = `${(96 - frame.h * scale) / 2 - frame.y * scale}px`;
+    img.style.clipPath = `inset(${frame.y * scale}px ${sw - (frame.x + frame.w) * scale}px ${sh - (frame.y + frame.h) * scale}px ${frame.x * scale}px)`;
   };
   let tick = 0;
   const start = () => {
@@ -162,27 +402,34 @@ function playCreatureRun(host: HTMLElement, id: string): () => void {
   return () => window.clearInterval(tick);
 }
 
-export type SplashBind = (host: HTMLElement, close: () => void) => () => void;
+export type SplashBind = (host: HTMLElement, close: (silent?: boolean) => void) => () => void;
 
-export function bindSimple(go?: () => void): SplashBind {
+export function bindSimple(go?: () => void, silentGo = false): SplashBind {
   return (host, close) => {
-    bindGo(host, close, go);
+    bindGo(host, close, go, silentGo);
     return () => undefined;
   };
 }
 
-export function bindEndGame(onCredits: () => void): SplashBind {
+export function bindEndGame(onCredits: () => void, onFeedback: () => void): SplashBind {
   return (host, close) => {
+    host.querySelector('[data-splash-feedback]')?.addEventListener('click', () => {
+      close();
+      onFeedback();
+    });
     host.querySelector('[data-splash-go]')?.addEventListener('click', () => {
       close();
       onCredits();
     });
-    host.querySelector('[data-splash-close]')?.addEventListener('click', close);
+    host.querySelector('[data-splash-close]')?.addEventListener('click', () => close());
     return () => undefined;
   };
 }
 
-export function bindCreature(creature: CreatureDef): SplashBind {
+export function bindCreature(
+  creature: CreatureDef,
+  play: (key: Sfx, volume?: number) => void,
+): SplashBind {
   return (host, close) => {
     const timers: number[] = [];
     let stopRun = () => undefined as void;
@@ -197,6 +444,9 @@ export function bindCreature(creature: CreatureDef): SplashBind {
     };
     showFrame(0);
     [2000, 2050, 2100, 2150].forEach((ms, i) => at(ms, () => showFrame(i + 1)));
+    at(1000, () => play('lock-rattle', 0.38));
+    at(1400, () => play('lock-rattle', 0.38));
+    at(2000, () => play('lock-shatter', 0.46));
     const z = [0, -5, 5, -5, 5, 0, 0, -5, 5, -5, 5, 0];
     [1000, 1050, 1100, 1150, 1200, 1267, 1400, 1450, 1500, 1550, 1600, 1667].forEach((ms, i) =>
       at(ms, () => {
@@ -204,6 +454,7 @@ export function bindCreature(creature: CreatureDef): SplashBind {
       }),
     );
     at(3167, () => {
+      play('creature-reveal', 0.42);
       host.innerHTML = creaturePanel(creature);
       stopRun = playCreatureRun(host, creature.id);
       bindGo(host, close);
@@ -215,7 +466,19 @@ export function bindCreature(creature: CreatureDef): SplashBind {
   };
 }
 
-export function bindCredits(host: HTMLElement, close: () => void): () => void {
-  host.querySelector('[data-credits-close]')?.addEventListener('click', close);
-  return () => undefined;
+export function bindCreatureInspect(creature: CreatureDef, helperName: string): SplashBind {
+  return (host, close) => {
+    host.innerHTML = creaturePanel(creature, creature.name, helperName);
+    const stopRun = playCreatureRun(host, creature.id);
+    bindGo(host, close);
+    return () => stopRun();
+  };
+}
+
+export function bindCredits(onFeedback: () => void): SplashBind {
+  return (host, close) => {
+    host.querySelector('[data-credits-feedback]')?.addEventListener('click', onFeedback);
+    host.querySelector('[data-credits-close]')?.addEventListener('click', () => close());
+    return () => undefined;
+  };
 }

@@ -1,13 +1,17 @@
 import type { GameContext } from '../game/GameContext';
-import type { ChapterDef, GameSave, TabId } from '../types';
+import type { ChapterDef, CreatureDef, GameSave, RegionId, TabId } from '../types';
 import { formatNumber } from '../utils/format';
 import { devPresets } from '../systems/SaveSystem';
+import { ACHIEVEMENTS } from '../systems/AchievementSystem';
+import { creatureRun } from '../scenes/play/splash/creatureSplash';
 
 const GITHUB = 'https://github.com/kevinlogan94/xals-path';
 const COFFEE = 'https://buymeacoffee.com/kevinmlogan';
 const SITE = 'https://kevinmlogan.com';
+const FEEDBACK = 'https://tally.so/r/jea951';
 
 export type RewardId = 'helper' | 'clicker' | 'meta' | 'login' | 'story';
+export type RewardsSubTab = 'milestones' | 'achievements';
 
 export type AchievementClaimInfo = {
   id: RewardId;
@@ -22,7 +26,7 @@ const CREDITS: [string, string[]][] = [
   ['Game Design', ['Kevin Logan']],
   ['Developer', ['Kevin Logan']],
   ['Music', ['Steven Logan']],
-  ['Sound Effects', ['freesound.org']],
+  ['Sound Effects', ['Kevin Logan']],
   ['Art', ['Kevin Logan', 'Shayne Gadd']],
   ['Story', ['Kevin Logan', 'Elliot Maynard']],
   ['Brand', ['Brock Johnson']],
@@ -57,6 +61,10 @@ function openUrl(url: string): void {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
+export function openFeedback(source: string, level: number): void {
+  openUrl(`${FEEDBACK}?source=${source}&level=${level}`);
+}
+
 function modal(kicker: string, title: string, body: string): string {
   return `<section class="scroll-modal"><p class="scroll-kicker">${kicker}</p><h2 class="scroll-title">${title}</h2><div class="scroll-body">${body}</div></section>`;
 }
@@ -80,10 +88,10 @@ export function settingsHtml(ctx: GameContext): string {
     <button type="button" class="scroll-card audio-row" data-audio="sfx"><span>Effects</span>${toggle(sfxOn)}</button>
     <p class="scroll-section">About</p>
     <div class="about-grid">
+      <button type="button" class="scroll-card about-btn" data-about="whats-new">What's New</button>
       <button type="button" class="scroll-card about-btn" data-about="credits">Credits</button>
       <button type="button" class="scroll-card about-btn" data-about="github">GitHub</button>
       <button type="button" class="scroll-card about-btn" data-about="coffee">Coffee</button>
-      <button type="button" class="scroll-card about-btn" data-about="site">Site</button>
     </div>
     <button type="button" class="ritual-btn" data-new-game>New Game</button>
     ${extra}`,
@@ -94,15 +102,28 @@ export function bindSettings(
   root: HTMLElement,
   ctx: GameContext,
   handlers: {
+    onWhatsNew: () => void;
     onCredits: () => void;
     onNewGame: () => void;
     onJump: (state: GameSave) => void;
   },
 ): void {
   const presets = devPresets();
+  const tap = () => ctx.audio.playSfx('ui-tap', 0.22);
   root.querySelectorAll<HTMLElement>('[data-audio]').forEach((row) => {
     row.addEventListener('click', () => {
-      const muted = row.dataset.audio === 'bgm' ? ctx.audio.toggleMuteBgm() : ctx.audio.toggleMuteSfx();
+      const effects = row.dataset.audio === 'sfx';
+      if (effects && ctx.audio.muteSfx) {
+        ctx.audio.toggleMuteSfx();
+        const pill = row.querySelector('.audio-toggle');
+        if (!pill) return;
+        pill.textContent = 'ON';
+        pill.classList.remove('is-off');
+        tap();
+        return;
+      }
+      if (!effects) tap();
+      const muted = effects ? ctx.audio.toggleMuteSfx() : ctx.audio.toggleMuteBgm();
       const pill = row.querySelector('.audio-toggle');
       if (!pill) return;
       pill.textContent = muted ? 'OFF' : 'ON';
@@ -111,16 +132,21 @@ export function bindSettings(
   });
   root.querySelectorAll<HTMLElement>('[data-about]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      tap();
       const id = btn.dataset.about;
+      if (id === 'whats-new') handlers.onWhatsNew();
       if (id === 'credits') handlers.onCredits();
       if (id === 'github') openUrl(GITHUB);
       if (id === 'coffee') openUrl(COFFEE);
-      if (id === 'site') openUrl(SITE);
     });
   });
-  root.querySelector('[data-new-game]')?.addEventListener('click', handlers.onNewGame);
+  root.querySelector('[data-new-game]')?.addEventListener('click', () => {
+    tap();
+    handlers.onNewGame();
+  });
   root.querySelectorAll<HTMLElement>('[data-dev]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      tap();
       const preset = presets[Number(btn.dataset.dev)];
       if (preset) handlers.onJump(preset.save());
     });
@@ -246,7 +272,45 @@ function rewardRows(ctx: GameContext): RewardRow[] {
   return rows.sort((a, b) => Number(b.n >= b.goal) - Number(a.n >= a.goal));
 }
 
-export function rewardsHtml(ctx: GameContext): string {
+export function rewardsHtml(
+  ctx: GameContext,
+  subTab: RewardsSubTab = 'milestones',
+): string {
+  const unlockedSet = new Set(ctx.state.unlockedAchievements);
+  const unlockedCount = ACHIEVEMENTS.filter((a) => unlockedSet.has(a.id)).length;
+  const anyClaimable = ctx.economy.anyClaimable(ctx.state);
+  const tabs = `<div class="rewards-tabs" role="tablist">
+    <button type="button" class="rewards-tab${subTab === 'milestones' ? ' is-on' : ''}" data-rewards-tab="milestones">
+      <span>Milestones</span>
+      ${anyClaimable ? '<span class="rewards-tab-dot">!</span>' : ''}
+    </button>
+    <button type="button" class="rewards-tab${subTab === 'achievements' ? ' is-on' : ''}" data-rewards-tab="achievements">
+      <span>Achievements</span>
+      <span class="rewards-tab-count">${unlockedCount}/${ACHIEVEMENTS.length}</span>
+    </button>
+  </div>`;
+
+  if (subTab === 'achievements') {
+    const sorted = [...ACHIEVEMENTS].sort(
+      (a, b) => Number(unlockedSet.has(b.id)) - Number(unlockedSet.has(a.id)),
+    );
+    const rows = sorted
+      .map((ach) => {
+        const unlocked = unlockedSet.has(ach.id);
+        const cls = `scroll-card ach-row ${unlocked ? 'is-unlocked scroll-card-active' : 'is-locked'}`;
+        return `<div class="${cls}" data-ach="${ach.id}">
+          <img src="${ach.icon}" alt="" />
+          <div>
+            <div class="reward-title">${ach.title}</div>
+            <div class="reward-hint">${ach.description}</div>
+          </div>
+          <span class="ach-pill ${unlocked ? 'unlocked' : 'locked'}">${unlocked ? 'Unlocked' : 'Locked'}</span>
+        </div>`;
+      })
+      .join('');
+    return `<section class="scroll-modal"><p class="scroll-kicker">Hall of Trophies</p><h2 class="scroll-title">Achievements</h2>${tabs}<div class="scroll-body">${rows}</div></section>`;
+  }
+
   const body = rewardRows(ctx)
     .map((row) => {
       const ready = row.n >= row.goal;
@@ -268,13 +332,20 @@ export function rewardsHtml(ctx: GameContext): string {
       </div>`;
     })
     .join('');
-  return modal('Milestones', 'Rewards', body);
+  return `<section class="scroll-modal"><p class="scroll-kicker">Milestones</p><h2 class="scroll-title">Rewards</h2>${tabs}<div class="scroll-body">${body}</div></section>`;
 }
 
 export function bindRewards(
   root: HTMLElement,
   onClaim: (id: RewardId, meta: Pick<AchievementClaimInfo, 'title' | 'description' | 'iconKey'>) => void,
+  onSubTab: (subTab: RewardsSubTab) => void,
 ): void {
+  root.querySelectorAll<HTMLElement>('[data-rewards-tab]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const subTab = btn.dataset.rewardsTab as RewardsSubTab;
+      if (subTab) onSubTab(subTab);
+    });
+  });
   root.querySelectorAll<HTMLElement>('[data-claim]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = btn.dataset.claim as RewardId;
@@ -330,9 +401,12 @@ export function creditsHtml(): string {
     'The Company of the Path',
     'Credits',
     `<p class="credits-wordmark">Xal's Path</p>
-    <p class="scroll-kicker">Created By Kevin Logan</p>
+    <p class="credits-author-wrap"><a href="${SITE}" target="_blank" rel="noopener noreferrer" class="scroll-kicker credits-author-link">Created By Kevin Logan ↗</a></p>
     <div class="credits-list">${pairs}</div>
-    <button type="button" class="ritual-btn" data-credits-close>Close</button>`,
+    <div class="splash-actions">
+      <button type="button" class="ritual-btn" data-credits-feedback>Share Feedback</button>
+      <button type="button" class="scroll-card back-btn" data-credits-close>Close</button>
+    </div>`,
   );
 }
 
@@ -349,6 +423,120 @@ export function chapterHtml(chapter: ChapterDef, locked: boolean): string {
       ${mana ? '<div class="reward-hint">2x mana</div>' : ''}
     </div>
   </button>`;
+}
+
+const REGION_TITLES: Record<RegionId, string> = {
+  meadow: 'The Meadows',
+  river: 'Galia River',
+  altar: 'Sci Nai Mountains',
+};
+
+export function unlockedCreatureCount(ctx: GameContext): number {
+  return ctx.spawn.creatures.filter((c) => {
+    const h = ctx.state.helpers.find((x) => x.id === c.helperId);
+    return (h?.amountOwned ?? 0) > 0;
+  }).length;
+}
+
+export function bestiaryHtml(ctx: GameContext): string {
+  const regions: RegionId[] = ['meadow', 'river', 'altar'];
+  const total = ctx.spawn.creatures.length;
+  const cleansed = unlockedCreatureCount(ctx);
+
+  const sections = regions
+    .map((region) => {
+      const list = ctx.spawn.creatures.filter((c) => c.region === region);
+      const regionUnlocked = list.filter((c) => {
+        const h = ctx.state.helpers.find((x) => x.id === c.helperId);
+        return (h?.amountOwned ?? 0) > 0;
+      }).length;
+      const rows = list
+        .map((c) => {
+          const def = ctx.economy.def(c.helperId);
+          const save = ctx.state.helpers.find((h) => h.id === c.helperId);
+          const unlockLevel = def?.unlockLevel ?? 1;
+          const helperName = def?.name ?? c.helperId;
+          const isUnlocked = (save?.amountOwned ?? 0) > 0;
+          const isTomeUnlocked = ctx.state.playerLevel >= unlockLevel;
+          const cls = `scroll-card bestiary-row ${
+            isUnlocked ? 'is-unlocked scroll-card-active' : isTomeUnlocked ? 'is-silhouette' : 'is-locked'
+          }`;
+          const run = creatureRun(c.id);
+          const thumb =
+            (isUnlocked || isTomeUnlocked) && run
+              ? `<img data-bestiary-thumb="${c.id}" src="${run.src}" alt="" />`
+              : `<span class="tome-art is-lock" style="width:38px;height:38px;background-image:url('./assets/ui/lock-sheet.png')"></span>`;
+          const title = isUnlocked ? c.name : '???';
+          const sub = isUnlocked
+            ? `${helperName} Tome • Tap to read lore`
+            : isTomeUnlocked
+              ? `Summon via ${helperName} Tome`
+              : `Unlocks at Level ${unlockLevel}`;
+          const side = isUnlocked
+            ? `<img class="bestiary-tome-icon" src="./assets/ui/tomes/${c.helperId}.png" alt="" />`
+            : `<div class="tome-cost">${isTomeUnlocked ? 'Unsummoned' : `Lvl ${unlockLevel}`}</div>`;
+          return `<button type="button" class="${cls}" data-bestiary-creature="${c.id}" ${isUnlocked ? '' : 'disabled'}>
+            <div class="bestiary-thumb-box">${thumb}</div>
+            <div>
+              <div class="bestiary-name">${title}</div>
+              <div class="bestiary-sub">${sub}</div>
+            </div>
+            ${side}
+          </button>`;
+        })
+        .join('');
+      return `<p class="scroll-section">${REGION_TITLES[region]} (${regionUnlocked}/${list.length})</p>${rows}`;
+    })
+    .join('');
+
+  return `<section class="scroll-modal">
+    <p class="scroll-kicker">Sanctum Chronicles • ${cleansed} / ${total} Cleansed</p>
+    <h2 class="scroll-title">Bestiarum</h2>
+    <div class="scroll-body">${sections}</div>
+    <div class="splash-actions" style="margin-top:10px">
+      <button type="button" class="scroll-card back-btn" data-bestiary-close style="width:100%">Back</button>
+    </div>
+  </section>`;
+}
+
+export function bindBestiary(
+  root: HTMLElement,
+  ctx: GameContext,
+  onSelect: (creature: CreatureDef) => void,
+  onClose: () => void,
+): void {
+  root.querySelectorAll<HTMLImageElement>('[data-bestiary-thumb]').forEach((img) => {
+    const id = img.dataset.bestiaryThumb;
+    const run = id ? creatureRun(id) : null;
+    const frame = run?.frames[0];
+    if (!run || !frame) return;
+    const boxSize = 48;
+    const max = Math.max(...run.frames.flatMap((f) => [f.w, f.h]));
+    const scale = boxSize / max;
+    const apply = () => {
+      const sw = img.naturalWidth * scale;
+      const sh = img.naturalHeight * scale;
+      img.style.width = `${sw}px`;
+      img.style.height = `${sh}px`;
+      img.style.maxWidth = 'none';
+      img.style.position = 'absolute';
+      img.style.left = `${(boxSize - frame.w * scale) / 2 - frame.x * scale}px`;
+      img.style.top = `${(boxSize - frame.h * scale) / 2 - frame.y * scale}px`;
+      img.style.clipPath = `inset(${frame.y * scale}px ${sw - (frame.x + frame.w) * scale}px ${sh - (frame.y + frame.h) * scale}px ${frame.x * scale}px)`;
+    };
+    if (img.complete && img.naturalWidth) apply();
+    else img.addEventListener('load', apply, { once: true });
+  });
+
+  root.querySelectorAll<HTMLElement>('[data-bestiary-creature]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.bestiaryCreature;
+      const creature = id && ctx.spawn.creatures.find((c) => c.id === id);
+      if (creature) onSelect(creature);
+    });
+  });
+
+  root.querySelector('[data-bestiary-close]')?.addEventListener('click', onClose);
 }
 
 export const NAV: { id: TabId; label: string; icon: string }[] = [

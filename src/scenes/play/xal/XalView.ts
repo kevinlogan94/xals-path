@@ -27,7 +27,7 @@ const BOOK_IDLE_FRAMES = [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
 function ensureXalAnims(scene: Phaser.Scene): void {
   const idleTex = scene.textures.get(IDLE_SHEET);
   if (!idleTex.has('idle-0')) {
-    for (let i = 0; i < 12; i++) idleTex.add(`idle-${i}`, 0, 90 + i * 920, 24, IDLE_W, IDLE_H);
+    for (let i = 0; i < 12; i++) idleTex.add(`idle-${i}`, 0, (i % 4) * IDLE_W, Math.floor(i / 4) * IDLE_H, IDLE_W, IDLE_H);
   }
   const bookTex = scene.textures.get(BOOK_SHEET);
   if (!bookTex.has('book-0')) {
@@ -70,9 +70,9 @@ export class XalView {
 
   build(): void {
     const { width, height } = this.scene.scale;
-    // Full-scene tap target behind map UI + nav (depth order resolves hits).
+    const playH = height - NAV_H;
     this.tapZone = this.scene.add
-      .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
+      .rectangle(width / 2, playH / 2, width, playH, 0x000000, 0)
       .setDepth(1)
       .setInteractive({ useHandCursor: true });
     this.tapZone.on('pointerdown', this.onPortraitTap);
@@ -132,8 +132,9 @@ export class XalView {
     this.book
       .setScale(scale * BOOK_SX, scale)
       .setPosition(left + BOOK_X * scale, top + BOOK_Y * scale);
-    this.tapZone.setPosition(width / 2, height / 2);
-    this.tapZone.setSize(width, height);
+    const playH = height - NAV_H;
+    this.tapZone.setPosition(width / 2, playH / 2);
+    this.tapZone.setSize(width, playH);
   }
 
   setPortraitExpression(expr: string): void {

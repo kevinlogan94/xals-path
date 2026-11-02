@@ -4,36 +4,48 @@ import type { ChapterDef, CreatureDef, GameSave, TabId } from '../types';
 import { formatNumber } from '../utils/format';
 import {
   NAV,
+  bestiaryHtml,
+  bindBestiary,
   bindRewards,
   bindSettings,
   bindTomes,
   chapterHtml,
   claimInfo,
   creditsHtml,
+  openFeedback,
   rewardsHtml,
   settingsHtml,
   syncTomes,
   tomesHtml,
+  unlockedCreatureCount,
   type AchievementClaimInfo,
   type RewardId,
+  type RewardsSubTab,
 } from './panels';
 import {
   achievementSplash,
   bindCreature,
+  bindCreatureInspect,
   bindCredits,
   bindEndGame,
   bindSimple,
   buffSplash,
   endGameSplash,
+  feedbackSplash,
   influenceSplash,
   levelUpSplash,
   newGameSplash,
   portalSplash,
+  whatsNewSplash,
   type SplashBind,
 } from './splashes';
+import { ACHIEVEMENTS, WHATS_NEW_IDS, type AchievementDef } from '../systems/AchievementSystem';
 
 export type HudOverlayHandlers = {
   onTab: (tab: TabId) => void;
+  onOpenAchievements: () => void;
+  onOpenBestiary: () => void;
+  onCloseBestiary: () => void;
   onLevelTap: () => void;
   onNewGame: () => void;
   onJump: (state: GameSave) => void;
@@ -46,6 +58,7 @@ export type HudOverlayHandlers = {
 
 export class HudOverlay {
   readonly root: HTMLElement;
+  private readonly hudCrystal: HTMLElement;
   private readonly hudAmt: HTMLElement;
   private readonly hudRate: HTMLElement;
   private readonly hudLvl: HTMLElement;
@@ -56,12 +69,31 @@ export class HudOverlay {
   private readonly buff: HTMLElement;
   private readonly stage: HTMLElement;
   private readonly toast: HTMLElement;
+  private readonly achBanner: HTMLButtonElement;
+  private readonly achBannerIcon: HTMLImageElement;
+  private readonly achBannerTitle: HTMLElement;
   private readonly finger: HTMLImageElement;
+  private readonly fingerClip: HTMLElement;
   private readonly splash: HTMLElement;
   private readonly storyBack: HTMLButtonElement;
+  private readonly bookcase: HTMLButtonElement;
+  private readonly bookcaseCount: HTMLElement;
+  private readonly bookcaseDot: HTMLElement;
+  private readonly outlookPill: HTMLElement;
+  private readonly comboHud: HTMLElement;
+  private readonly comboMult: HTMLElement;
+  private readonly comboLabel: HTMLElement;
+  private readonly comboPips: HTMLElement[];
+  private readonly comboDecay: HTMLElement;
   private toastTimer = 0;
+  private achBannerTimer = 0;
+  private achQueue: AchievementDef[] = [];
+  private achBannerActive = false;
+  private achChimed = false;
+  private achGen = 0;
   private splashCleanup: (() => void) | null = null;
-  private view: TabId | 'credits' | null = null;
+  private view: TabId | 'credits' | 'bestiary' | null = null;
+  private rewardsSubTab: RewardsSubTab = 'milestones';
   private tabAllowed: (tab: TabId) => boolean = () => true;
 
   constructor(
@@ -93,16 +125,49 @@ export class HudOverlay {
         </button>
       </header>
       <div class="hud-stage" data-stage></div>
+      <button type="button" class="bookcase-hotspot" data-bookcase hidden aria-label="Open Bestiarum">
+        <span class="bookcase-shimmer-aura"></span>
+        <span class="glowing-spine-1"></span>
+        <span class="glowing-spine-2"></span>
+        <span class="bookcase-mote m1"></span>
+        <span class="bookcase-mote m2"></span>
+        <span class="bookcase-mote m3"></span>
+        <span class="bookcase-plaque">
+          <img src="./assets/ui/Tomes.png" alt="" />
+          <span class="bookcase-plaque-title">Bestiarum</span>
+          <span class="bookcase-plaque-count" data-bookcase-count>0/10</span>
+          <span class="bookcase-new-dot" data-bookcase-dot hidden>!</span>
+        </span>
+      </button>
       <button type="button" class="scroll-card back-btn story-back" data-story-back hidden>Back</button>
+      <div class="combo-hud" data-combo-hud hidden>
+        <span class="combo-mult" data-combo-mult>2× COMBO</span>
+        <div class="combo-right">
+          <span class="combo-label" data-combo-label>NEXT SURGE 2/10</span>
+          <div class="combo-pips">${Array.from({ length: 10 }, () => '<span class="combo-pip" data-combo-pip></span>').join('')}</div>
+        </div>
+        <div class="combo-decay" data-combo-decay></div>
+      </div>
+      <div class="outlook-pill" data-outlook-pill hidden>Tap creatures to cleanse • Light up 3 for The Great Weave</div>
       <nav class="nav-dock">${NAV.map(
         (n) =>
           `<button type="button" class="nav-btn" data-tab="${n.id}"><img src="${n.icon}" alt="" /><span>${n.label}</span><span class="nav-dot" data-dot="${n.id}" hidden>!</span></button>`,
       ).join('')}</nav>
       <div class="hud-toast" data-toast></div>
-      <img class="hud-finger" data-finger src="./assets/ui/pointer.png" alt="" hidden />
+      <button type="button" class="ach-banner" data-ach-banner hidden>
+        <img class="ach-banner-icon" data-ach-banner-icon src="./assets/ui/trophy.png" alt="" />
+        <div class="ach-banner-copy">
+          <span class="ach-banner-kicker">Achievement Unlocked</span>
+          <span class="ach-banner-title" data-ach-banner-title></span>
+        </div>
+      </button>
+      <div class="hud-finger-clip" data-finger-clip>
+        <img class="hud-finger" data-finger src="./assets/ui/pointer.png" alt="" hidden />
+      </div>
       <div class="splash-layer" data-splash hidden></div>
     `;
     parent.append(this.root);
+    this.hudCrystal = this.root.querySelector('.hud-crystal')!;
     this.hudAmt = this.root.querySelector('[data-amt]')!;
     this.hudRate = this.root.querySelector('[data-rate]')!;
     this.hudLvl = this.root.querySelector('[data-lvl]')!;
@@ -113,10 +178,38 @@ export class HudOverlay {
     this.buff = this.root.querySelector('[data-buff]')!;
     this.stage = this.root.querySelector('[data-stage]')!;
     this.toast = this.root.querySelector('[data-toast]')!;
+    this.achBanner = this.root.querySelector('[data-ach-banner]')!;
+    this.achBannerIcon = this.root.querySelector('[data-ach-banner-icon]')!;
+    this.achBannerTitle = this.root.querySelector('[data-ach-banner-title]')!;
     this.finger = this.root.querySelector('[data-finger]')!;
+    this.fingerClip = this.root.querySelector('[data-finger-clip]')!;
     this.splash = this.root.querySelector('[data-splash]')!;
     this.storyBack = this.root.querySelector('[data-story-back]')!;
+    this.bookcase = this.root.querySelector('[data-bookcase]')!;
+    this.bookcaseCount = this.root.querySelector('[data-bookcase-count]')!;
+    this.bookcaseDot = this.root.querySelector('[data-bookcase-dot]')!;
+    this.outlookPill = this.root.querySelector('[data-outlook-pill]')!;
+    this.comboHud = this.root.querySelector('[data-combo-hud]')!;
+    this.comboMult = this.root.querySelector('[data-combo-mult]')!;
+    this.comboLabel = this.root.querySelector('[data-combo-label]')!;
+    this.comboPips = Array.from(this.root.querySelectorAll<HTMLElement>('[data-combo-pip]'));
+    this.comboDecay = this.root.querySelector('[data-combo-decay]')!;
 
+    this.bookcase.addEventListener('pointerdown', (e) => e.stopPropagation());
+    this.bookcase.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.handlers.onOpenBestiary();
+    });
+
+    this.achBanner.addEventListener('pointerdown', (e) => e.stopPropagation());
+    this.achBanner.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.clearAchBanner();
+      this.rewardsSubTab = 'achievements';
+      this.handlers.onOpenAchievements();
+    });
     this.root.querySelector('[data-level]')?.addEventListener('click', () => this.handlers.onLevelTap());
     this.storyBack.addEventListener('pointerdown', (e) => e.stopPropagation());
     this.storyBack.addEventListener('click', (e) => {
@@ -134,7 +227,10 @@ export class HudOverlay {
   }
 
   destroy(): void {
-    this.dismissSplash();
+    window.clearTimeout(this.toastTimer);
+    window.clearTimeout(this.achBannerTimer);
+    this.achGen++;
+    this.clearSplash();
     this.root.remove();
   }
 
@@ -142,13 +238,16 @@ export class HudOverlay {
     return !this.splash.hidden;
   }
 
+  isAchBannerOpen(): boolean {
+    return this.achBannerActive || this.achQueue.length > 0;
+  }
+
   setStoryBack(on: boolean): void {
     this.storyBack.hidden = !on;
   }
 
-  hitsStoryBack(pointer: { x: number; y: number; event?: Event }): boolean {
-    if (this.storyBack.hidden) return false;
-    const r = this.storyBack.getBoundingClientRect();
+  /** Phaser still sees pointer coords when the click landed on HTML HUD chrome. */
+  hitsHud(pointer: { x: number; y: number; event?: Event }): boolean {
     const ev = pointer.event as MouseEvent | TouchEvent | undefined;
     let cx: number;
     let cy: number;
@@ -165,10 +264,17 @@ export class HudOverlay {
       cx = cr.left + (pointer.x / canvas.clientWidth) * cr.width;
       cy = cr.top + (pointer.y / canvas.clientHeight) * cr.height;
     }
-    return cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
+    const hit = document.elementFromPoint(cx, cy);
+    return !!hit && hit !== this.root && this.root.contains(hit);
   }
 
   dismissSplash(): void {
+    const wasOpen = this.isSplashOpen();
+    this.clearSplash();
+    if (wasOpen) this.onSplashClosed();
+  }
+
+  private clearSplash(): void {
     this.splashCleanup?.();
     this.splashCleanup = null;
     this.splash.hidden = true;
@@ -176,18 +282,19 @@ export class HudOverlay {
   }
 
   private openSplash(html: string, bind: SplashBind): void {
-    this.dismissSplash();
+    this.clearSplash();
+    this.pauseAchBanner();
     this.splash.hidden = false;
     this.splash.innerHTML = html;
-    const close = () => {
+    const close = (silent?: boolean) => {
       this.dismissSplash();
-      this.ctx.audio.playSfx('pop', 0.35);
+      if (!silent) this.ctx.audio.playSfx('ui-tap', 0.22);
     };
     this.splashCleanup = bind(this.splash, close);
   }
 
   showInfluenceSplash(amount: number, onCollect: () => void): void {
-    this.openSplash(influenceSplash(amount), bindSimple(onCollect));
+    this.openSplash(influenceSplash(amount), bindSimple(onCollect, true));
   }
 
   showAchievementSplash(opts: {
@@ -200,7 +307,7 @@ export class HudOverlay {
   }
 
   showBuffSplash(onCollect: () => void): void {
-    this.openSplash(buffSplash(), bindSimple(onCollect));
+    this.openSplash(buffSplash(), bindSimple(onCollect, true));
   }
 
   showNewGameSplash(onConfirm: () => void): void {
@@ -208,23 +315,191 @@ export class HudOverlay {
   }
 
   showPortalSplash(): void {
+    this.ctx.audio.playSfx('portal', 0.4);
     this.openSplash(portalSplash(), bindSimple());
   }
 
   showLevelUpSplash(reward: number, onContinue: () => void): void {
-    this.openSplash(levelUpSplash(reward), bindSimple(onContinue));
+    this.openSplash(levelUpSplash(reward), bindSimple(onContinue, true));
+  }
+
+  showFeedbackSplash(): void {
+    this.openSplash(
+      feedbackSplash(),
+      bindSimple(() => openFeedback('level11', this.ctx.state.playerLevel)),
+    );
   }
 
   showEndGameSplash(onCredits: () => void): void {
-    this.openSplash(endGameSplash(), bindEndGame(onCredits));
+    this.openSplash(
+      endGameSplash(),
+      bindEndGame(onCredits, () => openFeedback('endgame', this.ctx.state.playerLevel)),
+    );
   }
 
   showCreatureSplash(creature: CreatureDef): void {
-    this.openSplash('', bindCreature(creature));
+    this.openSplash(
+      '',
+      bindCreature(creature, (key, volume) => this.ctx.audio.playSfx(key, volume)),
+    );
+  }
+
+  showCreatureInspectSplash(creature: CreatureDef): void {
+    const def = this.ctx.economy.def(creature.helperId);
+    this.openSplash('', bindCreatureInspect(creature, def?.name ?? creature.helperId));
+  }
+
+  isBestiaryOpen(): boolean {
+    return this.view === 'bestiary';
+  }
+
+  setBookcaseVisible(visible: boolean): void {
+    this.bookcase.hidden = !visible || this.view === 'bestiary';
+    if (!this.bookcase.hidden) {
+      const count = unlockedCreatureCount(this.ctx);
+      const total = this.ctx.spawn.creatures.length;
+      this.bookcaseCount.textContent = `${count}/${total}`;
+      this.bookcaseDot.hidden = count <= this.ctx.state.bestiarySeenCount;
+    }
+  }
+
+  showBestiary(): void {
+    this.view = 'bestiary';
+    this.bookcase.hidden = true;
+    const count = unlockedCreatureCount(this.ctx);
+    if (count > this.ctx.state.bestiarySeenCount) {
+      this.ctx.state.bestiarySeenCount = count;
+      this.ctx.persist();
+    }
+    this.stage.innerHTML = bestiaryHtml(this.ctx);
+    bindBestiary(
+      this.stage,
+      this.ctx,
+      (creature) => {
+        this.ctx.audio.playSfx('ui-tap', 0.22);
+        this.showCreatureInspectSplash(creature);
+      },
+      () => this.handlers.onCloseBestiary(),
+    );
   }
 
   showCreditsSplash(): void {
-    this.openSplash(creditsHtml(), bindCredits);
+    this.openSplash(
+      creditsHtml(),
+      bindCredits(() => {
+        this.ctx.audio.playSfx('ui-tap', 0.22);
+        openFeedback('credits', this.ctx.state.playerLevel);
+      }),
+    );
+  }
+
+  showWhatsNewSplash(unseenOnly = false, onDismiss?: () => void): void {
+    const unlockedSet = new Set(this.ctx.state.unlockedAchievements);
+    const achievementsUnlocked = ACHIEVEMENTS.filter((a) => unlockedSet.has(a.id)).length;
+    const creaturesUnlocked = unlockedCreatureCount(this.ctx);
+    const unseen = WHATS_NEW_IDS.filter((id) => !this.ctx.state.whatsNewSeen.includes(id));
+    const unseenIds = unseenOnly && unseen.length > 0 ? unseen : [...WHATS_NEW_IDS];
+    this.openSplash(
+      whatsNewSplash({
+        unseenIds,
+        creaturesUnlocked,
+        creaturesTotal: this.ctx.spawn.creatures.length,
+        achievementsUnlocked,
+        achievementsTotal: ACHIEVEMENTS.length,
+        canViewOutlook: this.tabAllowed('outlook'),
+        canViewBestiary: this.tabAllowed('scene'),
+        canViewAchievements: this.tabAllowed('achievements'),
+      }),
+      (host, close) => {
+        const closeAndMark = (silent = false) => {
+          onDismiss?.();
+          close(silent);
+        };
+        host.querySelector('[data-whats-new-outlook]')?.addEventListener('click', () => {
+          closeAndMark();
+          this.handlers.onTab('outlook');
+        });
+        host.querySelector('[data-whats-new-bestiary]')?.addEventListener('click', () => {
+          closeAndMark(true);
+          this.handlers.onOpenBestiary();
+        });
+        host.querySelector('[data-whats-new-achievements]')?.addEventListener('click', () => {
+          closeAndMark();
+          this.rewardsSubTab = 'achievements';
+          this.handlers.onOpenAchievements();
+        });
+        host.querySelector('[data-splash-close]')?.addEventListener('click', () => closeAndMark());
+        return () => undefined;
+      },
+    );
+  }
+
+  clearAchBanner(): void {
+    this.achQueue.length = 0;
+    this.hideAchBanner();
+  }
+
+  enqueueAchievements(items: AchievementDef[]): void {
+    if (items.length === 0) return;
+    this.achQueue.push(...items);
+    if (this.view === 'achievements') {
+      this.showRewards(this.rewardsSubTab);
+    }
+    if (!this.achBannerActive && !this.isSplashOpen()) this.nextAchBanner();
+  }
+
+  private hideAchBanner(): void {
+    this.achGen++;
+    window.clearTimeout(this.achBannerTimer);
+    this.achBannerActive = false;
+    this.achChimed = false;
+    this.achBanner.classList.remove('is-on');
+    this.achBanner.hidden = true;
+  }
+
+  private pauseAchBanner(): void {
+    this.achGen++;
+    window.clearTimeout(this.achBannerTimer);
+  }
+
+  private onSplashClosed(): void {
+    if (this.achBannerActive) this.armAchBanner();
+    else if (this.achQueue.length > 0) this.nextAchBanner();
+  }
+
+  private armAchBanner(): void {
+    window.clearTimeout(this.achBannerTimer);
+    const gen = ++this.achGen;
+    requestAnimationFrame(() => {
+      if (gen !== this.achGen || !this.achBannerActive || this.isSplashOpen()) return;
+      if (!this.achChimed) {
+        this.achChimed = true;
+        this.ctx.audio.playSfx('achievement', 0.4);
+      }
+      this.achBannerTimer = window.setTimeout(() => {
+        this.achBanner.classList.remove('is-on');
+        this.achBannerTimer = window.setTimeout(() => this.nextAchBanner(), 260);
+      }, 2800);
+    });
+  }
+
+  private nextAchBanner(): void {
+    window.clearTimeout(this.achBannerTimer);
+    if (this.isSplashOpen()) return;
+    const next = this.achQueue.shift();
+    if (!next) {
+      this.hideAchBanner();
+      return;
+    }
+    this.achBannerActive = true;
+    this.achChimed = false;
+    this.achBannerIcon.src = next.icon;
+    this.achBannerTitle.textContent = next.title;
+    this.achBanner.hidden = false;
+    requestAnimationFrame(() => {
+      if (this.achBannerActive) this.achBanner.classList.add('is-on');
+    });
+    this.armAchBanner();
   }
 
   setTabAllowed(fn: (tab: TabId) => boolean): void {
@@ -265,6 +540,13 @@ export class HudOverlay {
     this.toastTimer = window.setTimeout(() => this.toast.classList.remove('is-on'), 2700);
   }
 
+  pulseInfluence(): void {
+    const keyframes = [{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1)' }];
+    const opts: KeyframeAnimationOptions = { duration: 120, easing: 'ease-out' };
+    this.hudCrystal.animate(keyframes, opts);
+    this.hudAmt.animate(keyframes, opts);
+  }
+
   clearStage(): void {
     this.view = null;
     this.stage.replaceChildren();
@@ -274,6 +556,7 @@ export class HudOverlay {
     this.view = 'settings';
     this.stage.innerHTML = settingsHtml(this.ctx);
     bindSettings(this.stage, this.ctx, {
+      onWhatsNew: () => this.showWhatsNewSplash(false),
       onCredits: () => this.showCredits(),
       onNewGame: this.handlers.onNewGame,
       onJump: this.handlers.onJump,
@@ -286,25 +569,47 @@ export class HudOverlay {
     bindTomes(this.stage, this.handlers.onBuyHelper);
   }
 
-  showRewards(): void {
+  showRewards(subTab?: RewardsSubTab): void {
+    if (subTab) this.rewardsSubTab = subTab;
     this.view = 'achievements';
-    this.stage.innerHTML = rewardsHtml(this.ctx);
-    bindRewards(this.stage, (id, meta) => {
-      if (!this.handlers.claimReward(id)) return;
-      this.ctx.audio.playSfx('levelup');
-      this.showRewards();
-      this.handlers.onClaimReward(claimInfo(id, this.ctx, meta));
-    });
+    this.stage.innerHTML = rewardsHtml(this.ctx, this.rewardsSubTab);
+    bindRewards(
+      this.stage,
+      (id, meta) => {
+        if (!this.handlers.claimReward(id)) return;
+        this.ctx.audio.playSfx('reward', 0.42);
+        this.showRewards();
+        this.handlers.onClaimReward(claimInfo(id, this.ctx, meta));
+      },
+      (nextSubTab) => {
+        if (this.rewardsSubTab === nextSubTab) return;
+        this.ctx.audio.playSfx('ui-tap', 0.22);
+        this.showRewards(nextSubTab);
+      },
+    );
   }
 
   showCredits(): void {
     this.view = 'credits';
     this.stage.innerHTML = creditsHtml();
-    this.stage.querySelector('[data-credits-close]')?.addEventListener('click', () => this.showSettings());
+    this.stage.querySelector('[data-credits-feedback]')?.addEventListener('click', () => {
+      this.ctx.audio.playSfx('ui-tap', 0.22);
+      openFeedback('credits', this.ctx.state.playerLevel);
+    });
+    this.stage.querySelector('[data-credits-close]')?.addEventListener('click', () => {
+      this.ctx.audio.playSfx('ui-tap', 0.22);
+      this.showSettings();
+    });
   }
 
   setChapter(chapter: ChapterDef | undefined, locked: boolean, visible: boolean): void {
-    if (this.view === 'settings' || this.view === 'shop' || this.view === 'achievements' || this.view === 'credits') {
+    if (
+      this.view === 'settings' ||
+      this.view === 'shop' ||
+      this.view === 'achievements' ||
+      this.view === 'credits' ||
+      this.view === 'bestiary'
+    ) {
       return;
     }
     if (!visible || !chapter) {
@@ -332,11 +637,75 @@ export class HudOverlay {
     return this.centerOf('[data-level]') ?? { x: this.root.clientWidth - 70, y: 50 };
   }
 
-  setFinger(visible: boolean, x: number, y: number, pointDown: boolean): void {
-    this.finger.hidden = !visible;
+  crystalCenter(): { x: number; y: number } {
+    return this.centerOf('.hud-crystal') ?? { x: 34, y: 38 };
+  }
+
+  setComboHud(opts: {
+    visible: boolean;
+    multiplier: number;
+    steps: number;
+    decayRatio: number;
+    surgeUnlocked: boolean;
+    bannerOpen?: boolean;
+  }): void {
+    this.comboHud.hidden = !opts.visible;
+    if (!opts.visible) return;
+    this.comboHud.classList.toggle('has-banner', !!opts.bannerOpen);
+    this.comboHud.classList.toggle('is-max', opts.multiplier >= 5 || opts.steps === 10);
+    this.comboMult.textContent = `${opts.multiplier}× COMBO`;
+    const burstName = opts.surgeUnlocked ? 'ARCANE SURGE' : 'SPELL BURST';
+    this.comboLabel.textContent =
+      opts.steps === 10 ? `${burstName}!` : `${burstName} ${opts.steps}/10`;
+    for (let i = 0; i < this.comboPips.length; i++) {
+      this.comboPips[i].classList.toggle('is-on', i < opts.steps);
+    }
+    this.comboDecay.style.transform = `scaleX(${opts.decayRatio.toFixed(3)})`;
+  }
+
+  setOutlookPill(
+    visible: boolean,
+    mode: 'normal' | 'corrupted' | 'vessel',
+  ): void {
+    this.outlookPill.hidden = !visible;
     if (!visible) return;
-    this.finger.style.left = `${x}px`;
-    this.finger.style.top = `${y}px`;
+    this.outlookPill.classList.toggle('is-blighted', mode === 'corrupted');
+    this.outlookPill.classList.toggle('is-vessel', mode === 'vessel');
+    if (mode === 'vessel') {
+      this.outlookPill.textContent =
+        'Ancient Vessel • Catch it 3× before it escapes!';
+    } else if (mode === 'corrupted') {
+      this.outlookPill.textContent =
+        'Corrupted creature • Tap 3× to cleanse';
+    } else {
+      this.outlookPill.textContent =
+        'Tap creatures to cleanse • Light 3 for The Great Weave';
+    }
+  }
+
+  setFinger(visible: boolean, x: number, y: number, pointDown: boolean, clipSel?: string): void {
+    this.finger.hidden = !visible;
+    if (!visible) {
+      this.fingerClip.classList.remove('is-clipped');
+      this.fingerClip.style.inset = '0';
+      return;
+    }
+    const clipEl = clipSel ? this.root.querySelector<HTMLElement>(clipSel) : null;
+    const root = this.root.getBoundingClientRect();
+    let ox = 0;
+    let oy = 0;
+    if (clipEl) {
+      const clip = clipEl.getBoundingClientRect();
+      ox = clip.left - root.left;
+      oy = clip.top - root.top;
+      this.fingerClip.style.inset = `${oy}px ${root.right - clip.right}px ${root.bottom - clip.bottom}px ${ox}px`;
+      this.fingerClip.classList.add('is-clipped');
+    } else {
+      this.fingerClip.classList.remove('is-clipped');
+      this.fingerClip.style.inset = '0';
+    }
+    this.finger.style.left = `${x - ox}px`;
+    this.finger.style.top = `${y - oy}px`;
     this.finger.classList.toggle('is-down', pointDown);
   }
 

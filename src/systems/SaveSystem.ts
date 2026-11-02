@@ -1,6 +1,7 @@
 import type { GameSave, HelperDef, RegionId } from '../types';
 import helpersData from '../data/helpers.json';
 import economy from '../data/economy.json';
+import { WHATS_NEW_IDS, evaluateAchievements } from './AchievementSystem';
 
 const SAVE_KEY = 'xals-path-web-save-v1';
 
@@ -49,7 +50,11 @@ function createDefaultSave(): GameSave {
     unlockedRegions: ['meadow'],
     pendingOffline: 0,
     tutorialCompleted: false,
+    feedbackShown: false,
     newsShown: [],
+    unlockedAchievements: [],
+    whatsNewSeen: [...WHATS_NEW_IDS],
+    bestiarySeenCount: 0,
     savedAt: new Date().toISOString(),
   };
 }
@@ -95,6 +100,7 @@ function claimClicker(save: GameSave, times: number, leftover: number): void {
     save.achievements.achievementCount += 1;
   }
   save.achievements.clickerCount = leftover;
+  evaluateAchievements(save);
 }
 
 function setMana(save: GameSave, level: number): void {
@@ -113,17 +119,23 @@ function devSave(
   const experienceRequired = xpRequiredAt(patch.playerLevel);
   Object.assign(save, patch, {
     tutorialCompleted: true,
+    feedbackShown: patch.playerLevel >= 11,
     experienceRequired,
     chapters: chaptersViewed(viewed),
     totalInfluenceEarned: patch.totalInfluenceEarned ?? 0,
   });
   buyHelpers(save, owned);
+  evaluateAchievements(save);
   return save;
 }
 
 /** Dev jumps. tutorialCompleted so SaveSystem.save will persist them. */
 export function devPresets(): { label: string; save: () => GameSave }[] {
   return [
+    {
+      label: 'Fresh start',
+      save: () => createDefaultSave(),
+    },
     {
       label: 'First blessing',
       save: () => {
@@ -156,7 +168,14 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
             unlockedRegions: ['meadow'],
             influence: 280,
             buffEverCollected: true,
-            newsShown: ['Outlook', 'Spells', 'Xal', 'Tomes', 'ClickerAchievement'],
+            newsShown: [
+              'Outlook',
+              'Spells',
+              'Xal',
+              'Tomes',
+              'ClickerAchievement',
+              'Ch2Power',
+            ],
           },
           [1, 2],
           { nature: 8, lightning: 5, earth: 4, water: 1 },
@@ -183,6 +202,8 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
               'Tomes',
               'ClickerAchievement',
               'TomeAchievement',
+              'Ch2Power',
+              'Ch3Power',
             ],
           },
           [1, 2, 3],
@@ -213,6 +234,9 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
               'Tomes',
               'ClickerAchievement',
               'TomeAchievement',
+              'Ch2Power',
+              'Ch3Power',
+              'Ch4Power',
             ],
           },
           [1, 2, 3, 4],
@@ -229,6 +253,40 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
         );
         setMana(save, 4);
         claimClicker(save, 3, 200);
+        return save;
+      },
+    },
+    {
+      label: 'Unlock creatures',
+      save: () => {
+        const helpers = helpersData.helpers as HelperDef[];
+        const lastUnlock = Math.max(...helpers.map((h) => h.unlockLevel));
+        const influence = helpers.reduce((sum, h) => sum + h.cost, 0);
+        const save = devSave(
+          {
+            playerLevel: lastUnlock,
+            region: 'meadow',
+            unlockedRegions: ['meadow', 'river', 'altar'],
+            portalUnlocked: true,
+            influence,
+            buffEverCollected: true,
+            newsShown: [
+              'Outlook',
+              'Spells',
+              'Xal',
+              'Tomes',
+              'ClickerAchievement',
+              'LoginAchievement',
+              'TomeAchievement',
+              'Ch2Power',
+              'Ch3Power',
+              'Ch4Power',
+            ],
+          },
+          [1, 2, 3, 4, 5, 6, 7],
+          {},
+        );
+        setMana(save, 4);
         return save;
       },
     },
@@ -259,9 +317,26 @@ export class SaveSystem {
       if (parsed.version !== 1) return createDefaultSave();
       const merged = this.mergeDefaults(parsed);
       if (!merged.tutorialCompleted) {
+        const fresh = createDefaultSave();
+        if (
+          merged.unlockedAchievements.length > 0 ||
+          merged.achievements.storyCount > 0 ||
+          merged.achievements.storyGoal > 2 ||
+          merged.feedbackShown
+        ) {
+          fresh.feedbackShown = merged.feedbackShown;
+          fresh.unlockedAchievements = merged.unlockedAchievements;
+          fresh.whatsNewSeen =
+            merged.whatsNewSeen.length > 0 ? merged.whatsNewSeen : [...WHATS_NEW_IDS];
+          fresh.achievements.storyCount = merged.achievements.storyCount;
+          fresh.achievements.storyGoal = merged.achievements.storyGoal;
+          this.writeRaw(fresh);
+          return fresh;
+        }
         this.clear();
-        return createDefaultSave();
+        return fresh;
       }
+      evaluateAchievements(merged);
       return merged;
     } catch {
       return createDefaultSave();
@@ -270,6 +345,14 @@ export class SaveSystem {
 
   save(state: GameSave): void {
     if (!state.tutorialCompleted) return;
+    this.writeRaw(state);
+  }
+
+  saveMeta(state: GameSave): void {
+    this.writeRaw(state);
+  }
+
+  private writeRaw(state: GameSave): void {
     state.savedAt = new Date().toISOString();
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(state));
@@ -383,7 +466,13 @@ export class SaveSystem {
         : ['meadow']) as RegionId[],
       pendingOffline: finite(save.pendingOffline, fresh.pendingOffline),
       tutorialCompleted: inferTutorialCompleted(save, fresh),
+      feedbackShown: save.feedbackShown ?? fresh.feedbackShown,
       newsShown: Array.isArray(save.newsShown) ? save.newsShown : [],
+      unlockedAchievements: Array.isArray(save.unlockedAchievements)
+        ? save.unlockedAchievements
+        : [],
+      whatsNewSeen: Array.isArray(save.whatsNewSeen) ? save.whatsNewSeen : [],
+      bestiarySeenCount: finite(save.bestiarySeenCount, 0),
       savedAt: typeof save.savedAt === 'string' ? save.savedAt : fresh.savedAt,
     };
   }

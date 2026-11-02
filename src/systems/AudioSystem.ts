@@ -1,23 +1,45 @@
 import type Phaser from 'phaser';
 import type { RegionId } from '../types';
 
-type Track =
-  | 'xals-theme'
-  | 'barlogs-theme'
-  | 'meadow'
-  | 'river'
-  | 'altar'
-  | 'cast'
-  | 'pop'
-  | 'levelup'
-  | 'buff'
-  | 'debuff'
-  | 'coin';
+const BGM = ['xals-theme', 'barlogs-theme', 'meadow', 'river', 'altar'] as const;
+
+/** Keys written by `pnpm sfx`. Adding a sound means one entry here. */
+export const SFX = [
+  'ui-tap',
+  'denied',
+  'barrier',
+  'cast',
+  'creature-tap',
+  'tome-buy',
+  'lock-rattle',
+  'lock-shatter',
+  'creature-reveal',
+  'page-turn',
+  'chapter-start',
+  'portal',
+  'pegasus-enter',
+  'pegasus-tap',
+  'blessing-on',
+  'blessing-off',
+  'level-ready',
+  'level-up',
+  'collect',
+  'achievement',
+  'reward',
+  'end-game',
+] as const;
+
+export const SFX_EXT = '.mp3';
+
+type Bgm = (typeof BGM)[number];
+export type Sfx = (typeof SFX)[number];
+
+const JITTER = new Set<Sfx>(['ui-tap', 'cast', 'creature-tap']);
 
 export class AudioSystem {
   private scene: Phaser.Scene | null = null;
   private currentBgm: Phaser.Sound.BaseSound | null = null;
-  private desiredBgm: Track | null = null;
+  private desiredBgm: Bgm | null = null;
   muteBgm = false;
   muteSfx = false;
 
@@ -30,7 +52,7 @@ export class AudioSystem {
     this.scene = scene;
   }
 
-  playBgm(key: Track, loop = true): void {
+  playBgm(key: Bgm, loop = true): void {
     if (!this.scene) return;
     this.scene.sound.unlock();
     const ctx = (this.scene.sound as Phaser.Sound.WebAudioSoundManager).context;
@@ -52,10 +74,11 @@ export class AudioSystem {
     this.playBgm(region);
   }
 
-  playSfx(key: Track, volume = 0.55): void {
+  playSfx(key: Sfx, volume = 0.45, rate = 1): void {
     if (!this.scene || this.muteSfx) return;
     if (!this.scene.cache.audio.exists(key)) return;
-    this.scene.sound.play(key, { volume });
+    const played = JITTER.has(key) ? rate * (0.97 + Math.random() * 0.06) : rate;
+    this.scene.sound.play(key, { volume, rate: played });
   }
 
   toggleMuteBgm(): boolean {

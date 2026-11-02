@@ -26,6 +26,12 @@ When interacting with files, prefer terminal commands over editing files directl
 
 Use pnpm at the repo root (not npm or yarn).
 
+## Commit messages
+
+When the user asks for a commit, start the subject line with a [gitmoji](https://gitmoji.dev/) shortcode, then a short message. The gitmoji must be the very first thing in the subject (no `feat(scope):` or other prefix before it).
+
+Examples from this repo: `:sound: warm the cast and creature tap sparks`, `:rewind: restore the original chapter dialogue`, `:sparkles: add project showcase section`.
+
 ## Intentional behavior
 
 `feature_list.json` lists play behaviors and how to check them. Entries with `"passes": true` are intentional. Only change `passes` after you have verified the steps. Read it before changing related play flow.
