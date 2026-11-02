@@ -3,20 +3,18 @@ import type { CreatureDef, GameSave, RegionId } from '../types';
 import creaturesData from '../data/creatures.json';
 import economy from '../data/economy.json';
 import {
-  makeBlightedAura,
   makeMagicAura,
-  makeVesselAura,
+  makeShieldAura,
   playLeylineArc,
   spawnBloomFlower,
-  type BlightedAuraHandle,
+  type ShieldAuraHandle,
 } from '../scenes/play/outlook/creatureMagic';
 import { ensureRunAnim, texKey } from '../scenes/play/splash/creatureSplash';
 
 interface Spawned {
   sprite: Phaser.GameObjects.Sprite;
   magicAura: Phaser.GameObjects.Container;
-  blightedAura: BlightedAuraHandle;
-  vesselAura: BlightedAuraHandle;
+  shieldAura: ShieldAuraHandle | null;
   creatureId: string;
   resonating: boolean;
   resonanceOrbAcc: number;
@@ -52,7 +50,7 @@ export interface CreatureTapHit {
   vessel: boolean;
   shieldPips: number;
   resonating: boolean;
-  applyTap: () => { purified: boolean; enteredResonance: boolean };
+  applyTap: () => void;
 }
 
 const MAX_CREATURES = 6;
@@ -116,8 +114,7 @@ export class SpawnSystem {
     for (const s of this.spawned) {
       s.sprite.destroy();
       s.magicAura.destroy();
-      s.blightedAura.container.destroy();
-      s.vesselAura.container.destroy();
+      s.shieldAura?.container.destroy();
     }
     for (const b of this.blooms) {
       b.graphic.destroy();
@@ -244,28 +241,26 @@ export class SpawnSystem {
     }
   }
 
-  private crackBlightShield(s: Spawned, amount = 1, checkWeave = true): boolean {
+  private crackBlightShield(s: Spawned, amount = 1, checkWeave = true): void {
     s.shieldPips = Math.max(0, s.shieldPips - amount);
-    s.blightedAura.setPips(s.shieldPips);
+    s.shieldAura?.setPips(s.shieldPips);
     if (s.shieldPips <= 0) {
       s.blighted = false;
-      s.blightedAura.container.setVisible(false);
+      s.shieldAura?.container.setVisible(false);
       s.sprite.clearTint();
       this.enterResonance(s, checkWeave);
-      return true;
     }
-    return false;
   }
 
-  private dodgeVessel(s: Spawned): boolean {
+  private dodgeVessel(s: Spawned): void {
     s.shieldPips = Math.max(0, s.shieldPips - 1);
-    s.vesselAura.setPips(s.shieldPips);
+    s.shieldAura?.setPips(s.shieldPips);
     if (s.shieldPips <= 0) {
       s.vessel = false;
-      s.vesselAura.container.setVisible(false);
+      s.shieldAura?.container.setVisible(false);
       s.sprite.clearTint();
       this.enterResonance(s);
-      return true;
+      return;
     }
 
     // Evasive vertical bound + forward surge so the player must track its leap
@@ -293,7 +288,6 @@ export class SpawnSystem {
     } else {
       s.baseY = nextY;
     }
-    return false;
   }
 
   private enterResonance(s: Spawned, checkWeave = true): void {
@@ -332,10 +326,8 @@ export class SpawnSystem {
       playLeylineArc(this.scene, cx, cy, other.x, other.sprite.y, 0x34d399);
       if (other.blighted) {
         this.crackBlightShield(other, 1, false);
-      } else if (!other.vessel && !other.resonating) {
-        other.resonating = true;
-        other.resonanceOrbAcc = RESONANCE_TICK_INTERVAL - 0.2;
-        other.magicAura.setVisible(true);
+      } else if (!other.vessel) {
+        this.enterResonance(other, false);
       }
     }
 
@@ -365,8 +357,7 @@ export class SpawnSystem {
         s.hopY +
         Math.sin(s.age * (s.vessel ? 7.5 : 5.5)) * (s.vessel ? 6 : 4);
       s.magicAura.setPosition(s.sprite.x, s.sprite.y);
-      s.blightedAura.container.setPosition(s.sprite.x, s.sprite.y);
-      s.vesselAura.container.setPosition(s.sprite.x, s.sprite.y);
+      s.shieldAura?.container.setPosition(s.sprite.x, s.sprite.y);
 
       // Check if running creature bounds over an active Bloom Rune Pad
       for (const b of this.blooms) {
@@ -409,8 +400,7 @@ export class SpawnSystem {
       if (s.done) {
         s.sprite.destroy();
         s.magicAura.destroy();
-        s.blightedAura.container.destroy();
-        s.vesselAura.container.destroy();
+        s.shieldAura?.container.destroy();
         return false;
       }
       return true;
@@ -461,33 +451,30 @@ export class SpawnSystem {
       .sprite(startX, baseY, texKey(pick.id), `${pick.id}-0`)
       .setOrigin(0.5, 0.5)
       .setFlipX(dir < 0)
-      .setInteractive({ useHandCursor: true })
       .setDepth(5);
     const baseScale = Math.min(96 / sprite.width, 72 / sprite.height);
-    sprite.setScale(isVessel ? baseScale * 1.15 : baseScale);
+    const finalScale = isVessel ? baseScale * 1.15 : baseScale;
+    sprite.setScale(finalScale);
+    sprite.setInteractive(
+      new Phaser.Geom.Circle(sprite.width / 2, sprite.height / 2, 58 / finalScale),
+      Phaser.Geom.Circle.Contains,
+    );
+    sprite.input!.cursor = 'pointer';
     sprite.play(runKey);
 
     const magicAura = makeMagicAura(this.scene).setPosition(startX, baseY);
-    const blightedAura = makeBlightedAura(this.scene);
-    blightedAura.container.setPosition(startX, baseY);
-    const vesselAura = makeVesselAura(this.scene);
-    vesselAura.container.setPosition(startX, baseY);
+    let shieldAura: ShieldAuraHandle | null = null;
 
-    if (isVessel) {
-      sprite.setTint(0xfde047);
-      vesselAura.container.setVisible(true);
-      vesselAura.setPips(3);
-    } else if (isBlighted) {
-      sprite.setTint(0xc084fc);
-      blightedAura.container.setVisible(true);
-      blightedAura.setPips(3);
+    if (isVessel || isBlighted) {
+      sprite.setTint(isVessel ? 0xfde047 : 0xc084fc);
+      shieldAura = makeShieldAura(this.scene, isVessel ? 'vessel' : 'blighted');
+      shieldAura.container.setPosition(startX, baseY);
     }
 
     const entry: Spawned = {
       sprite,
       magicAura,
-      blightedAura,
-      vesselAura,
+      shieldAura,
       creatureId: pick.id,
       resonating: false,
       resonanceOrbAcc: 0,
@@ -504,7 +491,7 @@ export class SpawnSystem {
       speed,
     };
 
-    const tap = () => {
+    sprite.on('pointerdown', () => {
       if (entry.done) return;
       this.onTap?.({
         sprite,
@@ -514,10 +501,9 @@ export class SpawnSystem {
         resonating: entry.resonating,
         applyTap: () => {
           if (entry.vessel) {
-            const extracted = this.dodgeVessel(entry);
-            return { purified: extracted, enteredResonance: extracted };
+            this.dodgeVessel(entry);
+            return;
           }
-
           if (this.scene) {
             this.scene.tweens.killTweensOf(entry);
             this.scene.tweens.add({
@@ -527,34 +513,14 @@ export class SpawnSystem {
               ease: 'Quad.easeOut',
             });
           }
-
           if (entry.blighted) {
-            const purified = this.crackBlightShield(entry, 1);
-            return { purified, enteredResonance: purified };
-          }
-
-          if (!entry.resonating) {
+            this.crackBlightShield(entry, 1);
+          } else if (!entry.resonating) {
             this.enterResonance(entry);
-            return { purified: false, enteredResonance: true };
           }
-          return { purified: false, enteredResonance: false };
         },
       });
-    };
-
-    sprite.on('pointerdown', tap);
-    magicAura
-      .setInteractive(new Phaser.Geom.Circle(0, 0, 58), Phaser.Geom.Circle.Contains)
-      .on('pointerdown', tap);
-    magicAura.input!.cursor = 'pointer';
-    blightedAura.container
-      .setInteractive(new Phaser.Geom.Circle(0, 0, 58), Phaser.Geom.Circle.Contains)
-      .on('pointerdown', tap);
-    blightedAura.container.input!.cursor = 'pointer';
-    vesselAura.container
-      .setInteractive(new Phaser.Geom.Circle(0, 0, 58), Phaser.Geom.Circle.Contains)
-      .on('pointerdown', tap);
-    vesselAura.container.input!.cursor = 'pointer';
+    });
 
     this.spawned.push(entry);
   }

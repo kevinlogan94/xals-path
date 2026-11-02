@@ -160,13 +160,13 @@ type WhatsNewEntrySpec = {
   intro: string;
   callout?: string;
   cta?: { label: string; attr: string };
-  singleCards: WhatsNewCardSpec[];
-  listCards: WhatsNewCardSpec[];
+  cards: WhatsNewCardSpec[];
+  listSummaryCard?: WhatsNewCardSpec;
 };
 
-function renderWhatsNewCard(c: WhatsNewCardSpec): string {
+function renderWhatsNewCard(c: WhatsNewCardSpec, clickable = true): string {
   const inner = `<img src="${c.icon}" alt="" /><div><div class="reward-title">${c.title}</div><div class="reward-hint">${c.hint}</div></div>`;
-  if (c.actionAttr) {
+  if (clickable && c.actionAttr) {
     return `<button type="button" class="scroll-card whats-new-card whats-new-card-btn scroll-card-active" ${c.actionAttr} ${c.enabled === false ? 'disabled' : ''}>${inner}</button>`;
   }
   return `<div class="scroll-card whats-new-card">${inner}</div>`;
@@ -177,11 +177,11 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
     {
       id: 'outlook-v1',
       intro:
-        'The valley is alive with running creatures, spell combos, and leyline magic.',
+        'The valley is alive with running creatures, spell combos, and cleansing magic.',
       cta: opts.canViewOutlook
         ? { label: 'Enter the Valley', attr: 'data-whats-new-outlook' }
         : undefined,
-      singleCards: [
+      cards: [
         {
           icon: './assets/ui/manaIcon.png',
           title: 'Empowered Spell Combos',
@@ -198,29 +198,20 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
           hint: "Tap purple Corrupted creatures 3× to shatter their blight, and unlock new spell surges as Xal's story unfolds.",
         },
       ],
-      listCards: [
-        {
-          icon: './assets/ui/OutlookFlower.png',
-          title: 'Living Valley & Spell Weaving',
-          hint: 'Build 5× spell combos, cleanse running & corrupted beasts, link 3 for The Great Weave, and unlock chapter mana powers.',
-          actionAttr: 'data-whats-new-outlook',
-          enabled: opts.canViewOutlook,
-        },
-      ],
+      listSummaryCard: {
+        icon: './assets/ui/OutlookFlower.png',
+        title: 'Living Valley & Spell Weaving',
+        hint: 'Build 5× spell combos, cleanse running & corrupted beasts, link 3 for The Great Weave, and unlock chapter mana powers.',
+        actionAttr: 'data-whats-new-outlook',
+        enabled: opts.canViewOutlook,
+      },
     },
     {
       id: 'sound-v1',
       heroIcon: './assets/ui/tomes/mystic.png',
       intro:
         'The sanctum now resonates with dark arcane sound effects across every ritual, spell cast, and creature awakening.',
-      singleCards: [
-        {
-          icon: './assets/ui/tomes/mystic.png',
-          title: 'Arcane Soundscape',
-          hint: 'New custom sound effects for creature unlocks, spell casting, story pages, and sanctum rewards.',
-        },
-      ],
-      listCards: [
+      cards: [
         {
           icon: './assets/ui/tomes/mystic.png',
           title: 'Arcane Soundscape',
@@ -240,17 +231,10 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
       cta: opts.canViewBestiary
         ? { label: 'View Bestiarum', attr: 'data-whats-new-bestiary' }
         : undefined,
-      singleCards: [
+      cards: [
         {
           icon: './assets/ui/Tomes.png',
           title: 'Sanctum Bestiarum',
-          hint: 'Tap the glowing bookcase beside Xal to read creature lore and view their animated forms.',
-        },
-      ],
-      listCards: [
-        {
-          icon: './assets/ui/Tomes.png',
-          title: `Sanctum Bestiarum (${opts.creaturesUnlocked}/${opts.creaturesTotal})`,
           hint: 'Tap the glowing bookcase beside Xal to read creature lore and view their animated forms.',
           actionAttr: 'data-whats-new-bestiary',
           enabled: opts.canViewBestiary,
@@ -268,21 +252,7 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
       cta: opts.canViewAchievements
         ? { label: 'View Trophies', attr: 'data-whats-new-achievements' }
         : undefined,
-      singleCards: [
-        {
-          icon: './assets/ui/trophy.png',
-          title: `12 Legacy Trophies (${opts.achievementsUnlocked}/${opts.achievementsTotal})`,
-          hint: 'Earn permanent badges for story chapters, spell mastery, and realm exploration.',
-          actionAttr: 'data-whats-new-achievements',
-          enabled: opts.canViewAchievements,
-        },
-        {
-          icon: './assets/ui/tomes/rebirth.png',
-          title: 'Cross-Run Progress',
-          hint: 'Unlocked achievements and story completion counts persist across New Games.',
-        },
-      ],
-      listCards: [
+      cards: [
         {
           icon: './assets/ui/trophy.png',
           title: `12 Legacy Trophies (${opts.achievementsUnlocked}/${opts.achievementsTotal})`,
@@ -319,7 +289,7 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
       <p class="splash-copy">${entry.intro}</p>
       ${calloutHtml}
       <div class="whats-new-list">
-        ${entry.singleCards.map(renderWhatsNewCard).join('')}
+        ${entry.cards.map((c) => renderWhatsNewCard(c, !entry.cta)).join('')}
       </div>
       <div class="splash-actions">
         ${ctaHtml}
@@ -346,7 +316,10 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
     `<p class="splash-copy">Recent additions to Xal's Path. Tap a chronicle below to inspect it directly.</p>
     ${calloutHtml}
     <div class="whats-new-list">
-      ${active.flatMap((e) => e.listCards).map(renderWhatsNewCard).join('')}
+      ${active
+        .flatMap((e) => (e.listSummaryCard ? [e.listSummaryCard] : e.cards))
+        .map((c) => renderWhatsNewCard(c, true))
+        .join('')}
     </div>
     <div class="splash-actions">
       <button type="button" class="scroll-card back-btn" data-splash-close>Continue</button>

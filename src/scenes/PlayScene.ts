@@ -374,81 +374,60 @@ export class PlayScene extends Phaser.Scene {
     const tapX = hit.sprite.x;
     const tapY = hit.sprite.y;
 
+    let gained: number;
+    let sfx: Parameters<typeof this.ctx.audio.playSfx>[0];
+    let vol = 0.42;
+    let rate = 1;
+    let sublabel: string | undefined;
+    let overcharge = false;
+    let purified = false;
+    let orbCount: number;
+    let orbColor = 0x34d399;
+
     if (hit.vessel) {
       const willExtract = hit.shieldPips <= 1;
-      const gained = this.ctx.economy.tryVesselTap(this.ctx.state, willExtract);
-      hit.applyTap();
-      this.ctx.audio.playSfx(
-        willExtract ? 'reward' : 'creature-tap',
-        willExtract ? 0.45 : 0.42,
-        willExtract ? 1 : 1.14,
-      );
-      playCastBurst(this, tapX, tapY, `+${formatNumber(gained)}`, {
-        sublabel: willExtract
-          ? 'ESSENCE EXTRACTED!'
-          : `VESSEL ${hit.shieldPips - 1}/3`,
-        overcharge: true,
-      });
-      spawnHomingOrbs(
-        this,
-        tapX,
-        tapY,
-        this.hud.crystalCenter(),
-        willExtract ? 6 : 3,
-        () => this.hud.pulseInfluence(),
-        0xfbbf24,
-      );
-      this.finishCreatureTapCast(tapX, tapY);
-      return;
-    }
-
-    if (hit.blighted) {
+      gained = this.ctx.economy.tryVesselTap(this.ctx.state, willExtract);
+      sfx = willExtract ? 'reward' : 'creature-tap';
+      vol = willExtract ? 0.45 : 0.42;
+      rate = willExtract ? 1 : 1.14;
+      sublabel = willExtract ? 'ESSENCE EXTRACTED!' : `VESSEL ${hit.shieldPips - 1}/3`;
+      overcharge = true;
+      orbCount = willExtract ? 6 : 3;
+      orbColor = 0xfbbf24;
+    } else if (hit.blighted) {
       const willPurify = hit.shieldPips <= 1;
-      const gained = this.ctx.economy.tryBlightedTap(this.ctx.state, willPurify);
-      hit.applyTap();
-      this.ctx.audio.playSfx(
-        willPurify ? 'lock-shatter' : 'lock-rattle',
-        willPurify ? 0.45 : 0.36,
-      );
-      playCastBurst(this, tapX, tapY, `+${formatNumber(gained)}`, {
-        sublabel: willPurify
-          ? 'CLEANSED!'
-          : `CORRUPTION ${hit.shieldPips - 1}/3`,
-        purified: willPurify,
-      });
-      spawnHomingOrbs(
-        this,
-        tapX,
-        tapY,
-        this.hud.crystalCenter(),
-        willPurify ? 6 : 1,
-        () => this.hud.pulseInfluence(),
-        willPurify ? 0x34d399 : 0xa855f7,
-      );
-      this.finishCreatureTapCast(tapX, tapY);
-      return;
+      gained = this.ctx.economy.tryBlightedTap(this.ctx.state, willPurify);
+      sfx = willPurify ? 'lock-shatter' : 'lock-rattle';
+      vol = willPurify ? 0.45 : 0.36;
+      sublabel = willPurify ? 'CLEANSED!' : `CORRUPTION ${hit.shieldPips - 1}/3`;
+      purified = willPurify;
+      orbCount = willPurify ? 6 : 1;
+      orbColor = willPurify ? 0x34d399 : 0xa855f7;
+    } else {
+      gained = this.ctx.economy.tryCreatureTap(this.ctx.state, hit.resonating);
+      sfx = 'creature-tap';
+      rate = hit.resonating ? 1.16 : 1;
+      sublabel = hit.resonating ? undefined : 'CLEANSED';
+      orbCount = hit.resonating ? 1 : 4;
     }
 
-    const wasResonating = hit.resonating;
-    const gained = this.ctx.economy.tryCreatureTap(this.ctx.state, wasResonating);
     hit.applyTap();
-    this.ctx.audio.playSfx('creature-tap', 0.42, wasResonating ? 1.16 : 1);
+    this.ctx.audio.playSfx(sfx, vol, rate);
     playCastBurst(this, tapX, tapY, `+${formatNumber(gained)}`, {
-      sublabel: wasResonating ? undefined : 'CLEANSED',
+      sublabel,
+      overcharge,
+      purified,
     });
     spawnHomingOrbs(
       this,
       tapX,
       tapY,
       this.hud.crystalCenter(),
-      wasResonating ? 1 : 4,
+      orbCount,
       () => this.hud.pulseInfluence(),
-      0x34d399,
+      orbColor,
     );
-    this.finishCreatureTapCast(tapX, tapY);
-  }
 
-  private finishCreatureTapCast(tapX: number, tapY: number): void {
     this.lastCastPos = { x: tapX, y: tapY };
     if (this.ctx.economy.lastOvercharge) {
       this.ctx.spawn.triggerArcaneSurge(this.ctx.state, tapX, tapY);

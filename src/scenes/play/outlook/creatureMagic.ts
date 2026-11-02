@@ -91,51 +91,57 @@ export function makeMagicAura(scene: Phaser.Scene): Phaser.GameObjects.Container
   return container;
 }
 
-export interface BlightedAuraHandle {
+export interface ShieldAuraHandle {
   container: Phaser.GameObjects.Container;
   setPips: (remaining: number) => void;
 }
 
-/** Purple miasma shroud + 3-pip shield indicator for Blighted Beasts. */
-export function makeBlightedAura(scene: Phaser.Scene): BlightedAuraHandle {
+/** 3-pip shield aura for Corrupted creatures (purple) or Ancient Vessels (golden). */
+export function makeShieldAura(
+  scene: Phaser.Scene,
+  kind: 'blighted' | 'vessel',
+): ShieldAuraHandle {
+  const isVessel = kind === 'vessel';
+  const color = isVessel ? AMBER : VIOLET;
+  const pipRing = isVessel ? 0xfef08a : PALE_VIOLET;
+  const r = isVessel ? 58 : 56;
+
   const backing = scene.add.graphics();
-  backing.fillStyle(DARK_BACKING, 0.76);
-  backing.fillCircle(0, 0, 56);
-  backing.lineStyle(3, VIOLET, 0.92);
-  backing.strokeCircle(0, 0, 50);
+  backing.fillStyle(DARK_BACKING, isVessel ? 0.72 : 0.76);
+  backing.fillCircle(0, 0, r);
+  backing.lineStyle(3, color, 0.95);
+  backing.strokeCircle(0, 0, r - 6);
 
   const rune = scene.add.graphics();
-  strokeOctagonRune(rune, 46, 6, DARK_BACKING, 0.85);
-  strokeOctagonRune(rune, 46, 2.5, VIOLET, 0.95);
+  strokeOctagonRune(rune, r - 10, 6, DARK_BACKING, 0.85);
+  strokeOctagonRune(rune, r - 10, 2.6, color, 0.98);
 
   const pips = scene.add.graphics();
-  const drawPips = (remaining: number) => {
+  const setPips = (remaining: number) => {
     pips.clear();
     const xs = [-18, 0, 18];
-    const y = -56;
     for (let i = 0; i < 3; i++) {
       const active = i < remaining;
       pips.fillStyle(DARK_BACKING, 0.9);
-      pips.fillCircle(xs[i], y, 7);
-      pips.lineStyle(2, active ? PALE_VIOLET : 0x4b5563, 0.95);
-      pips.strokeCircle(xs[i], y, 6);
+      pips.fillCircle(xs[i], -r, 7);
+      pips.lineStyle(2, active ? pipRing : 0x4b5563, 0.95);
+      pips.strokeCircle(xs[i], -r, 6);
       if (active) {
-        pips.fillStyle(VIOLET, 1);
-        pips.fillCircle(xs[i], y, 4.2);
+        pips.fillStyle(color, 1);
+        pips.fillCircle(xs[i], -r, 4.3);
       }
     }
   };
-  drawPips(3);
+  setPips(3);
 
   const container = scene.add
     .container(0, 0, [backing, rune, pips])
-    .setDepth(4)
-    .setVisible(false);
+    .setDepth(4);
 
   scene.tweens.add({
     targets: rune,
-    angle: -360,
-    duration: 3200,
+    angle: isVessel ? 360 : -360,
+    duration: isVessel ? 2100 : 3200,
     repeat: -1,
   });
 
@@ -143,57 +149,7 @@ export function makeBlightedAura(scene: Phaser.Scene): BlightedAuraHandle {
     scene.tweens.killTweensOf(rune);
   });
 
-  return { container, setPips: drawPips };
-}
-
-/** Radiant golden aura + 3-pip essence indicator for Ancient Vessels (Ch 3+). */
-export function makeVesselAura(scene: Phaser.Scene): BlightedAuraHandle {
-  const backing = scene.add.graphics();
-  backing.fillStyle(DARK_BACKING, 0.72);
-  backing.fillCircle(0, 0, 58);
-  backing.lineStyle(3, AMBER, 0.96);
-  backing.strokeCircle(0, 0, 52);
-
-  const rune = scene.add.graphics();
-  strokeOctagonRune(rune, 48, 6, DARK_BACKING, 0.85);
-  strokeOctagonRune(rune, 48, 2.8, AMBER, 1);
-
-  const pips = scene.add.graphics();
-  const drawPips = (remaining: number) => {
-    pips.clear();
-    const xs = [-18, 0, 18];
-    const y = -58;
-    for (let i = 0; i < 3; i++) {
-      const active = i < remaining;
-      pips.fillStyle(DARK_BACKING, 0.9);
-      pips.fillCircle(xs[i], y, 7);
-      pips.lineStyle(2, active ? 0xfef08a : 0x4b5563, 0.95);
-      pips.strokeCircle(xs[i], y, 6);
-      if (active) {
-        pips.fillStyle(AMBER, 1);
-        pips.fillCircle(xs[i], y, 4.4);
-      }
-    }
-  };
-  drawPips(3);
-
-  const container = scene.add
-    .container(0, 0, [backing, rune, pips])
-    .setDepth(4)
-    .setVisible(false);
-
-  scene.tweens.add({
-    targets: rune,
-    angle: 360,
-    duration: 2100,
-    repeat: -1,
-  });
-
-  container.once('destroy', () => {
-    scene.tweens.killTweensOf(rune);
-  });
-
-  return { container, setPips: drawPips };
+  return { container, setPips };
 }
 
 /** Sprouts a temporary procedural golden/emerald flower pad on the valley turf. */

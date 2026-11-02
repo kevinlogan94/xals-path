@@ -88,74 +88,45 @@ export class EconomySystem {
     return empowered;
   }
 
+  private recordCast(state: GameSave, overrideMult?: number): number {
+    const empowered = this.advanceCastState(state);
+    const defaultMult = empowered
+      ? this.comboMultiplier +
+        (this.lastOvercharge ? economy.overchargeBonusMultiplier : 0)
+      : 1;
+    const gained = state.clickerIncrement * (overrideMult ?? defaultMult);
+    this.addInfluence(state, gained);
+    state.achievements.clickerCount += 1;
+    state.buffClickProgress += 1;
+    this.afterClick(state);
+    return gained;
+  }
+
   tryCast(state: GameSave): number {
-    const empowered = this.advanceCastState(state);
-    const mult = empowered
-      ? this.comboMultiplier +
-        (this.lastOvercharge ? economy.overchargeBonusMultiplier : 0)
-      : 1;
-    const gained = state.clickerIncrement * mult;
-    this.addInfluence(state, gained);
-    state.achievements.clickerCount += 1;
-    state.buffClickProgress += 1;
-    this.afterClick(state);
-    return gained;
+    return this.recordCast(state);
   }
 
-  /**
-   * Direct tap on a creature: ×5 / ×10 Cleansing Burst on first tap; combo mult while resonating.
-   */
+  /** Direct tap on a creature: ×5 / ×10 Cleansing Burst on first tap; combo mult while resonating. */
   tryCreatureTap(state: GameSave, alreadyMagic: boolean): number {
-    const empowered = this.advanceCastState(state);
-
-    let mult = empowered
-      ? this.comboMultiplier +
-        (this.lastOvercharge ? economy.overchargeBonusMultiplier : 0)
-      : 1;
-    if (!alreadyMagic) {
-      mult =
-        Math.random() < economy.creatureTapBonusChance
-          ? economy.creatureTapBonusHigh
-          : economy.creatureTapBonusNormal;
-    }
-    const gained = state.clickerIncrement * mult;
-    this.addInfluence(state, gained);
-    state.achievements.clickerCount += 1;
-    state.buffClickProgress += 1;
-    this.afterClick(state);
-    return gained;
+    const bonusMult = alreadyMagic
+      ? undefined
+      : Math.random() < economy.creatureTapBonusChance
+        ? economy.creatureTapBonusHigh
+        : economy.creatureTapBonusNormal;
+    return this.recordCast(state, bonusMult);
   }
 
-  /**
-   * Tap on a Corrupted creature: 1x per shield crack, 20x when the 3rd tap draws out the corruption.
-   */
+  /** Tap on a Corrupted creature: 1x per shield crack, 20x when the 3rd tap draws out the corruption. */
   tryBlightedTap(state: GameSave, purified: boolean): number {
-    this.advanceCastState(state);
-
-    const mult = purified ? economy.blightedPurifyMultiplier : 1;
-    const gained = state.clickerIncrement * mult;
-    this.addInfluence(state, gained);
-    state.achievements.clickerCount += 1;
-    state.buffClickProgress += 1;
-    this.afterClick(state);
-    return gained;
+    return this.recordCast(state, purified ? economy.blightedPurifyMultiplier : 1);
   }
 
-  /**
-   * Tap on an Ancient Vessel (unlocked Ch 3): 5x on dodges 1–2, 15x on 3rd tap full extraction.
-   */
+  /** Tap on an Ancient Vessel (unlocked Ch 3): 5x on dodges 1–2, 15x on 3rd tap full extraction. */
   tryVesselTap(state: GameSave, finalExtraction: boolean): number {
-    this.advanceCastState(state);
-
-    const mult = finalExtraction
-      ? economy.vesselFinalMultiplier
-      : economy.vesselTapMultiplier;
-    const gained = state.clickerIncrement * mult;
-    this.addInfluence(state, gained);
-    state.achievements.clickerCount += 1;
-    state.buffClickProgress += 1;
-    this.afterClick(state);
-    return gained;
+    return this.recordCast(
+      state,
+      finalExtraction ? economy.vesselFinalMultiplier : economy.vesselTapMultiplier,
+    );
   }
 
   /** Passive 1x clickerIncrement per second emitted by each resonating creature. */
