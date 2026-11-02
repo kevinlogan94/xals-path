@@ -1,8 +1,14 @@
 import type { GameSave } from '../types';
 
-export type WhatsNewId = 'outlook-v1' | 'sound-v1' | 'bestiary-v1' | 'achievements-v1';
+export type WhatsNewId =
+  | 'fold-v1'
+  | 'outlook-v1'
+  | 'sound-v1'
+  | 'bestiary-v1'
+  | 'achievements-v1';
 
 export const WHATS_NEW_IDS: WhatsNewId[] = [
+  'fold-v1',
   'outlook-v1',
   'sound-v1',
   'bestiary-v1',

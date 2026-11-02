@@ -13,6 +13,7 @@
   position: absolute;
   inset: 0;
   z-index: 30;
+  container-type: size;
   pointer-events: none;
   color: #f5f0e6;
   user-select: none;
@@ -208,6 +209,9 @@
 .scroll-modal {
   flex: 1;
   min-height: 0;
+  width: 100%;
+  max-width: 420px;
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
   border-radius: 22px;
@@ -522,6 +526,9 @@
 }
 
 .chapter-card {
+  width: 100%;
+  max-width: 360px;
+  margin-inline: auto;
   margin-top: auto;
   pointer-events: auto;
 }
@@ -633,6 +640,8 @@
   top: calc(var(--safe-top, 0px) + 76px);
   left: 10px;
   right: 10px;
+  max-width: 420px;
+  margin-inline: auto;
   z-index: 4;
   display: flex;
   align-items: center;
@@ -1037,9 +1046,9 @@
 .bookcase-hotspot {
   position: absolute;
   left: 0;
-  top: 50.5%;
+  top: calc(50% + 0.005 * max(100cqh, 100cqw * 16 / 7));
   width: 24.5%;
-  height: 19.5%;
+  height: calc(0.195 * max(100cqh, 100cqw * 16 / 7));
   z-index: 25;
   padding: 0;
   border: 0;
