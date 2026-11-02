@@ -70,7 +70,7 @@ export class PegasusFlyby {
     }
     s.setVisible(true);
     if (this.pointer) this.pointer.setVisible(true);
-    const y = bounds.y + s.displayHeight / 2 + 4;
+    const y = bounds.y + s.displayHeight / 2 + 28;
     s.y = y + Math.sin(this.scene.time.now / 280) * 6;
     const speed = (bounds.w + s.displayWidth) / CROSS_SECONDS;
     s.x += this.dir * speed * dt;

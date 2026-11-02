@@ -168,7 +168,14 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
             unlockedRegions: ['meadow'],
             influence: 280,
             buffEverCollected: true,
-            newsShown: ['Outlook', 'Spells', 'Xal', 'Tomes', 'ClickerAchievement'],
+            newsShown: [
+              'Outlook',
+              'Spells',
+              'Xal',
+              'Tomes',
+              'ClickerAchievement',
+              'Ch2Power',
+            ],
           },
           [1, 2],
           { nature: 8, lightning: 5, earth: 4, water: 1 },
@@ -195,6 +202,8 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
               'Tomes',
               'ClickerAchievement',
               'TomeAchievement',
+              'Ch2Power',
+              'Ch3Power',
             ],
           },
           [1, 2, 3],
@@ -225,6 +234,9 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
               'Tomes',
               'ClickerAchievement',
               'TomeAchievement',
+              'Ch2Power',
+              'Ch3Power',
+              'Ch4Power',
             ],
           },
           [1, 2, 3, 4],
@@ -250,7 +262,7 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
         const helpers = helpersData.helpers as HelperDef[];
         const lastUnlock = Math.max(...helpers.map((h) => h.unlockLevel));
         const influence = helpers.reduce((sum, h) => sum + h.cost, 0);
-        return devSave(
+        const save = devSave(
           {
             playerLevel: lastUnlock,
             region: 'meadow',
@@ -266,11 +278,16 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
               'ClickerAchievement',
               'LoginAchievement',
               'TomeAchievement',
+              'Ch2Power',
+              'Ch3Power',
+              'Ch4Power',
             ],
           },
           [1, 2, 3, 4, 5, 6, 7],
           {},
         );
+        setMana(save, 4);
+        return save;
       },
     },
   ];

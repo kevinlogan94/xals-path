@@ -24,6 +24,12 @@ function matches(state: GameSave, id: string): boolean {
       return a.loginCount >= a.loginGoal;
     case 'TomeAchievement':
       return a.helperCount >= a.helperGoal;
+    case 'Ch2Power':
+      return state.manaLevel >= 2;
+    case 'Ch3Power':
+      return state.manaLevel >= 3;
+    case 'Ch4Power':
+      return state.manaLevel >= 4;
     default:
       return false;
   }
@@ -53,7 +59,16 @@ export class NewsBanner {
     parent.append(this.el);
   }
 
-  tick(state: GameSave, onOutlook: boolean, now: number): void {
+  isOpen(): boolean {
+    return !!this.el && !this.el.hidden;
+  }
+
+  tick(
+    state: GameSave,
+    onOutlook: boolean,
+    now: number,
+    canOpenNew = onOutlook,
+  ): void {
     if (!onOutlook) {
       this.hide();
       return;
@@ -62,6 +77,7 @@ export class NewsBanner {
       if (now >= this.hideAt) this.hide();
       return;
     }
+    if (!canOpenNew) return;
     const item = NEWS.find((n) => !state.newsShown.includes(n.id) && matches(state, n.id));
     if (!item) return;
     state.newsShown.push(item.id);

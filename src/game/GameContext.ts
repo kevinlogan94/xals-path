@@ -52,6 +52,7 @@ export class GameContext {
     }
     this.offlineGained = 0;
     this.economy.buffSessionClicks = 0;
+    this.economy.resetCombo();
     this.story.reset();
     this.spawn.clear();
     this.tutorial.reset();
@@ -64,6 +65,7 @@ export class GameContext {
     evaluateAchievements(this.state);
     this.offlineGained = 0;
     this.economy.buffSessionClicks = 0;
+    this.economy.resetCombo();
     this.story.reset();
     this.spawn.clear();
     this.tutorial.reset();

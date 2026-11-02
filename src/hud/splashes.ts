@@ -141,73 +141,168 @@ export type WhatsNewSplashOpts = {
   creaturesTotal: number;
   achievementsUnlocked: number;
   achievementsTotal: number;
+  canViewOutlook: boolean;
   canViewBestiary: boolean;
   canViewAchievements: boolean;
 };
 
-export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
-  const showSound = opts.unseenIds.includes('sound-v1');
-  const showBestiary = opts.unseenIds.includes('bestiary-v1');
-  const showAchievements = opts.unseenIds.includes('achievements-v1');
-  const onlySound = showSound && !showBestiary && !showAchievements;
-  const onlyBestiary = showBestiary && !showSound && !showAchievements;
+type WhatsNewCardSpec = {
+  icon: string;
+  title: string;
+  hint: string;
+  actionAttr?: string;
+  enabled?: boolean;
+};
 
-  if (onlySound) {
-    return shell(
-      'Sanctum Chronicle',
-      "What's New",
-      `<img class="splash-icon" src="./assets/ui/tomes/mystic.png" alt="" />
-      <p class="splash-copy">The sanctum now resonates with dark arcane sound effects across every ritual, spell cast, and creature awakening.</p>
-      <div class="whats-new-list">
-        <div class="scroll-card whats-new-card">
-          <img src="./assets/ui/tomes/mystic.png" alt="" />
-          <div>
-            <div class="reward-title">Arcane Soundscape</div>
-            <div class="reward-hint">New custom sound effects for creature unlocks, spell casting, story pages, and sanctum rewards.</div>
-          </div>
-        </div>
-      </div>
-      <div class="splash-actions">
-        <button type="button" class="scroll-card back-btn" data-splash-close>Continue</button>
-      </div>`,
-    );
+type WhatsNewEntrySpec = {
+  id: string;
+  heroIcon?: string;
+  intro: string;
+  callout?: string;
+  cta?: { label: string; attr: string };
+  cards: WhatsNewCardSpec[];
+  listSummaryCard?: WhatsNewCardSpec;
+};
+
+function renderWhatsNewCard(c: WhatsNewCardSpec, clickable = true): string {
+  const inner = `<img src="${c.icon}" alt="" /><div><div class="reward-title">${c.title}</div><div class="reward-hint">${c.hint}</div></div>`;
+  if (clickable && c.actionAttr) {
+    return `<button type="button" class="scroll-card whats-new-card whats-new-card-btn scroll-card-active" ${c.actionAttr} ${c.enabled === false ? 'disabled' : ''}>${inner}</button>`;
   }
+  return `<div class="scroll-card whats-new-card">${inner}</div>`;
+}
 
-  if (onlyBestiary) {
-    const callout =
-      opts.creaturesUnlocked > 0
-        ? `<p class="whats-new-callout">✨ ${opts.creaturesUnlocked} / ${opts.creaturesTotal} Creatures already recorded in your Bestiarum!</p>`
-        : '';
-    const viewBtn = opts.canViewBestiary
-      ? `<button type="button" class="ritual-btn" data-whats-new-bestiary>View Bestiarum</button>`
+export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
+  const entries: WhatsNewEntrySpec[] = [
+    {
+      id: 'outlook-v1',
+      intro:
+        'The valley is alive with running creatures, spell combos, and cleansing magic.',
+      cta: opts.canViewOutlook
+        ? { label: 'Enter the Valley', attr: 'data-whats-new-outlook' }
+        : undefined,
+      cards: [
+        {
+          icon: './assets/ui/manaIcon.png',
+          title: 'Empowered Spell Combos',
+          hint: 'Low mana never stops your casting! Cast while mana is charged to build up to a 5× Combo and trigger 10-spell Bursts.',
+        },
+        {
+          icon: './assets/ui/OutlookFlower.png',
+          title: 'Cleansing & The Great Weave',
+          hint: 'Tap running creatures or plant Bloom Runes in their path to cleanse them. Light up 3 at once to link The Great Weave (+10× burst!).',
+        },
+        {
+          icon: './assets/ui/tomes/lightning.png',
+          title: 'Corrupted Beasts & Chapter Powers',
+          hint: "Tap purple Corrupted creatures 3× to shatter their blight, and unlock new spell surges as Xal's story unfolds.",
+        },
+      ],
+      listSummaryCard: {
+        icon: './assets/ui/OutlookFlower.png',
+        title: 'Living Valley & Spell Weaving',
+        hint: 'Build 5× spell combos, cleanse running & corrupted beasts, link 3 for The Great Weave, and unlock chapter mana powers.',
+        actionAttr: 'data-whats-new-outlook',
+        enabled: opts.canViewOutlook,
+      },
+    },
+    {
+      id: 'sound-v1',
+      heroIcon: './assets/ui/tomes/mystic.png',
+      intro:
+        'The sanctum now resonates with dark arcane sound effects across every ritual, spell cast, and creature awakening.',
+      cards: [
+        {
+          icon: './assets/ui/tomes/mystic.png',
+          title: 'Arcane Soundscape',
+          hint: 'New custom sound effects for creature unlocks, spell casting, story pages, and sanctum rewards.',
+        },
+      ],
+    },
+    {
+      id: 'bestiary-v1',
+      heroIcon: './assets/ui/Tomes.png',
+      intro:
+        'Xal has opened the shelves of his study. Inspect the Bestiarum anytime from his tower to revisit every creature you have cleansed.',
+      callout:
+        opts.creaturesUnlocked > 0
+          ? `${opts.creaturesUnlocked} / ${opts.creaturesTotal} Creatures already recorded in your Bestiarum!`
+          : undefined,
+      cta: opts.canViewBestiary
+        ? { label: 'View Bestiarum', attr: 'data-whats-new-bestiary' }
+        : undefined,
+      cards: [
+        {
+          icon: './assets/ui/Tomes.png',
+          title: 'Sanctum Bestiarum',
+          hint: 'Tap the glowing bookcase beside Xal to read creature lore and view their animated forms.',
+          actionAttr: 'data-whats-new-bestiary',
+          enabled: opts.canViewBestiary,
+        },
+      ],
+    },
+    {
+      id: 'achievements-v1',
+      intro:
+        "Recent additions to Xal's Path. Tap a chronicle below to inspect it directly.",
+      callout:
+        opts.achievementsUnlocked > 0
+          ? `${opts.achievementsUnlocked}/${opts.achievementsTotal} Achievements already recorded from your journey!`
+          : undefined,
+      cta: opts.canViewAchievements
+        ? { label: 'View Trophies', attr: 'data-whats-new-achievements' }
+        : undefined,
+      cards: [
+        {
+          icon: './assets/ui/trophy.png',
+          title: `12 Legacy Trophies (${opts.achievementsUnlocked}/${opts.achievementsTotal})`,
+          hint: 'Earn permanent badges for story chapters, spell mastery, and realm exploration.',
+          actionAttr: 'data-whats-new-achievements',
+          enabled: opts.canViewAchievements,
+        },
+        {
+          icon: './assets/ui/tomes/rebirth.png',
+          title: 'Cross-Run Progress',
+          hint: 'Unlocked achievements and story completion counts persist across New Games.',
+        },
+      ],
+    },
+  ];
+
+  const active = entries.filter((e) => opts.unseenIds.includes(e.id));
+
+  if (active.length === 1) {
+    const entry = active[0];
+    const heroHtml = entry.heroIcon
+      ? `<img class="splash-icon" src="${entry.heroIcon}" alt="" />`
+      : '';
+    const calloutHtml = entry.callout
+      ? `<p class="whats-new-callout">✨ ${entry.callout}</p>`
+      : '';
+    const ctaHtml = entry.cta
+      ? `<button type="button" class="ritual-btn" ${entry.cta.attr}>${entry.cta.label}</button>`
       : '';
     return shell(
       'Sanctum Chronicle',
       "What's New",
-      `<img class="splash-icon" src="./assets/ui/Tomes.png" alt="" />
-      <p class="splash-copy">Xal has opened the shelves of his study. Inspect the Bestiarum anytime from his tower to revisit every creature you have cleansed.</p>
-      ${callout}
+      `${heroHtml}
+      <p class="splash-copy">${entry.intro}</p>
+      ${calloutHtml}
       <div class="whats-new-list">
-        <div class="scroll-card whats-new-card">
-          <img src="./assets/ui/Tomes.png" alt="" />
-          <div>
-            <div class="reward-title">Sanctum Bestiarum</div>
-            <div class="reward-hint">Tap the glowing bookcase beside Xal to read creature lore and view their animated forms.</div>
-          </div>
-        </div>
+        ${entry.cards.map((c) => renderWhatsNewCard(c, !entry.cta)).join('')}
       </div>
       <div class="splash-actions">
-        ${viewBtn}
+        ${ctaHtml}
         <button type="button" class="scroll-card back-btn" data-splash-close>Continue</button>
       </div>`,
     );
   }
 
   const callouts: string[] = [];
-  if (showBestiary && opts.creaturesUnlocked > 0) {
+  if (opts.unseenIds.includes('bestiary-v1') && opts.creaturesUnlocked > 0) {
     callouts.push(`${opts.creaturesUnlocked}/${opts.creaturesTotal} Creatures`);
   }
-  if (showAchievements && opts.achievementsUnlocked > 0) {
+  if (opts.unseenIds.includes('achievements-v1') && opts.achievementsUnlocked > 0) {
     callouts.push(`${opts.achievementsUnlocked}/${opts.achievementsTotal} Achievements`);
   }
   const calloutHtml =
@@ -215,52 +310,16 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
       ? `<p class="whats-new-callout">✨ ${callouts.join(' & ')} already recorded from your journey!</p>`
       : '';
 
-  const soundCard = showSound
-    ? `<div class="scroll-card whats-new-card">
-        <img src="./assets/ui/tomes/mystic.png" alt="" />
-        <div>
-          <div class="reward-title">Arcane Soundscape</div>
-          <div class="reward-hint">New custom sound effects for creature unlocks, spell casting, story pages, and sanctum rewards.</div>
-        </div>
-      </div>`
-    : '';
-
-  const bestiaryCard = showBestiary
-    ? `<button type="button" class="scroll-card whats-new-card whats-new-card-btn scroll-card-active" data-whats-new-bestiary ${opts.canViewBestiary ? '' : 'disabled'}>
-        <img src="./assets/ui/Tomes.png" alt="" />
-        <div>
-          <div class="reward-title">Sanctum Bestiarum (${opts.creaturesUnlocked}/${opts.creaturesTotal})</div>
-          <div class="reward-hint">Tap the glowing bookcase beside Xal to read creature lore and view their animated forms.</div>
-        </div>
-      </button>`
-    : '';
-
-  const achCards = showAchievements
-    ? `<button type="button" class="scroll-card whats-new-card whats-new-card-btn scroll-card-active" data-whats-new-achievements ${opts.canViewAchievements ? '' : 'disabled'}>
-        <img src="./assets/ui/trophy.png" alt="" />
-        <div>
-          <div class="reward-title">12 Legacy Trophies (${opts.achievementsUnlocked}/${opts.achievementsTotal})</div>
-          <div class="reward-hint">Earn permanent badges for story chapters, spell mastery, and realm exploration.</div>
-        </div>
-      </button>
-      <div class="scroll-card whats-new-card">
-        <img src="./assets/ui/tomes/rebirth.png" alt="" />
-        <div>
-          <div class="reward-title">Cross-Run Progress</div>
-          <div class="reward-hint">Unlocked achievements and story completion counts persist across New Games.</div>
-        </div>
-      </div>`
-    : '';
-
   return shell(
     'Sanctum Chronicle',
     "What's New",
     `<p class="splash-copy">Recent additions to Xal's Path. Tap a chronicle below to inspect it directly.</p>
     ${calloutHtml}
     <div class="whats-new-list">
-      ${soundCard}
-      ${bestiaryCard}
-      ${achCards}
+      ${active
+        .flatMap((e) => (e.listSummaryCard ? [e.listSummaryCard] : e.cards))
+        .map((c) => renderWhatsNewCard(c, true))
+        .join('')}
     </div>
     <div class="splash-actions">
       <button type="button" class="scroll-card back-btn" data-splash-close>Continue</button>
