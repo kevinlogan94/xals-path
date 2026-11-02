@@ -175,6 +175,19 @@ function renderWhatsNewCard(c: WhatsNewCardSpec, clickable = true): string {
 export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
   const entries: WhatsNewEntrySpec[] = [
     {
+      id: 'fold-v1',
+      heroIcon: './assets/ui/Portal2.png',
+      intro:
+        'The sanctum now unfolds cleanly across foldable displays, keeping cards, scrolls, and dialogue framed while the realm fills the screen.',
+      cards: [
+        {
+          icon: './assets/ui/Portal2.png',
+          title: 'Foldable Display Support',
+          hint: 'Tailored layout for unfolded screens—full-bleed realm art with centered chapter cards, scrolls, and dialogue.',
+        },
+      ],
+    },
+    {
       id: 'outlook-v1',
       intro:
         'The valley is alive with running creatures, spell combos, and cleansing magic.',

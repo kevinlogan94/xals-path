@@ -2,13 +2,14 @@ import Phaser from 'phaser';
 import { darkText } from '../ui/textStyles';
 
 const QUOTE_PAD_X = 24;
+const QUOTE_MAX_W = 390;
 const QUOTE_ASPECT = 300 / 460;
 const QUOTE_MAX_H = 132;
 /** Just above Xal's head — bubble tail points down toward him. */
 const QUOTE_Y_RATIO = 0.36;
 
 export function quoteBoxHeight(gameWidth: number): number {
-  const boxW = gameWidth - QUOTE_PAD_X;
+  const boxW = Math.min(gameWidth - QUOTE_PAD_X, QUOTE_MAX_W);
   return Math.min(Math.round(boxW * QUOTE_ASPECT), QUOTE_MAX_H);
 }
 
@@ -23,7 +24,7 @@ export class QuoteBox {
   build(depth = 22, y?: number): void {
     const w = this.scene.scale.width;
     const h = this.scene.scale.height;
-    const boxW = w - QUOTE_PAD_X;
+    const boxW = Math.min(w - QUOTE_PAD_X, QUOTE_MAX_W);
     const boxH = quoteBoxHeight(w);
     const placedY = y ?? h * QUOTE_Y_RATIO;
     const textWrap = boxW - 64;
