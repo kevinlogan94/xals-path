@@ -71,47 +71,150 @@
       }
       #install-gate {
         position: fixed;
-        inset: 0;
-        z-index: 10;
+        padding: 24px 16px;
+        background:
+          radial-gradient(circle at 50% 24%, rgba(16, 185, 129, 0.1) 0%, rgba(245, 158, 11, 0.04) 38%, rgba(7, 4, 8, 0) 70%),
+          #070408;
+      }
+      #install-gate [data-for] {
+        display: none;
+      }
+      #install-gate[data-mode='ios'] [data-for~='ios'],
+      #install-gate[data-mode='android'] [data-for~='android'],
+      #install-gate[data-mode='embedded'] [data-for~='embedded'] {
         display: flex;
-        flex-direction: column;
-        justify-content: center;
+      }
+      #install-gate .gate-icon {
+        width: 68px;
+        height: 68px;
+        margin: 2px auto 12px;
+        border-radius: 16px;
+        background: radial-gradient(circle at 50% 35%, rgba(16, 185, 129, 0.22), rgba(14, 10, 18, 0.92));
+        border: 1px solid rgba(245, 158, 11, 0.45);
+        box-shadow: 0 0 22px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        display: flex;
         align-items: center;
-        gap: 20px;
-        padding: 32px 24px;
-        background: #070408;
-        color: #fff;
-        text-align: center;
-        font-size: 11px;
-        line-height: 1.7;
+        justify-content: center;
       }
-      #install-gate[hidden] {
-        display: none;
+      #install-gate .gate-callout {
+        justify-content: center;
+        margin: 0 0 12px;
+        background: rgba(245, 158, 11, 0.12);
+        border-color: rgba(245, 158, 11, 0.45);
+        color: #fde68a;
       }
-      #install-gate [data-open] {
-        display: none;
+      #install-gate .gate-step {
+        gap: 10px;
+        align-items: center;
+        padding: 10px 12px;
+        margin-top: 10px;
+        text-align: left;
       }
-      #install-gate.embedded [data-open] {
-        display: block;
+      #install-gate .gate-badge {
+        width: 44px;
+        height: 44px;
+        flex: none;
+        border-radius: 10px;
+        background: rgba(8, 6, 10, 0.65);
+        border: 1px solid rgba(245, 158, 11, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fbbf24;
       }
-      #install-gate button {
-        font: inherit;
-        font-size: 10px;
-        color: #fff;
-        background: #1a2e1a;
-        border: 2px solid #3d5c3d;
-        padding: 12px 16px;
-        cursor: pointer;
+      #install-gate .splash-actions button {
+        width: 100%;
+        justify-content: center;
       }
     </style>
   </head>
   <body>
     <div id="game"></div>
-    <div id="install-gate" hidden>
-      <p>Add Xal's Path to your home screen for the full game.</p>
-      <p>In your browser: share or menu → Add to Home Screen. Then open the icon.</p>
-      <button type="button" data-open>Open in browser</button>
-      <button type="button" data-play>Play in browser anyway</button>
+    <div id="install-gate" class="hud-root splash-layer" data-mode="ios" hidden>
+      <div class="scroll-modal splash-modal">
+        <div class="scroll-kicker">Sanctum Portal</div>
+        <h2 class="scroll-title">Enshrine the Path</h2>
+        <div class="gate-icon" aria-hidden="true">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9" stroke="rgba(245, 158, 11, 0.65)" stroke-dasharray="3 2" />
+            <circle cx="12" cy="12" r="5.5" stroke="#34d399" />
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#fbbf24" />
+            <circle cx="12" cy="12" r="2" fill="#fbbf24" stroke="none" />
+          </svg>
+        </div>
+
+        <div class="whats-new-callout gate-callout" data-for="embedded">In-App Browser Detected</div>
+
+        <p class="splash-copy" data-for="ios android">
+          Add Xal's Path to your home screen for the full-screen realm experience and uninterrupted sanctum progress.
+        </p>
+        <p class="splash-copy" data-for="embedded">
+          Open Xal's Path in your system browser so you can add it to your home screen and keep your sanctum progress safe.
+        </p>
+
+        <div class="scroll-card gate-step" data-for="ios">
+          <div class="gate-badge" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+          </div>
+          <div class="tome-copy">
+            <div class="tome-name">1. Tap the Share button</div>
+            <div class="tome-meta">In your Safari toolbar at the bottom or top of the screen.</div>
+          </div>
+        </div>
+
+        <div class="scroll-card gate-step" data-for="ios">
+          <div class="gate-badge" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3" />
+              <line x1="12" y1="8" x2="12" y2="16" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+            </svg>
+          </div>
+          <div class="tome-copy">
+            <div class="tome-name">2. Choose "Add to Home Screen"</div>
+            <div class="tome-meta">Then launch Xal's Path from your home screen icon.</div>
+          </div>
+        </div>
+
+        <div class="scroll-card gate-step" data-for="android">
+          <div class="gate-badge" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="5" r="1.5" fill="currentColor" />
+              <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+              <circle cx="12" cy="19" r="1.5" fill="currentColor" />
+            </svg>
+          </div>
+          <div class="tome-copy">
+            <div class="tome-name">Install via Browser Menu</div>
+            <div class="tome-meta">Open the browser menu (⋮) → "Add to Home screen" or "Install app".</div>
+          </div>
+        </div>
+
+        <div class="scroll-card gate-step" data-for="embedded">
+          <div class="gate-badge" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3" />
+              <line x1="12" y1="8" x2="12" y2="16" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+            </svg>
+          </div>
+          <div class="tome-copy">
+            <div class="tome-name">Then Add to Home Screen</div>
+            <div class="tome-meta">In Safari or Chrome: Share or Menu → "Add to Home Screen".</div>
+          </div>
+        </div>
+
+        <div class="splash-actions">
+          <button type="button" class="ritual-btn" data-install hidden>Add to Home Screen</button>
+          <button type="button" class="ritual-btn" data-for="embedded" data-open>Open in Safari / Chrome</button>
+          <button type="button" class="ritual-btn" data-for="ios android" data-play>Play in Browser Anyway</button>
+          <button type="button" class="scroll-card back-btn" data-for="embedded" data-play>Continue Here Anyway</button>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

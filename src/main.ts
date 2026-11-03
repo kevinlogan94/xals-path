@@ -20,8 +20,7 @@ Phaser.GameObjects.GameObjectFactory.prototype.text = function (
 
 const parent = document.getElementById('game');
 
-await passInstallGate();
-await Promise.race([
+const fontsReady = Promise.race([
   Promise.all([
     document.fonts.load('900 44px "Cinzel Decorative"'),
     document.fonts.load('italic 600 16px "Cormorant Garamond"'),
@@ -29,6 +28,9 @@ await Promise.race([
   ]),
   new Promise((resolve) => window.setTimeout(resolve, 2500)),
 ]);
+
+await passInstallGate();
+await fontsReady;
 
 new Phaser.Game({
   type: Phaser.AUTO,
