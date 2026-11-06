@@ -178,7 +178,7 @@ export class TutorialSystem {
       return 'none';
     }
 
-    if (tab === 'scene' && this.currentLine()) return 'xal';
+    if (this.currentLine()) return tab === 'scene' ? 'xal' : 'sceneNav';
     return 'none';
   }
 

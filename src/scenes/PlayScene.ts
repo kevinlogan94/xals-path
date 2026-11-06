@@ -754,7 +754,11 @@ export class PlayScene extends Phaser.Scene {
     if (this.ctx.economy.buyHelper(this.ctx.state, id)) {
       this.ctx.audio.playSfx('tome-buy', 0.4);
       const owned = this.ctx.state.helpers.find((hh) => hh.id === id);
+      const wasWaitingNature = this.ctx.tutorial.waitingNature;
       this.ctx.tutorial.onNaturePurchased(this.ctx.state);
+      if (wasWaitingNature && !this.ctx.tutorial.waitingNature) {
+        this.tutorialLine = null;
+      }
       this.hud.showTomes();
       this.checkAchievements();
       if (owned?.amountOwned === 1) {
