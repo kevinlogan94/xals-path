@@ -125,7 +125,7 @@ export class HudOverlay {
         </button>
       </header>
       <div class="hud-stage" data-stage></div>
-      <button type="button" class="bookcase-hotspot" data-bookcase hidden aria-label="Open Bestiarum">
+      <button type="button" class="bookcase-hotspot" data-bookcase hidden aria-label="Open Bestiary">
         <span class="bookcase-shimmer-aura"></span>
         <span class="glowing-spine-1"></span>
         <span class="glowing-spine-2"></span>
@@ -134,7 +134,7 @@ export class HudOverlay {
         <span class="bookcase-mote m3"></span>
         <span class="bookcase-plaque">
           <img src="./assets/ui/Tomes.png" alt="" />
-          <span class="bookcase-plaque-title">Bestiarum</span>
+          <span class="bookcase-plaque-title">Bestiary</span>
           <span class="bookcase-plaque-count" data-bookcase-count>0/10</span>
           <span class="bookcase-new-dot" data-bookcase-dot hidden>!</span>
         </span>
