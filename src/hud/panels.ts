@@ -492,7 +492,7 @@ export function bestiaryHtml(ctx: GameContext): string {
   return `<section class="scroll-modal">
     <p class="scroll-kicker">Sanctum Chronicles • ${recorded} / ${total} Recorded</p>
     <h2 class="scroll-title">Bestiary</h2>
-    <p class="splash-copy">Purchase every tome to record all ${total} creatures.</p>
+    <p class="splash-copy">Each tome you purchase inscribes its creature within these pages.</p>
     <div class="scroll-body">${sections}</div>
     <div class="splash-actions" style="margin-top:10px">
       <button type="button" class="scroll-card back-btn" data-bestiary-close style="width:100%">Back</button>
