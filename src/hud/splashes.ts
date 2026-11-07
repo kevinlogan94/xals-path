@@ -236,18 +236,18 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
       id: 'bestiary-v1',
       heroIcon: './assets/ui/Tomes.png',
       intro:
-        'Xal has opened the shelves of his study. Inspect the Bestiarum anytime from his tower to revisit every creature you have cleansed.',
+        'Xal has opened the shelves of his study. Inspect the Bestiary anytime from his tower to revisit every creature you have cleansed.',
       callout:
         opts.creaturesUnlocked > 0
-          ? `${opts.creaturesUnlocked} / ${opts.creaturesTotal} Creatures already recorded in your Bestiarum!`
+          ? `${opts.creaturesUnlocked} / ${opts.creaturesTotal} Creatures already recorded in your Bestiary!`
           : undefined,
       cta: opts.canViewBestiary
-        ? { label: 'View Bestiarum', attr: 'data-whats-new-bestiary' }
+        ? { label: 'View Bestiary', attr: 'data-whats-new-bestiary' }
         : undefined,
       cards: [
         {
           icon: './assets/ui/Tomes.png',
-          title: 'Sanctum Bestiarum',
+          title: 'Sanctum Bestiary',
           hint: 'Tap the glowing bookcase beside Xal to read creature lore and view their animated forms.',
           actionAttr: 'data-whats-new-bestiary',
           enabled: opts.canViewBestiary,
@@ -365,7 +365,7 @@ function creaturePanel(creature: CreatureDef, title = 'New Creature Unlocked', h
       </div>`
     : `<p class="splash-copy">${creature.name}</p>`;
   return shell(
-    'Bestiarum',
+    'Bestiary',
     title,
     `${portrait}${pills}<p class="splash-copy">${creature.description}</p>${back()}`,
   );

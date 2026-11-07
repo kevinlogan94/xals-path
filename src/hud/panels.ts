@@ -491,7 +491,7 @@ export function bestiaryHtml(ctx: GameContext): string {
 
   return `<section class="scroll-modal">
     <p class="scroll-kicker">Sanctum Chronicles • ${cleansed} / ${total} Cleansed</p>
-    <h2 class="scroll-title">Bestiarum</h2>
+    <h2 class="scroll-title">Bestiary</h2>
     <div class="scroll-body">${sections}</div>
     <div class="splash-actions" style="margin-top:10px">
       <button type="button" class="scroll-card back-btn" data-bestiary-close style="width:100%">Back</button>
