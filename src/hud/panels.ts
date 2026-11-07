@@ -441,7 +441,7 @@ export function unlockedCreatureCount(ctx: GameContext): number {
 export function bestiaryHtml(ctx: GameContext): string {
   const regions: RegionId[] = ['meadow', 'river', 'altar'];
   const total = ctx.spawn.creatures.length;
-  const cleansed = unlockedCreatureCount(ctx);
+  const recorded = unlockedCreatureCount(ctx);
 
   const sections = regions
     .map((region) => {
@@ -490,8 +490,9 @@ export function bestiaryHtml(ctx: GameContext): string {
     .join('');
 
   return `<section class="scroll-modal">
-    <p class="scroll-kicker">Sanctum Chronicles • ${cleansed} / ${total} Cleansed</p>
+    <p class="scroll-kicker">Sanctum Chronicles • ${recorded} / ${total} Recorded</p>
     <h2 class="scroll-title">Bestiary</h2>
+    <p class="splash-copy">Purchase every tome to record all ${total} creatures.</p>
     <div class="scroll-body">${sections}</div>
     <div class="splash-actions" style="margin-top:10px">
       <button type="button" class="scroll-card back-btn" data-bestiary-close style="width:100%">Back</button>
