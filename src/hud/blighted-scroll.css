@@ -1259,6 +1259,27 @@
   }
 }
 
+.bestiary-instruction {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 400;
+  color: #f5f0e6;
+  text-align: center;
+  margin: 0 0 12px;
+}
+
+.bestiary-flavor {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  line-height: 21px;
+  font-weight: 400;
+  font-style: italic;
+  color: #b6a99c;
+  text-align: center;
+  margin: 0 0 12px;
+}
+
 .hud-root .bestiary-row {
   display: grid;
   grid-template-columns: 56px 1fr auto;
