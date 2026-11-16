@@ -1,11 +1,13 @@
 import './blighted-scroll.css';
 import type { GameContext } from '../game/GameContext';
-import type { ChapterDef, CreatureDef, GameSave, TabId } from '../types';
+import type { ChapterDef, CreatureDef, GameSave, RegionId, TabId } from '../types';
 import { formatNumber } from '../utils/format';
 import {
   NAV,
+  REGION_SHORT_TITLES,
   bestiaryHtml,
   bindBestiary,
+  bindPortal,
   bindRewards,
   bindSettings,
   bindTomes,
@@ -13,6 +15,7 @@ import {
   claimInfo,
   creditsHtml,
   openFeedback,
+  portalHtml,
   rewardsHtml,
   settingsHtml,
   syncTomes,
@@ -46,6 +49,9 @@ export type HudOverlayHandlers = {
   onOpenAchievements: () => void;
   onOpenBestiary: () => void;
   onCloseBestiary: () => void;
+  onOpenPortal: () => void;
+  onClosePortal: () => void;
+  onSelectPortalRegion: (region: RegionId) => void;
   onLevelTap: () => void;
   onNewGame: () => void;
   onJump: (state: GameSave) => void;
@@ -79,6 +85,9 @@ export class HudOverlay {
   private readonly bookcase: HTMLButtonElement;
   private readonly bookcaseCount: HTMLElement;
   private readonly bookcaseDot: HTMLElement;
+  private readonly portal: HTMLButtonElement;
+  private readonly portalPlaque: HTMLElement;
+  private readonly portalRealm: HTMLElement;
   private readonly outlookPill: HTMLElement;
   private readonly comboHud: HTMLElement;
   private readonly comboMult: HTMLElement;
@@ -92,7 +101,7 @@ export class HudOverlay {
   private achChimed = false;
   private achGen = 0;
   private splashCleanup: (() => void) | null = null;
-  private view: TabId | 'credits' | 'bestiary' | null = null;
+  private view: TabId | 'credits' | 'bestiary' | 'portal' | null = null;
   private rewardsSubTab: RewardsSubTab = 'milestones';
   private tabAllowed: (tab: TabId) => boolean = () => true;
 
@@ -137,6 +146,17 @@ export class HudOverlay {
           <span class="bookcase-plaque-title">Bestiary</span>
           <span class="bookcase-plaque-count" data-bookcase-count>0/10</span>
           <span class="bookcase-new-dot" data-bookcase-dot hidden>!</span>
+        </span>
+      </button>
+      <button type="button" class="portal-hotspot" data-portal hidden aria-label="Open Portal">
+        <span class="portal-rune-aura"></span>
+        <span class="portal-mote m1"></span>
+        <span class="portal-mote m2"></span>
+        <span class="portal-mote m3"></span>
+        <span class="portal-plaque" data-portal-plaque hidden>
+          <img src="./assets/ui/Portal2.png" alt="" />
+          <span class="portal-plaque-title">Portal</span>
+          <span class="portal-plaque-realm" data-portal-realm>Meadows</span>
         </span>
       </button>
       <button type="button" class="scroll-card back-btn story-back" data-story-back hidden>Back</button>
@@ -188,6 +208,9 @@ export class HudOverlay {
     this.bookcase = this.root.querySelector('[data-bookcase]')!;
     this.bookcaseCount = this.root.querySelector('[data-bookcase-count]')!;
     this.bookcaseDot = this.root.querySelector('[data-bookcase-dot]')!;
+    this.portal = this.root.querySelector('[data-portal]')!;
+    this.portalPlaque = this.root.querySelector('[data-portal-plaque]')!;
+    this.portalRealm = this.root.querySelector('[data-portal-realm]')!;
     this.outlookPill = this.root.querySelector('[data-outlook-pill]')!;
     this.comboHud = this.root.querySelector('[data-combo-hud]')!;
     this.comboMult = this.root.querySelector('[data-combo-mult]')!;
@@ -200,6 +223,15 @@ export class HudOverlay {
       e.preventDefault();
       e.stopPropagation();
       this.handlers.onOpenBestiary();
+    });
+
+    this.portal.addEventListener('pointerdown', (e) => e.stopPropagation());
+    this.portal.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!this.portal.classList.contains('is-dormant')) {
+        this.handlers.onOpenPortal();
+      }
     });
 
     this.achBanner.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -353,8 +385,12 @@ export class HudOverlay {
     return this.view === 'bestiary';
   }
 
+  isPortalOpen(): boolean {
+    return this.view === 'portal';
+  }
+
   setBookcaseVisible(visible: boolean): void {
-    this.bookcase.hidden = !visible || this.view === 'bestiary';
+    this.bookcase.hidden = !visible || this.view === 'bestiary' || this.view === 'portal';
     if (!this.bookcase.hidden) {
       const count = unlockedCreatureCount(this.ctx);
       const total = this.ctx.spawn.creatures.length;
@@ -363,9 +399,20 @@ export class HudOverlay {
     }
   }
 
+  setPortalVisible(visible: boolean, unlocked: boolean, region: RegionId): void {
+    this.portal.hidden = !visible || this.view === 'bestiary' || this.view === 'portal';
+    if (!this.portal.hidden) {
+      this.portal.classList.toggle('is-dormant', !unlocked);
+      this.portal.disabled = !unlocked;
+      this.portalPlaque.hidden = !unlocked;
+      this.portalRealm.textContent = REGION_SHORT_TITLES[region];
+    }
+  }
+
   showBestiary(): void {
     this.view = 'bestiary';
     this.bookcase.hidden = true;
+    this.portal.hidden = true;
     const count = unlockedCreatureCount(this.ctx);
     if (count > this.ctx.state.bestiarySeenCount) {
       this.ctx.state.bestiarySeenCount = count;
@@ -380,6 +427,18 @@ export class HudOverlay {
         this.showCreatureInspectSplash(creature);
       },
       () => this.handlers.onCloseBestiary(),
+    );
+  }
+
+  showPortal(): void {
+    this.view = 'portal';
+    this.bookcase.hidden = true;
+    this.portal.hidden = true;
+    this.stage.innerHTML = portalHtml(this.ctx);
+    bindPortal(
+      this.stage,
+      (region) => this.handlers.onSelectPortalRegion(region),
+      () => this.handlers.onClosePortal(),
     );
   }
 
@@ -608,7 +667,8 @@ export class HudOverlay {
       this.view === 'shop' ||
       this.view === 'achievements' ||
       this.view === 'credits' ||
-      this.view === 'bestiary'
+      this.view === 'bestiary' ||
+      this.view === 'portal'
     ) {
       return;
     }

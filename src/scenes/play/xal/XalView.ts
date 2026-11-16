@@ -1,12 +1,10 @@
 import Phaser from 'phaser';
-import type { RegionId } from '../../../types';
 import { NAV_H } from '../ui/constants';
-import { createImageButton } from '../ui/ImageButton';
-import { whiteText } from '../ui/textStyles';
 import { QuoteBox } from './QuoteBox';
 
 const IDLE_SHEET = 'xal-idle-sheet';
 const BOOK_SHEET = 'xal-book-sheet';
+const PORTAL_TEX = 'xal-portal-shimmer';
 const IDLE_ANIM = 'xal-idle';
 const BOOK_TURN = 'xal-book-turn';
 const SCENE_W = 1344;
@@ -21,8 +19,76 @@ const BOOK_Y = 1880;
 const BOOK_W = 750;
 const BOOK_H = 500;
 const BOOK_SX = 0.66;
+const PORTAL_X = 945;
+const PORTAL_Y = 1372;
+const PORTAL_W = 343;
+const PORTAL_H = 621;
+const GRID_W = 69;
+const GRID_H = 125;
 // Same 12-beat loop as the eyes: scan, then turn the page.
 const BOOK_IDLE_FRAMES = [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
+
+interface PortalShimmerBuffer {
+  origGrid: Uint8ClampedArray;
+  vortexCanvas: HTMLCanvasElement;
+  vortexCtx: CanvasRenderingContext2D;
+  vortexImgData: ImageData;
+  maskCanvas: HTMLCanvasElement;
+}
+
+let shimmerBuf: PortalShimmerBuffer | null = null;
+
+function ensurePortalBuffer(scene: Phaser.Scene): PortalShimmerBuffer | null {
+  if (shimmerBuf) return shimmerBuf;
+  if (!scene.textures.exists('xal-generic')) return null;
+  const src = scene.textures.get('xal-generic').getSourceImage() as HTMLImageElement | HTMLCanvasElement;
+  if (!src || !src.width) return null;
+
+  const patchCanvas = document.createElement('canvas');
+  patchCanvas.width = PORTAL_W;
+  patchCanvas.height = PORTAL_H;
+  const patchCtx = patchCanvas.getContext('2d')!;
+  patchCtx.imageSmoothingEnabled = false;
+  patchCtx.drawImage(src, PORTAL_X, PORTAL_Y, PORTAL_W, PORTAL_H, 0, 0, PORTAL_W, PORTAL_H);
+  const patchData = patchCtx.getImageData(0, 0, PORTAL_W, PORTAL_H);
+  const px = patchData.data;
+
+  const maskCanvas = document.createElement('canvas');
+  maskCanvas.width = PORTAL_W;
+  maskCanvas.height = PORTAL_H;
+  const maskCtx = maskCanvas.getContext('2d')!;
+  const maskImgData = maskCtx.createImageData(PORTAL_W, PORTAL_H);
+  const mx = maskImgData.data;
+
+  for (let i = 0; i < px.length; i += 4) {
+    const r = px[i];
+    const b = px[i + 2];
+    if (b > r + 30 && b > 56) {
+      mx[i] = 255;
+      mx[i + 1] = 255;
+      mx[i + 2] = 255;
+      mx[i + 3] = 255;
+    }
+  }
+  maskCtx.putImageData(maskImgData, 0, 0);
+
+  const gridCanvas = document.createElement('canvas');
+  gridCanvas.width = GRID_W;
+  gridCanvas.height = GRID_H;
+  const gridCtx = gridCanvas.getContext('2d')!;
+  gridCtx.imageSmoothingEnabled = false;
+  gridCtx.drawImage(patchCanvas, 0, 0, GRID_W, GRID_H);
+  const origGrid = gridCtx.getImageData(0, 0, GRID_W, GRID_H).data;
+
+  const vortexCanvas = document.createElement('canvas');
+  vortexCanvas.width = GRID_W;
+  vortexCanvas.height = GRID_H;
+  const vortexCtx = vortexCanvas.getContext('2d')!;
+  const vortexImgData = vortexCtx.createImageData(GRID_W, GRID_H);
+
+  shimmerBuf = { origGrid, vortexCanvas, vortexCtx, vortexImgData, maskCanvas };
+  return shimmerBuf;
+}
 
 function ensureXalAnims(scene: Phaser.Scene): void {
   const idleTex = scene.textures.get(IDLE_SHEET);
@@ -54,11 +120,12 @@ function ensureXalAnims(scene: Phaser.Scene): void {
 export class XalView {
   private tapZone!: Phaser.GameObjects.Rectangle;
   private portrait!: Phaser.GameObjects.Image;
+  private portal!: Phaser.GameObjects.Image;
+  private portalTex: Phaser.Textures.CanvasTexture | null = null;
+  private lastPortalStep = -1;
   private idle!: Phaser.GameObjects.Sprite;
   private book!: Phaser.GameObjects.Sprite;
   private quoteBox: QuoteBox;
-  private portalBar!: Phaser.GameObjects.Container;
-  private onPortalTravel?: (region: RegionId) => void;
   private quoteOpen = false;
 
   constructor(
@@ -82,6 +149,14 @@ export class XalView {
       .setDepth(2)
       .setVisible(false);
     ensureXalAnims(this.scene);
+    this.portalTex = this.scene.textures.exists(PORTAL_TEX)
+      ? (this.scene.textures.get(PORTAL_TEX) as Phaser.Textures.CanvasTexture)
+      : this.scene.textures.createCanvas(PORTAL_TEX, PORTAL_W, PORTAL_H);
+    this.portal = this.scene.add
+      .image(width / 2, height / 2, PORTAL_TEX)
+      .setDepth(3)
+      .setOrigin(0)
+      .setVisible(false);
     this.book = this.scene.add
       .sprite(width / 2, height / 2, BOOK_SHEET, 'book-0')
       // Flip rises into the idle torso; book has to paint over that overlay.
@@ -94,12 +169,8 @@ export class XalView {
       .setOrigin(0)
       .setVisible(false);
     this.fitPortrait();
-    this.portalBar = this.scene.add.container(width / 2, height - NAV_H - 36).setDepth(23).setVisible(false);
+    this.tickPortal(0, false);
     this.quoteBox.build();
-  }
-
-  setPortalTravelHandler(handler: (region: RegionId) => void): void {
-    this.onPortalTravel = handler;
   }
 
   setVisible(visible: boolean): void {
@@ -107,10 +178,10 @@ export class XalView {
     if (visible) this.tapZone.setInteractive({ useHandCursor: true });
     else this.tapZone.disableInteractive();
     this.portrait.setVisible(visible);
+    this.portal.setVisible(visible);
     if (!visible) {
       this.stopIdle();
       this.book.setVisible(false);
-      this.portalBar.setVisible(false);
     } else if (!this.quoteOpen) {
       this.playIdle();
     }
@@ -128,6 +199,7 @@ export class XalView {
     this.portrait.setPosition(width / 2, height / 2);
     const left = width / 2 - (SCENE_W * scale) / 2;
     const top = height / 2 - (SCENE_H * scale) / 2;
+    this.portal.setScale(scale).setPosition(left + PORTAL_X * scale, top + PORTAL_Y * scale);
     this.idle.setScale(scale).setPosition(left + IDLE_X * scale, top + IDLE_Y * scale);
     this.book
       .setScale(scale * BOOK_SX, scale)
@@ -135,6 +207,75 @@ export class XalView {
     const playH = height - NAV_H;
     this.tapZone.setPosition(width / 2, playH / 2);
     this.tapZone.setSize(width, playH);
+  }
+
+  /** Original-art liquid ripple + inward spiral highlight pulse inside the exact portal mask. */
+  tickPortal(timeMs: number, unlocked: boolean): void {
+    if (!this.portal.visible && timeMs > 0) return;
+    const step = Math.floor(timeMs / 60);
+    if (step === this.lastPortalStep && timeMs > 0) return;
+    this.lastPortalStep = step;
+
+    const buf = ensurePortalBuffer(this.scene);
+    if (!buf || !this.portalTex) return;
+
+    const timeSec = timeMs / 1000;
+    const speedMult = unlocked ? 1.2 : 0.65;
+    const breath = Math.sin(timeSec * (unlocked ? 2.6 : 1.6));
+    const waveAmt = unlocked ? 1.35 : 0.85;
+    const { origGrid, vortexCanvas, vortexCtx, vortexImgData, maskCanvas } = buf;
+    const data = vortexImgData.data;
+
+    const cx = 33.4;
+    const cy = 60.6;
+    const rx = 34.2;
+    const ry = 62.0;
+
+    let ptr = 0;
+    for (let gy = 0; gy < GRID_H; gy++) {
+      const dy = gy - cy;
+      const dyEll = (gy - 62.0) / ry;
+      for (let gx = 0; gx < GRID_W; gx++) {
+        const dx = gx - cx;
+        const dxEll = (gx - 34.2) / rx;
+        const rEll = Math.hypot(dxEll, dyEll);
+        const theta = Math.atan2(dy / (rx * 1.15), dx / rx);
+
+        const damp = Math.max(0, 1 - rEll * 0.5);
+        const ox = Math.round(gx + Math.sin(gy * 0.22 - timeSec * 2.4 * speedMult) * waveAmt * damp);
+        const oy = Math.round(gy + Math.cos(gx * 0.22 - timeSec * 2.0 * speedMult) * waveAmt * damp);
+        const sx = Math.max(0, Math.min(GRID_W - 1, ox));
+        const sy = Math.max(0, Math.min(GRID_H - 1, oy));
+        const sPtr = (sy * GRID_W + sx) * 4;
+
+        const r = origGrid[sPtr];
+        const g = origGrid[sPtr + 1];
+        const b = origGrid[sPtr + 2];
+
+        const spiralWave = Math.sin(theta - rEll * 14.0 - timeSec * 2.8 * speedMult);
+        const centerPulse = (1.0 - Math.min(1.0, rEll)) * (0.12 + 0.12 * breath);
+        const boost =
+          (Math.max(0, spiralWave) * (unlocked ? 0.24 : 0.14) + centerPulse) *
+          Math.max(0, 1.0 - rEll * 0.45);
+
+        data[ptr] = Math.min(255, Math.round(r * (1 - boost * 0.3)));
+        data[ptr + 1] = Math.min(255, Math.round(g + boost * 85));
+        data[ptr + 2] = Math.min(255, Math.round(b + boost * 55));
+        data[ptr + 3] = 255;
+        ptr += 4;
+      }
+    }
+
+    vortexCtx.putImageData(vortexImgData, 0, 0);
+
+    const ctx = this.portalTex.getContext();
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0, 0, PORTAL_W, PORTAL_H);
+    ctx.drawImage(vortexCanvas, 0, 0, PORTAL_W, PORTAL_H);
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(maskCanvas, 0, 0, PORTAL_W, PORTAL_H);
+    this.portalTex.refresh();
   }
 
   setPortraitExpression(expr: string): void {
@@ -182,42 +323,4 @@ export class XalView {
   quoteVisible(): boolean {
     return this.quoteOpen;
   }
-
-  /** Portal region travel after story unlock (rehomed from Settings). */
-  refreshPortalBar(unlocked: boolean, visible: boolean, current: RegionId): void {
-    this.portalBar.removeAll(true);
-    if (!unlocked || !visible) {
-      this.portalBar.setVisible(false);
-      return;
-    }
-    const regions: RegionId[] = ['meadow', 'river', 'altar'];
-    const label = this.scene.add
-      .text(0, -22, 'Portal', whiteText('14px', { color: '#c8b89a' }))
-      .setOrigin(0.5);
-    this.portalBar.add(label);
-    regions.forEach((r, i) => {
-      const x = (i - 1) * 108;
-      const active = r === current;
-      this.portalBar.add(
-        createImageButton(
-          this.scene,
-          x,
-          6,
-          active ? 'ui-btn-green' : 'ui-btn-blue',
-          r,
-          96,
-          28,
-          active
-            ? undefined
-            : () => {
-                this.onPortalTravel?.(r);
-              },
-          active ? 0.7 : 1,
-          '12px',
-        ),
-      );
-    });
-    this.portalBar.setVisible(true);
-  }
-
 }

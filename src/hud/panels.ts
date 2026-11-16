@@ -431,6 +431,66 @@ const REGION_TITLES: Record<RegionId, string> = {
   altar: 'Sci Nai Mountains',
 };
 
+export const REGION_SHORT_TITLES: Record<RegionId, string> = {
+  meadow: 'Meadows',
+  river: 'River',
+  altar: 'Mountains',
+};
+
+export function portalHtml(ctx: GameContext): string {
+  const regions: RegionId[] = ['meadow', 'river', 'altar'];
+  const rows = regions
+    .map((region) => {
+      const list = ctx.spawn.creatures.filter((c) => c.region === region);
+      const regionUnlocked = list.filter((c) => {
+        const h = ctx.state.helpers.find((x) => x.id === c.helperId);
+        return (h?.amountOwned ?? 0) > 0;
+      }).length;
+      const isCurrent = region === ctx.state.region;
+      const cls = `scroll-card portal-row ${isCurrent ? 'is-current' : 'is-travelable scroll-card-active'}`;
+      const pill = isCurrent
+        ? '<span class="portal-pill current">Current</span>'
+        : '<span class="portal-pill teleport">Teleport</span>';
+      return `<button type="button" class="${cls}" data-portal-region="${region}" ${isCurrent ? 'disabled' : ''}>
+        <div class="portal-thumb-box"><img src="./assets/backgrounds/${region}.png" alt="" /></div>
+        <div>
+          <div class="portal-realm-name">${REGION_TITLES[region]}</div>
+          <div class="portal-realm-sub">${regionUnlocked} / ${list.length} Creatures Recorded</div>
+        </div>
+        ${pill}
+      </button>`;
+    })
+    .join('');
+
+  return `<section class="scroll-modal">
+    <p class="scroll-kicker">Sanctum Nexus • Instant Traverse</p>
+    <h2 class="scroll-title">Portal</h2>
+    <p class="bestiary-instruction">Select a realm to teleport there instantly.</p>
+    <p class="bestiary-flavor">Step through Xal's rift to tend any realm across the path.</p>
+    <div class="scroll-body">
+      <p class="scroll-section">Realms of the Path (${regions.length}/${regions.length})</p>
+      ${rows}
+    </div>
+    <div class="splash-actions" style="margin-top:10px">
+      <button type="button" class="scroll-card back-btn" data-portal-close style="width:100%">Back</button>
+    </div>
+  </section>`;
+}
+
+export function bindPortal(
+  root: HTMLElement,
+  onSelect: (region: RegionId) => void,
+  onClose: () => void,
+): void {
+  root.querySelectorAll<HTMLElement>('[data-portal-region]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const region = btn.dataset.portalRegion as RegionId;
+      if (region) onSelect(region);
+    });
+  });
+  root.querySelector('[data-portal-close]')?.addEventListener('click', onClose);
+}
+
 export function unlockedCreatureCount(ctx: GameContext): number {
   return ctx.spawn.creatures.filter((c) => {
     const h = ctx.state.helpers.find((x) => x.id === c.helperId);

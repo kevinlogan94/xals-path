@@ -110,7 +110,6 @@ export class PlayScene extends Phaser.Scene {
       this.onPortraitTap(pointer);
     });
     this.xal.build();
-    this.xal.setPortalTravelHandler((region) => this.onPortalTravel(region));
 
     this.pegasus = new PegasusFlyby(
       this,
@@ -134,6 +133,9 @@ export class PlayScene extends Phaser.Scene {
       },
       onOpenBestiary: () => this.openBestiary(),
       onCloseBestiary: () => this.closeBestiary(),
+      onOpenPortal: () => this.openPortal(),
+      onClosePortal: () => this.closePortal(),
+      onSelectPortalRegion: (region) => this.onPortalTravel(region),
       onLevelTap: () => this.openLevelUpSplash(),
       onNewGame: () => this.onNewGame(),
       onJump: (state) => {
@@ -311,6 +313,7 @@ export class PlayScene extends Phaser.Scene {
         !this.hud.isAchBannerOpen() &&
         this.ctx.tutorial.isTabAllowed(this.ctx.state, 'outlook'),
     );
+    this.xal.tickPortal(this.time.now, this.ctx.state.portalUnlocked);
     this.refreshHud();
     this.refreshTutorialPointers();
   }
@@ -588,11 +591,6 @@ export class PlayScene extends Phaser.Scene {
       next ? !this.ctx.story.canStart(this.ctx.state, next.id) : false,
       visible,
     );
-    this.xal.refreshPortalBar(
-      this.ctx.state.portalUnlocked,
-      this.tab === 'scene' && !this.ctx.story.reading && !visible && !this.hud.isBestiaryOpen(),
-      this.ctx.state.region,
-    );
   }
 
   private openBestiary(): void {
@@ -603,7 +601,6 @@ export class PlayScene extends Phaser.Scene {
     }
     this.clearBanterTimer();
     this.xal.hideQuote();
-    this.xal.refreshPortalBar(false, false, this.ctx.state.region);
     this.ctx.audio.playSfx('ui-tap', 0.22);
     this.hud.showBestiary();
     this.refreshTutorialPointers();
@@ -624,6 +621,30 @@ export class PlayScene extends Phaser.Scene {
     this.refreshTutorialPointers();
   }
 
+  private openPortal(): void {
+    if (this.barlog.active() || this.ctx.story.reading) return;
+    if (!this.ctx.state.portalUnlocked) return;
+    if (this.tab !== 'scene') {
+      this.setTab('scene', true);
+    }
+    this.clearBanterTimer();
+    this.xal.hideQuote();
+    this.ctx.audio.playSfx('ui-tap', 0.22);
+    this.hud.showPortal();
+    this.refreshTutorialPointers();
+  }
+
+  private closePortal(): void {
+    if (!this.hud.isPortalOpen()) return;
+    this.ctx.audio.playSfx('ui-tap', 0.22);
+    this.hud.clearStage();
+    if (this.tab === 'scene' && !this.ctx.story.reading) {
+      this.refreshChapterCard();
+    }
+    this.refreshHud();
+    this.refreshTutorialPointers();
+  }
+
   private onStoryBack(): void {
     if (!this.ctx.story.retreat()) return;
     this.ctx.audio.playSfx('ui-tap', 0.22);
@@ -637,7 +658,6 @@ export class PlayScene extends Phaser.Scene {
     this.clearBanterTimer();
     this.xal.showQuote(line.text);
     this.hud.setChapter(undefined, false, false);
-    this.xal.refreshPortalBar(false, false, this.ctx.state.region);
     if (line.speaker !== 'barlog') {
       this.xal.setPortraitExpression(line.expression);
     }
@@ -670,6 +690,10 @@ export class PlayScene extends Phaser.Scene {
     if (!force && this.tab === tab) {
       if (tab === 'scene' && this.hud.isBestiaryOpen()) {
         this.closeBestiary();
+        return;
+      }
+      if (tab === 'scene' && this.hud.isPortalOpen()) {
+        this.closePortal();
         return;
       }
       if (!this.ctx.state.tutorialCompleted) {
@@ -712,7 +736,6 @@ export class PlayScene extends Phaser.Scene {
 
     if (tab === 'outlook') {
       this.hud.setChapter(undefined, false, false);
-      this.xal.refreshPortalBar(false, false, this.ctx.state.region);
       this.maybeStartBarlog();
       if (!this.barlog.active()) {
         this.ctx.audio.playRegion(this.ctx.state.region);
@@ -740,7 +763,6 @@ export class PlayScene extends Phaser.Scene {
     }
 
     this.hud.setChapter(undefined, false, false);
-    this.xal.refreshPortalBar(false, false, this.ctx.state.region);
     this.ctx.spawn.clear();
     if (tab === 'shop') this.hud.showTomes();
     if (tab === 'achievements') this.hud.showRewards();
@@ -841,7 +863,12 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private refreshTutorialPointers(): void {
-    if (this.barlog.active() || this.hud.isSplashOpen() || this.hud.isBestiaryOpen()) {
+    if (
+      this.barlog.active() ||
+      this.hud.isSplashOpen() ||
+      this.hud.isBestiaryOpen() ||
+      this.hud.isPortalOpen()
+    ) {
       this.hud.setFinger(false, 0, 0, false);
       return;
     }
@@ -1019,6 +1046,11 @@ export class PlayScene extends Phaser.Scene {
       this.tab === 'scene' &&
         !this.ctx.story.reading &&
         this.ctx.tutorial.isBestiaryRevealed(this.ctx.state),
+    );
+    this.hud.setPortalVisible(
+      this.tab === 'scene' && !this.ctx.story.reading,
+      this.ctx.state.portalUnlocked,
+      this.ctx.state.region,
     );
     const vesselActive = this.ctx.spawn.hasVessel();
     const blightedActive = this.ctx.spawn.hasBlighted();

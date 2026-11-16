@@ -402,9 +402,6 @@ function queueGameAssets(load: Phaser.Loader.LoaderPlugin): void {
   load.image('ui-square-cloud', 'assets/ui/clouds/squareCloud.png');
   load.image('ui-quote-box', 'assets/ui/QuoteBox.png');
   load.image('ui-mana-icon', 'assets/ui/manaIcon.png');
-  load.image('ui-btn-green', 'assets/ui/buttons/greenButton.png');
-  load.image('ui-btn-blue', 'assets/ui/buttons/blueButton.png');
-  load.image('ui-btn-orange', 'assets/ui/buttons/OrangeButton.png');
   load.image('ui-influence', 'assets/ui/influence.png');
   load.image('ui-pointer', 'assets/ui/pointer.png');
   load.image('ui-reward-star', 'assets/ui/reward-star.png');
