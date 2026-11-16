@@ -1049,7 +1049,7 @@
   top: calc(50% + 0.005 * max(100cqh, 100cqw * 16 / 7));
   width: 24.5%;
   height: calc(0.195 * max(100cqh, 100cqw * 16 / 7));
-  z-index: 25;
+  z-index: 1;
   padding: 0;
   border: 0;
   background: transparent;
@@ -1362,7 +1362,7 @@
   top: calc(50% - 0.0713 * var(--scene-h));
   width: calc(0.3043 * var(--scene-w));
   height: calc(0.2708 * var(--scene-h));
-  z-index: 25;
+  z-index: 1;
   padding: 0;
   border: 0;
   background: transparent;
@@ -1446,7 +1446,7 @@
 
 .portal-plaque {
   position: absolute;
-  right: 8px;
+  right: calc(max(0px, 50cqw + 0.4881 * var(--scene-w) - 100cqw) + 8px);
   top: -36px;
   width: max-content;
   box-sizing: border-box;

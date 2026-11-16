@@ -115,6 +115,44 @@ function ensurePortalBuffer(scene: Phaser.Scene): PortalShimmerBuffer | null {
       mx[i + 3] = 255;
     }
   }
+  // Fill any dark interior pinholes unreachable from the patch borders.
+  const total = PORTAL_W * PORTAL_H;
+  const outside = new Uint8Array(total);
+  const queue = new Int32Array(total);
+  let head = 0;
+  let tail = 0;
+  const seed = (idx: number) => {
+    if (!mx[idx * 4 + 3] && !outside[idx]) {
+      outside[idx] = 1;
+      queue[tail++] = idx;
+    }
+  };
+  for (let x = 0; x < PORTAL_W; x++) {
+    seed(x);
+    seed((PORTAL_H - 1) * PORTAL_W + x);
+  }
+  for (let y = 0; y < PORTAL_H; y++) {
+    seed(y * PORTAL_W);
+    seed(y * PORTAL_W + PORTAL_W - 1);
+  }
+  while (head < tail) {
+    const cur = queue[head++];
+    const x = cur % PORTAL_W;
+    const y = Math.floor(cur / PORTAL_W);
+    if (x > 0) seed(cur - 1);
+    if (x + 1 < PORTAL_W) seed(cur + 1);
+    if (y > 0) seed(cur - PORTAL_W);
+    if (y + 1 < PORTAL_H) seed(cur + PORTAL_W);
+  }
+  for (let idx = 0; idx < total; idx++) {
+    if (!outside[idx]) {
+      const p = idx * 4;
+      mx[p] = 255;
+      mx[p + 1] = 255;
+      mx[p + 2] = 255;
+      mx[p + 3] = 255;
+    }
+  }
   maskCtx.putImageData(maskImgData, 0, 0);
 
   const gridCanvas = document.createElement('canvas');

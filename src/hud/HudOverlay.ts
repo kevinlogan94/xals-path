@@ -38,7 +38,6 @@ import {
   influenceSplash,
   levelUpSplash,
   newGameSplash,
-  portalSplash,
   whatsNewSplash,
   type SplashBind,
 } from './splashes';
@@ -342,11 +341,6 @@ export class HudOverlay {
 
   showNewGameSplash(onConfirm: () => void): void {
     this.openSplash(newGameSplash(), bindSimple(onConfirm));
-  }
-
-  showPortalSplash(): void {
-    this.ctx.audio.playSfx('portal', 0.4);
-    this.openSplash(portalSplash(), bindSimple());
   }
 
   showLevelUpSplash(reward: number, onContinue: () => void): void {

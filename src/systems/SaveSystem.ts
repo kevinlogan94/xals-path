@@ -379,6 +379,17 @@ export class SaveSystem {
 
   private mergeDefaults(save: Partial<GameSave>): GameSave {
     const fresh = createDefaultSave();
+    const chapters = fresh.chapters.map((c) => {
+      const existing = save.chapters?.find((x) => x.id === c.id);
+      return existing ?? c;
+    });
+    const ch3Done = chapters.find((c) => c.id === 3)?.sceneViewed ?? false;
+    const ch4Done = chapters.find((c) => c.id === 4)?.sceneViewed ?? false;
+    const unlockedSet = new Set<RegionId>(
+      (save.unlockedRegions?.length ? save.unlockedRegions : ['meadow']) as RegionId[],
+    );
+    if (ch3Done) unlockedSet.add('river');
+    if (ch4Done) unlockedSet.add('altar');
     return {
       ...fresh,
       version: 1,
@@ -405,7 +416,7 @@ export class SaveSystem {
       buffOfferPending: save.buffOfferPending ?? fresh.buffOfferPending,
       buffEverCollected: save.buffEverCollected ?? fresh.buffEverCollected,
       buffRemaining: finite(save.buffRemaining, fresh.buffRemaining),
-      portalUnlocked: save.portalUnlocked ?? fresh.portalUnlocked,
+      portalUnlocked: Boolean(save.portalUnlocked || ch3Done || unlockedSet.size > 1),
       helpers: fresh.helpers.map((h) => {
         const existing = save.helpers?.find((x) => x.id === h.id);
         if (!existing) return h;
@@ -419,10 +430,7 @@ export class SaveSystem {
           ),
         };
       }),
-      chapters: fresh.chapters.map((c) => {
-        const existing = save.chapters?.find((x) => x.id === c.id);
-        return existing ?? c;
-      }),
+      chapters,
       achievements: {
         ...fresh.achievements,
         clickerGoal: Math.max(
@@ -473,9 +481,7 @@ export class SaveSystem {
             ? save.achievements.lastLoginDay
             : fresh.achievements.lastLoginDay,
       },
-      unlockedRegions: (save.unlockedRegions?.length
-        ? save.unlockedRegions
-        : ['meadow']) as RegionId[],
+      unlockedRegions: Array.from(unlockedSet),
       pendingOffline: finite(save.pendingOffline, fresh.pendingOffline),
       tutorialCompleted: inferTutorialCompleted(save, fresh),
       feedbackShown: save.feedbackShown ?? fresh.feedbackShown,

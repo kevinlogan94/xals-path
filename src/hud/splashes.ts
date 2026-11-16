@@ -106,14 +106,6 @@ export function newGameSplash(): string {
   );
 }
 
-export function portalSplash(): string {
-  return shell(
-    'The Path Closes',
-    'Portal',
-    `<p class="splash-copy">The path closes… The portal opens.</p>${back()}`,
-  );
-}
-
 export function levelUpSplash(reward: number): string {
   return shell(
     'Level Up Rewards',

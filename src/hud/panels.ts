@@ -437,6 +437,12 @@ export const REGION_SHORT_TITLES: Record<RegionId, string> = {
   altar: 'Mountains',
 };
 
+const REGION_UNLOCK_HINT: Record<RegionId, string> = {
+  meadow: 'Starting Realm',
+  river: 'Unlocks in Chapter 3',
+  altar: 'Unlocks in Chapter 4',
+};
+
 export function portalHtml(ctx: GameContext): string {
   const regions: RegionId[] = ['meadow', 'river', 'altar'];
   const unlockedCount = regions.filter((r) => ctx.state.unlockedRegions.includes(r)).length;
@@ -461,7 +467,7 @@ export function portalHtml(ctx: GameContext): string {
         : `<span class="tome-art is-lock" style="width:38px;height:38px;background-image:url('./assets/ui/lock-sheet.png')"></span>`;
       const title = isRegionUnlocked ? REGION_TITLES[region] : '???';
       const sub = !isRegionUnlocked
-        ? 'Unlocks in Chapter 4'
+        ? REGION_UNLOCK_HINT[region]
         : `${regionUnlocked} / ${list.length} Creatures Recorded`;
       const pill = !isRegionUnlocked
         ? '<span class="portal-pill locked">Locked</span>'

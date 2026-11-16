@@ -447,7 +447,7 @@ export class PlayScene extends Phaser.Scene {
 
   private onPortraitTap(pointer?: Phaser.Input.Pointer): void {
     if (pointer && this.hud.hitsHud(pointer)) return;
-    if (this.tab !== 'scene') return;
+    if (this.tab !== 'scene' || this.hud.isBestiaryOpen() || this.hud.isPortalOpen()) return;
 
     if (this.ctx.story.reading) {
       const finishingCh1 = this.ctx.story.activeChapter?.id === 1;
@@ -481,8 +481,6 @@ export class PlayScene extends Phaser.Scene {
             before: `${(lvl - 1) * 100}`,
             after: `${lvl * 100}`,
           });
-        } else if (result.portalJustUnlocked) {
-          this.hud.showPortalSplash();
         } else {
           this.ctx.audio.playSfx('page-turn', 0.28);
         }
@@ -978,6 +976,7 @@ export class PlayScene extends Phaser.Scene {
     if (!this.ctx.state.unlockedRegions.includes(region) || this.ctx.state.region === region) return;
     this.ctx.state.region = region;
     this.ctx.economy.drainMana(this.ctx.state);
+    this.ctx.persist();
     this.ctx.spawn.clear();
     this.outlook.applyRegionVisual();
     this.ctx.audio.playSfx('portal', 0.4);
@@ -1047,13 +1046,15 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.story.reading,
       this.chapterReady(),
     );
-    this.hud.setBookcaseVisible(
+    const showSceneHotspots =
       this.tab === 'scene' &&
-        !this.ctx.story.reading &&
-        this.ctx.tutorial.isBestiaryRevealed(this.ctx.state),
+      !this.ctx.story.reading &&
+      !this.xal.quoteVisible();
+    this.hud.setBookcaseVisible(
+      showSceneHotspots && this.ctx.tutorial.isBestiaryRevealed(this.ctx.state),
     );
     this.hud.setPortalVisible(
-      this.tab === 'scene' && !this.ctx.story.reading,
+      showSceneHotspots && this.ctx.state.tutorialCompleted,
       this.ctx.state.portalUnlocked,
       this.ctx.state.region,
     );
