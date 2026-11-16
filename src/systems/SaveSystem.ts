@@ -257,18 +257,17 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
       },
     },
     {
-      label: 'Unlock creatures',
+      label: 'End of game',
       save: () => {
         const helpers = helpersData.helpers as HelperDef[];
         const lastUnlock = Math.max(...helpers.map((h) => h.unlockLevel));
-        const influence = helpers.reduce((sum, h) => sum + h.cost, 0);
         const save = devSave(
           {
             playerLevel: lastUnlock,
-            region: 'meadow',
+            region: 'altar',
             unlockedRegions: ['meadow', 'river', 'altar'],
             portalUnlocked: true,
-            influence,
+            influence: 100000,
             buffEverCollected: true,
             newsShown: [
               'Outlook',
@@ -284,9 +283,21 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
             ],
           },
           [1, 2, 3, 4, 5, 6, 7],
-          {},
+          {
+            nature: 15,
+            lightning: 12,
+            earth: 10,
+            water: 10,
+            mystic: 8,
+            air: 7,
+            fire: 6,
+            death: 5,
+            rebirth: 3,
+            void: 1,
+          },
         );
         setMana(save, 4);
+        claimClicker(save, 3, 200);
         return save;
       },
     },
