@@ -431,41 +431,115 @@ const REGION_TITLES: Record<RegionId, string> = {
   altar: 'Sci Nai Mountains',
 };
 
-export function unlockedCreatureCount(ctx: GameContext): number {
-  return ctx.spawn.creatures.filter((c) => {
+export const REGION_SHORT_TITLES: Record<RegionId, string> = {
+  meadow: 'Meadows',
+  river: 'River',
+  altar: 'Mountains',
+};
+
+const REGION_UNLOCK_HINT: Record<RegionId, string> = {
+  meadow: 'Starting Realm',
+  river: 'Unlocks in Chapter 3',
+  altar: 'Unlocks in Chapter 4',
+};
+
+const REGIONS: RegionId[] = ['meadow', 'river', 'altar'];
+
+const LOCK_THUMB =
+  '<span class="tome-art is-lock" style="width:38px;height:38px;background-image:url(\'./assets/ui/lock-sheet.png\')"></span>';
+
+function regionCreatures(ctx: GameContext, region: RegionId) {
+  const list = ctx.spawn.creatures.filter((c) => c.region === region);
+  const recorded = list.filter((c) => {
     const h = ctx.state.helpers.find((x) => x.id === c.helperId);
     return (h?.amountOwned ?? 0) > 0;
   }).length;
+  return { list, recorded };
+}
+
+export function portalHtml(ctx: GameContext): string {
+  const unlockedCount = REGIONS.filter((r) => ctx.state.unlockedRegions.includes(r)).length;
+  const rows = REGIONS.map((region) => {
+    const { list, recorded } = regionCreatures(ctx, region);
+    const unlocked = ctx.state.unlockedRegions.includes(region);
+    const isCurrent = unlocked && region === ctx.state.region;
+    const cls = `scroll-card portal-row ${
+      !unlocked ? 'is-locked' : isCurrent ? 'is-current' : 'is-travelable scroll-card-active'
+    }`;
+    const thumb = unlocked ? `<img src="./assets/backgrounds/${region}.png" alt="" />` : LOCK_THUMB;
+    const sub = !unlocked
+      ? REGION_UNLOCK_HINT[region]
+      : `${recorded} / ${list.length} Creatures Recorded`;
+    const pill = !unlocked
+      ? '<span class="portal-pill locked">Locked</span>'
+      : isCurrent
+        ? '<span class="portal-pill current">Current</span>'
+        : '<span class="portal-pill teleport">Teleport</span>';
+    return `<button type="button" class="${cls}" data-portal-region="${region}" ${!unlocked || isCurrent ? 'disabled' : ''}>
+      <div class="portal-thumb-box">${thumb}</div>
+      <div>
+        <div class="portal-realm-name">${unlocked ? REGION_TITLES[region] : '???'}</div>
+        <div class="portal-realm-sub">${sub}</div>
+      </div>
+      ${pill}
+    </button>`;
+  }).join('');
+
+  return `<section class="scroll-modal">
+    <p class="scroll-kicker">Sanctum Nexus • Instant Traverse</p>
+    <h2 class="scroll-title">Portal</h2>
+    <p class="bestiary-instruction">Select a realm to teleport there instantly.</p>
+    <p class="bestiary-flavor">Step through Xal's rift to tend any realm across the path.</p>
+    <div class="scroll-body">
+      <p class="scroll-section">Realms of the Path (${unlockedCount}/${REGIONS.length})</p>
+      ${rows}
+    </div>
+    <div class="splash-actions" style="margin-top:10px">
+      <button type="button" class="scroll-card back-btn" data-portal-close style="width:100%">Back</button>
+    </div>
+  </section>`;
+}
+
+export function bindPortal(
+  root: HTMLElement,
+  onSelect: (region: RegionId) => void,
+  onClose: () => void,
+): void {
+  root.querySelectorAll<HTMLElement>('[data-portal-region]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const region = btn.dataset.portalRegion as RegionId;
+      if (region) onSelect(region);
+    });
+  });
+  root.querySelector('[data-portal-close]')?.addEventListener('click', onClose);
+}
+
+export function unlockedCreatureCount(ctx: GameContext): number {
+  return REGIONS.reduce((sum, r) => sum + regionCreatures(ctx, r).recorded, 0);
 }
 
 export function bestiaryHtml(ctx: GameContext): string {
-  const regions: RegionId[] = ['meadow', 'river', 'altar'];
   const total = ctx.spawn.creatures.length;
   const recorded = unlockedCreatureCount(ctx);
 
-  const sections = regions
-    .map((region) => {
-      const list = ctx.spawn.creatures.filter((c) => c.region === region);
-      const regionUnlocked = list.filter((c) => {
-        const h = ctx.state.helpers.find((x) => x.id === c.helperId);
-        return (h?.amountOwned ?? 0) > 0;
-      }).length;
-      const rows = list
-        .map((c) => {
-          const def = ctx.economy.def(c.helperId);
-          const save = ctx.state.helpers.find((h) => h.id === c.helperId);
-          const unlockLevel = def?.unlockLevel ?? 1;
-          const helperName = def?.name ?? c.helperId;
-          const isUnlocked = (save?.amountOwned ?? 0) > 0;
-          const isTomeUnlocked = ctx.state.playerLevel >= unlockLevel;
-          const cls = `scroll-card bestiary-row ${
-            isUnlocked ? 'is-unlocked scroll-card-active' : isTomeUnlocked ? 'is-silhouette' : 'is-locked'
-          }`;
-          const run = creatureRun(c.id);
-          const thumb =
-            (isUnlocked || isTomeUnlocked) && run
-              ? `<img data-bestiary-thumb="${c.id}" src="${run.src}" alt="" />`
-              : `<span class="tome-art is-lock" style="width:38px;height:38px;background-image:url('./assets/ui/lock-sheet.png')"></span>`;
+  const sections = REGIONS.map((region) => {
+    const { list, recorded: regionUnlocked } = regionCreatures(ctx, region);
+    const rows = list
+      .map((c) => {
+        const def = ctx.economy.def(c.helperId);
+        const save = ctx.state.helpers.find((h) => h.id === c.helperId);
+        const unlockLevel = def?.unlockLevel ?? 1;
+        const helperName = def?.name ?? c.helperId;
+        const isUnlocked = (save?.amountOwned ?? 0) > 0;
+        const isTomeUnlocked = ctx.state.playerLevel >= unlockLevel;
+        const cls = `scroll-card bestiary-row ${
+          isUnlocked ? 'is-unlocked scroll-card-active' : isTomeUnlocked ? 'is-silhouette' : 'is-locked'
+        }`;
+        const run = creatureRun(c.id);
+        const thumb =
+          (isUnlocked || isTomeUnlocked) && run
+            ? `<img data-bestiary-thumb="${c.id}" src="${run.src}" alt="" />`
+            : LOCK_THUMB;
           const title = isUnlocked ? c.name : '???';
           const sub = isUnlocked
             ? `${helperName} Tome • Tap to read lore`

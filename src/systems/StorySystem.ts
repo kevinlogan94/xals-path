@@ -6,9 +6,13 @@ import { track } from '../utils/track';
 export interface AdvanceResult {
   finished: boolean;
   finishedChapterId?: number;
-  portalJustUnlocked: boolean;
   regionChanged: boolean;
 }
+
+const CHAPTER_TARGET_REGION: Record<number, RegionId> = {
+  3: 'river',
+  4: 'altar',
+};
 
 export class StorySystem {
   readonly chapters: ChapterDef[] = chaptersData.chapters as ChapterDef[];
@@ -60,26 +64,34 @@ export class StorySystem {
     return true;
   }
 
-  /** Advance dialogue. Returns finished + first-unlock portal flag. */
+  /** Advance dialogue. Returns finished + region-changed flags. */
   advance(state: GameSave): AdvanceResult {
     if (!this.activeChapter) {
-      return { finished: false, portalJustUnlocked: false, regionChanged: false };
+      return { finished: false, regionChanged: false };
     }
     const line = this.activeChapter.quotes[this.quoteIndex];
     const firstClear = !state.chapters.find((c) => c.id === this.activeChapter!.id)
       ?.sceneViewed;
 
     let regionChanged = false;
-    if (firstClear && line?.text === 'It is done.') {
-      const before = state.region;
-      this.advanceRegion(state);
-      regionChanged = state.region !== before;
+    const target =
+      firstClear && line?.text === 'It is done.'
+        ? CHAPTER_TARGET_REGION[this.activeChapter.id]
+        : undefined;
+    if (target) {
+      regionChanged =
+        state.region !== target || !state.unlockedRegions.includes(target);
+      state.region = target;
+      state.portalUnlocked = true;
+      if (!state.unlockedRegions.includes(target)) {
+        state.unlockedRegions.push(target);
+      }
     }
 
     this.quoteIndex += 1;
     if (this.quoteIndex >= this.activeChapter.quotes.length) {
       const finishedChapterId = this.activeChapter.id;
-      const portalJustUnlocked = this.finishChapter(state, finishedChapterId);
+      this.finishChapter(state, finishedChapterId);
       this.reading = false;
       this.activeChapter = null;
       this.quoteIndex = 0;
@@ -87,42 +99,26 @@ export class StorySystem {
         track('chapter_complete', { chapter_id: finishedChapterId });
         if (finishedChapterId === 7) track('end_game');
       }
-      return { finished: true, finishedChapterId, portalJustUnlocked, regionChanged };
+      return { finished: true, finishedChapterId, regionChanged };
     }
-    return { finished: false, portalJustUnlocked: false, regionChanged };
+    return { finished: false, regionChanged };
   }
 
-  /** @returns true if portal was newly unlocked on this finish */
-  private finishChapter(state: GameSave, id: number): boolean {
+  private finishChapter(state: GameSave, id: number): void {
     const save = state.chapters.find((c) => c.id === id);
     const firstClear = !save?.sceneViewed;
     if (save) save.sceneViewed = true;
-    if (!firstClear) return false;
+    if (!firstClear) return;
 
     // Mana level bumps once when starting chapters 2–4 (Unity ChapterButton)
     // Applied from PlayScene.onChapterButton — not here on finish.
 
-    const allViewed = state.chapters.every((c) => c.sceneViewed);
-    if (allViewed && !state.portalUnlocked) {
+    if (state.chapters.every((c) => c.sceneViewed)) {
       state.portalUnlocked = true;
       for (const r of economy.regions as RegionId[]) {
         if (!state.unlockedRegions.includes(r)) state.unlockedRegions.push(r);
       }
       state.achievements.storyCount += 1;
-      return true;
-    }
-    return false;
-  }
-
-  private advanceRegion(state: GameSave): void {
-    const order: RegionId[] = ['meadow', 'river', 'altar'];
-    const idx = order.indexOf(state.region);
-    if (idx >= 0 && idx < order.length - 1) {
-      const next = order[idx + 1];
-      state.region = next;
-      if (!state.unlockedRegions.includes(next)) {
-        state.unlockedRegions.push(next);
-      }
     }
   }
 

@@ -475,6 +475,14 @@
           "expression": "generic"
         },
         {
+          "text": "The portal behind me is open to you now.",
+          "expression": "generic"
+        },
+        {
+          "text": "Whenever you wish to return to the Meadows, simply step through it anytime.",
+          "expression": "generic"
+        },
+        {
           "text": "Its creatures need you.",
           "expression": "generic"
         },
@@ -1383,19 +1391,11 @@
           "expression": "generic"
         },
         {
-          "text": "Before you go... the portal. My portal.",
+          "text": "The portal remains open to you.",
           "expression": "generic"
         },
         {
-          "text": "It can traverse the different regions instantly.",
-          "expression": "generic"
-        },
-        {
-          "text": "I've kept it locked all this time, but you should have access to it now.",
-          "expression": "generic"
-        },
-        {
-          "text": "Use it to move freely. To see what remains.",
+          "text": "Use it to move freely between every region. To see what remains.",
           "expression": "generic"
         },
         {

@@ -193,6 +193,7 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
             playerLevel: 20,
             region: 'river',
             unlockedRegions: ['meadow', 'river'],
+            portalUnlocked: true,
             influence: 900,
             buffEverCollected: true,
             newsShown: [
@@ -225,7 +226,7 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
             unlockedRegions: ['meadow', 'river', 'altar'],
             totalInfluenceEarned: experienceRequired,
             influence: 2500,
-            portalUnlocked: false,
+            portalUnlocked: true,
             buffEverCollected: true,
             newsShown: [
               'Outlook',
@@ -257,18 +258,17 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
       },
     },
     {
-      label: 'Unlock creatures',
+      label: 'End of game',
       save: () => {
         const helpers = helpersData.helpers as HelperDef[];
         const lastUnlock = Math.max(...helpers.map((h) => h.unlockLevel));
-        const influence = helpers.reduce((sum, h) => sum + h.cost, 0);
         const save = devSave(
           {
             playerLevel: lastUnlock,
-            region: 'meadow',
+            region: 'altar',
             unlockedRegions: ['meadow', 'river', 'altar'],
             portalUnlocked: true,
-            influence,
+            influence: 100000,
             buffEverCollected: true,
             newsShown: [
               'Outlook',
@@ -284,9 +284,21 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
             ],
           },
           [1, 2, 3, 4, 5, 6, 7],
-          {},
+          {
+            nature: 15,
+            lightning: 12,
+            earth: 10,
+            water: 10,
+            mystic: 8,
+            air: 7,
+            fire: 6,
+            death: 5,
+            rebirth: 3,
+            void: 1,
+          },
         );
         setMana(save, 4);
+        claimClicker(save, 3, 200);
         return save;
       },
     },
@@ -367,6 +379,17 @@ export class SaveSystem {
 
   private mergeDefaults(save: Partial<GameSave>): GameSave {
     const fresh = createDefaultSave();
+    const chapters = fresh.chapters.map((c) => {
+      const existing = save.chapters?.find((x) => x.id === c.id);
+      return existing ?? c;
+    });
+    const ch3Done = chapters.find((c) => c.id === 3)?.sceneViewed ?? false;
+    const ch4Done = chapters.find((c) => c.id === 4)?.sceneViewed ?? false;
+    const unlockedSet = new Set<RegionId>(
+      (save.unlockedRegions?.length ? save.unlockedRegions : ['meadow']) as RegionId[],
+    );
+    if (ch3Done) unlockedSet.add('river');
+    if (ch4Done) unlockedSet.add('altar');
     return {
       ...fresh,
       version: 1,
@@ -393,7 +416,7 @@ export class SaveSystem {
       buffOfferPending: save.buffOfferPending ?? fresh.buffOfferPending,
       buffEverCollected: save.buffEverCollected ?? fresh.buffEverCollected,
       buffRemaining: finite(save.buffRemaining, fresh.buffRemaining),
-      portalUnlocked: save.portalUnlocked ?? fresh.portalUnlocked,
+      portalUnlocked: Boolean(save.portalUnlocked || ch3Done || unlockedSet.size > 1),
       helpers: fresh.helpers.map((h) => {
         const existing = save.helpers?.find((x) => x.id === h.id);
         if (!existing) return h;
@@ -407,10 +430,7 @@ export class SaveSystem {
           ),
         };
       }),
-      chapters: fresh.chapters.map((c) => {
-        const existing = save.chapters?.find((x) => x.id === c.id);
-        return existing ?? c;
-      }),
+      chapters,
       achievements: {
         ...fresh.achievements,
         clickerGoal: Math.max(
@@ -461,9 +481,7 @@ export class SaveSystem {
             ? save.achievements.lastLoginDay
             : fresh.achievements.lastLoginDay,
       },
-      unlockedRegions: (save.unlockedRegions?.length
-        ? save.unlockedRegions
-        : ['meadow']) as RegionId[],
+      unlockedRegions: Array.from(unlockedSet),
       pendingOffline: finite(save.pendingOffline, fresh.pendingOffline),
       tutorialCompleted: inferTutorialCompleted(save, fresh),
       feedbackShown: save.feedbackShown ?? fresh.feedbackShown,
