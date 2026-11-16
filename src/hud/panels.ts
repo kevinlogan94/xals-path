@@ -456,6 +456,10 @@ export function portalHtml(ctx: GameContext): string {
             ? 'is-current'
             : 'is-travelable scroll-card-active'
       }`;
+      const thumb = isRegionUnlocked
+        ? `<img src="./assets/backgrounds/${region}.png" alt="" />`
+        : `<span class="tome-art is-lock" style="width:38px;height:38px;background-image:url('./assets/ui/lock-sheet.png')"></span>`;
+      const title = isRegionUnlocked ? REGION_TITLES[region] : '???';
       const sub = !isRegionUnlocked
         ? 'Unlocks in Chapter 4'
         : `${regionUnlocked} / ${list.length} Creatures Recorded`;
@@ -465,9 +469,9 @@ export function portalHtml(ctx: GameContext): string {
           ? '<span class="portal-pill current">Current</span>'
           : '<span class="portal-pill teleport">Teleport</span>';
       return `<button type="button" class="${cls}" data-portal-region="${region}" ${!isRegionUnlocked || isCurrent ? 'disabled' : ''}>
-        <div class="portal-thumb-box"><img src="./assets/backgrounds/${region}.png" alt="" /></div>
+        <div class="portal-thumb-box">${thumb}</div>
         <div>
-          <div class="portal-realm-name">${REGION_TITLES[region]}</div>
+          <div class="portal-realm-name">${title}</div>
           <div class="portal-realm-sub">${sub}</div>
         </div>
         ${pill}

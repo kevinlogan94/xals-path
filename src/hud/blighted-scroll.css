@@ -1524,8 +1524,8 @@
   cursor: default;
 }
 
-.portal-row.is-locked .portal-thumb-box img {
-  filter: grayscale(0.85) brightness(0.6);
+.portal-row.is-locked .portal-realm-sub {
+  color: #c4b5a0;
 }
 
 .portal-thumb-box {
@@ -1535,6 +1535,9 @@
   overflow: hidden;
   border: 1px solid rgba(245, 158, 11, 0.28);
   background: rgba(8, 6, 10, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .portal-thumb-box img {
