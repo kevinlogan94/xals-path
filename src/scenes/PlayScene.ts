@@ -592,31 +592,12 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private openBestiary(): void {
-    if (this.barlog.active() || this.ctx.story.reading) return;
     if (!this.ctx.tutorial.isBestiaryRevealed(this.ctx.state)) return;
-    if (this.tab !== 'scene') {
-      this.setTab('scene', true);
-    }
-    this.clearBanterTimer();
-    this.xal.hideQuote();
-    this.ctx.audio.playSfx('ui-tap', 0.22);
-    this.hud.showBestiary();
-    this.refreshTutorialPointers();
+    this.openSceneModal(() => this.hud.showBestiary());
   }
 
   private closeBestiary(): void {
-    if (!this.hud.isBestiaryOpen()) return;
-    this.ctx.audio.playSfx('ui-tap', 0.22);
-    this.hud.clearStage();
-    if (this.tab === 'scene' && !this.ctx.story.reading) {
-      this.refreshChapterCard();
-      if (this.tutorialLine && !this.ctx.state.tutorialCompleted) {
-        this.xal.showQuote(this.tutorialLine);
-        this.xal.setPortraitExpression('generic');
-      }
-    }
-    this.refreshHud();
-    this.refreshTutorialPointers();
+    this.closeSceneModal(this.hud.isBestiaryOpen());
   }
 
   private openPortal(): void {
@@ -627,22 +608,33 @@ export class PlayScene extends Phaser.Scene {
       }
       return;
     }
-    if (this.tab !== 'scene') {
-      this.setTab('scene', true);
-    }
-    this.clearBanterTimer();
-    this.xal.hideQuote();
-    this.ctx.audio.playSfx('ui-tap', 0.22);
-    this.hud.showPortal();
-    this.refreshTutorialPointers();
+    this.openSceneModal(() => this.hud.showPortal());
   }
 
   private closePortal(): void {
-    if (!this.hud.isPortalOpen()) return;
+    this.closeSceneModal(this.hud.isPortalOpen());
+  }
+
+  private openSceneModal(show: () => void): void {
+    if (this.barlog.active() || this.ctx.story.reading) return;
+    if (this.tab !== 'scene') this.setTab('scene', true);
+    this.clearBanterTimer();
+    this.xal.hideQuote();
+    this.ctx.audio.playSfx('ui-tap', 0.22);
+    show();
+    this.refreshTutorialPointers();
+  }
+
+  private closeSceneModal(isOpen: boolean): void {
+    if (!isOpen) return;
     this.ctx.audio.playSfx('ui-tap', 0.22);
     this.hud.clearStage();
     if (this.tab === 'scene' && !this.ctx.story.reading) {
       this.refreshChapterCard();
+      if (this.tutorialLine && !this.ctx.state.tutorialCompleted) {
+        this.xal.showQuote(this.tutorialLine);
+        this.xal.setPortraitExpression('generic');
+      }
     }
     this.refreshHud();
     this.refreshTutorialPointers();

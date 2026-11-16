@@ -39,39 +39,34 @@ interface PortalShimmerBuffer {
 
 let shimmerBuf: PortalShimmerBuffer | null = null;
 
+function offscreenCanvas(w: number, h: number): [HTMLCanvasElement, CanvasRenderingContext2D] {
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+  ctx.imageSmoothingEnabled = false;
+  return [canvas, ctx];
+}
+
 /** Sample a clean 2-course brick tile directly from the tower wall in xal-generic. */
 function buildDormantWallCanvas(src: HTMLImageElement | HTMLCanvasElement): HTMLCanvasElement {
-  const tx = 890;
-  const ty = 766;
-  const tw = 243;
-  const th = 86;
-
-  const tileCanvas = document.createElement('canvas');
-  tileCanvas.width = tw;
-  tileCanvas.height = th;
-  const tileCtx = tileCanvas.getContext('2d')!;
-  tileCtx.imageSmoothingEnabled = false;
+  const [tx, ty, tw, th] = [890, 766, 243, 86];
+  const [, tileCtx] = offscreenCanvas(tw, th);
   tileCtx.drawImage(src, tx, ty, tw, th, 0, 0, tw, th);
   const tilePx = tileCtx.getImageData(0, 0, tw, th).data;
 
-  const outCanvas = document.createElement('canvas');
-  outCanvas.width = PORTAL_W;
-  outCanvas.height = PORTAL_H;
-  const outCtx = outCanvas.getContext('2d')!;
+  const [outCanvas, outCtx] = offscreenCanvas(PORTAL_W, PORTAL_H);
   const outImg = outCtx.createImageData(PORTAL_W, PORTAL_H);
   const dst = outImg.data;
 
   for (let y = 0; y < PORTAL_H; y++) {
     const syTile = (y + 4) % th;
-    const band = Math.floor((y + 4) / th) % 2;
-    const xShift = band === 1 ? 178 : 55;
+    const xShift = Math.floor((y + 4) / th) % 2 === 1 ? 178 : 55;
     const dyEll = (y - 310) / 310;
     for (let x = 0; x < PORTAL_W; x++) {
-      const dxEll = (x - 171) / 171;
-      const rEll = Math.hypot(dxEll, dyEll);
+      const rEll = Math.hypot((x - 171) / 171, dyEll);
       const rimShade = Math.max(0.45, 1 - Math.max(0, rEll - 0.62) * 0.95);
-      const sxTile = (x + xShift) % tw;
-      const sp = (syTile * tw + sxTile) * 4;
+      const sp = (syTile * tw + ((x + xShift) % tw)) * 4;
       const dp = (y * PORTAL_W + x) * 4;
       dst[dp] = Math.round(tilePx[sp] * rimShade);
       dst[dp + 1] = Math.round(tilePx[sp + 1] * rimShade);
@@ -83,39 +78,15 @@ function buildDormantWallCanvas(src: HTMLImageElement | HTMLCanvasElement): HTML
   return outCanvas;
 }
 
-function ensurePortalBuffer(scene: Phaser.Scene): PortalShimmerBuffer | null {
-  if (shimmerBuf) return shimmerBuf;
-  if (!scene.textures.exists('xal-generic')) return null;
-  const src = scene.textures.get('xal-generic').getSourceImage() as HTMLImageElement | HTMLCanvasElement;
-  if (!src || !src.width) return null;
-
-  const patchCanvas = document.createElement('canvas');
-  patchCanvas.width = PORTAL_W;
-  patchCanvas.height = PORTAL_H;
-  const patchCtx = patchCanvas.getContext('2d')!;
-  patchCtx.imageSmoothingEnabled = false;
-  patchCtx.drawImage(src, PORTAL_X, PORTAL_Y, PORTAL_W, PORTAL_H, 0, 0, PORTAL_W, PORTAL_H);
-  const patchData = patchCtx.getImageData(0, 0, PORTAL_W, PORTAL_H);
-  const px = patchData.data;
-
-  const maskCanvas = document.createElement('canvas');
-  maskCanvas.width = PORTAL_W;
-  maskCanvas.height = PORTAL_H;
-  const maskCtx = maskCanvas.getContext('2d')!;
+function buildPortalMask(px: Uint8ClampedArray): HTMLCanvasElement {
+  const [maskCanvas, maskCtx] = offscreenCanvas(PORTAL_W, PORTAL_H);
   const maskImgData = maskCtx.createImageData(PORTAL_W, PORTAL_H);
   const mx = maskImgData.data;
 
   for (let i = 0; i < px.length; i += 4) {
-    const r = px[i];
-    const b = px[i + 2];
-    if (b > r + 30 && b > 56) {
-      mx[i] = 255;
-      mx[i + 1] = 255;
-      mx[i + 2] = 255;
-      mx[i + 3] = 255;
-    }
+    if (px[i + 2] > px[i] + 30 && px[i + 2] > 56) mx.fill(255, i, i + 4);
   }
-  // Fill any dark interior pinholes unreachable from the patch borders.
+  // Fill dark interior pinholes unreachable from the patch borders.
   const total = PORTAL_W * PORTAL_H;
   const outside = new Uint8Array(total);
   const queue = new Int32Array(total);
@@ -145,32 +116,34 @@ function ensurePortalBuffer(scene: Phaser.Scene): PortalShimmerBuffer | null {
     if (y + 1 < PORTAL_H) seed(cur + PORTAL_W);
   }
   for (let idx = 0; idx < total; idx++) {
-    if (!outside[idx]) {
-      const p = idx * 4;
-      mx[p] = 255;
-      mx[p + 1] = 255;
-      mx[p + 2] = 255;
-      mx[p + 3] = 255;
-    }
+    if (!outside[idx]) mx.fill(255, idx * 4, idx * 4 + 4);
   }
   maskCtx.putImageData(maskImgData, 0, 0);
+  return maskCanvas;
+}
 
-  const gridCanvas = document.createElement('canvas');
-  gridCanvas.width = GRID_W;
-  gridCanvas.height = GRID_H;
-  const gridCtx = gridCanvas.getContext('2d')!;
-  gridCtx.imageSmoothingEnabled = false;
+function ensurePortalBuffer(scene: Phaser.Scene): PortalShimmerBuffer | null {
+  if (shimmerBuf) return shimmerBuf;
+  if (!scene.textures.exists('xal-generic')) return null;
+  const src = scene.textures.get('xal-generic').getSourceImage() as HTMLImageElement | HTMLCanvasElement;
+  if (!src || !src.width) return null;
+
+  const [patchCanvas, patchCtx] = offscreenCanvas(PORTAL_W, PORTAL_H);
+  patchCtx.drawImage(src, PORTAL_X, PORTAL_Y, PORTAL_W, PORTAL_H, 0, 0, PORTAL_W, PORTAL_H);
+  const px = patchCtx.getImageData(0, 0, PORTAL_W, PORTAL_H).data;
+
+  const [, gridCtx] = offscreenCanvas(GRID_W, GRID_H);
   gridCtx.drawImage(patchCanvas, 0, 0, GRID_W, GRID_H);
-  const origGrid = gridCtx.getImageData(0, 0, GRID_W, GRID_H).data;
 
-  const vortexCanvas = document.createElement('canvas');
-  vortexCanvas.width = GRID_W;
-  vortexCanvas.height = GRID_H;
-  const vortexCtx = vortexCanvas.getContext('2d')!;
-  const vortexImgData = vortexCtx.createImageData(GRID_W, GRID_H);
-
-  const dormantCanvas = buildDormantWallCanvas(src);
-  shimmerBuf = { origGrid, dormantCanvas, vortexCanvas, vortexCtx, vortexImgData, maskCanvas };
+  const [vortexCanvas, vortexCtx] = offscreenCanvas(GRID_W, GRID_H);
+  shimmerBuf = {
+    origGrid: gridCtx.getImageData(0, 0, GRID_W, GRID_H).data,
+    dormantCanvas: buildDormantWallCanvas(src),
+    vortexCanvas,
+    vortexCtx,
+    vortexImgData: vortexCtx.createImageData(GRID_W, GRID_H),
+    maskCanvas: buildPortalMask(px),
+  };
   return shimmerBuf;
 }
 
