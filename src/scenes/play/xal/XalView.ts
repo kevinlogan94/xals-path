@@ -30,7 +30,7 @@ const BOOK_IDLE_FRAMES = [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
 
 interface PortalShimmerBuffer {
   origGrid: Uint8ClampedArray;
-  dormantGrid: Uint8ClampedArray;
+  dormantCanvas: HTMLCanvasElement;
   vortexCanvas: HTMLCanvasElement;
   vortexCtx: CanvasRenderingContext2D;
   vortexImgData: ImageData;
@@ -39,52 +39,48 @@ interface PortalShimmerBuffer {
 
 let shimmerBuf: PortalShimmerBuffer | null = null;
 
-function buildDormantBrickGrid(): Uint8ClampedArray {
-  const out = new Uint8ClampedArray(GRID_W * GRID_H * 4);
-  const rowH = 8;
-  const brickW = 14;
-  for (let gy = 0; gy < GRID_H; gy++) {
-    const row = Math.floor(gy / rowH);
-    const ly = gy % rowH;
-    const shift = (row & 1) * 7;
-    const dyEll = (gy - 62.0) / 62.0;
-    for (let gx = 0; gx < GRID_W; gx++) {
-      const sx = gx + shift;
-      const col = Math.floor(sx / brickW);
-      const lx = sx % brickW;
-      const dxEll = (gx - 34.2) / 34.2;
+/** Sample a clean 2-course brick tile directly from the tower wall in xal-generic. */
+function buildDormantWallCanvas(src: HTMLImageElement | HTMLCanvasElement): HTMLCanvasElement {
+  const tx = 890;
+  const ty = 766;
+  const tw = 243;
+  const th = 86;
+
+  const tileCanvas = document.createElement('canvas');
+  tileCanvas.width = tw;
+  tileCanvas.height = th;
+  const tileCtx = tileCanvas.getContext('2d')!;
+  tileCtx.imageSmoothingEnabled = false;
+  tileCtx.drawImage(src, tx, ty, tw, th, 0, 0, tw, th);
+  const tilePx = tileCtx.getImageData(0, 0, tw, th).data;
+
+  const outCanvas = document.createElement('canvas');
+  outCanvas.width = PORTAL_W;
+  outCanvas.height = PORTAL_H;
+  const outCtx = outCanvas.getContext('2d')!;
+  const outImg = outCtx.createImageData(PORTAL_W, PORTAL_H);
+  const dst = outImg.data;
+
+  for (let y = 0; y < PORTAL_H; y++) {
+    const syTile = (y + 4) % th;
+    const band = Math.floor((y + 4) / th) % 2;
+    const xShift = band === 1 ? 178 : 55;
+    const dyEll = (y - 310) / 310;
+    for (let x = 0; x < PORTAL_W; x++) {
+      const dxEll = (x - 171) / 171;
       const rEll = Math.hypot(dxEll, dyEll);
-      const rimShade = Math.max(0.42, 1.0 - Math.max(0, rEll - 0.56) * 0.85);
-
-      const p = (gy * GRID_W + gx) * 4;
-      const isMortar = ly === rowH - 1 || lx === 0;
-      const brickHash = Math.sin(row * 12.9898 + col * 78.233) * 43758.5453;
-      const brickFrac = brickHash - Math.floor(brickHash);
-      const grainHash = Math.sin(gx * 41.3 + gy * 97.7) * 19341.2;
-      const grain = (grainHash - Math.floor(grainHash) - 0.5) * 10;
-
-      let r: number;
-      let g: number;
-      let b: number;
-      if (isMortar) {
-        r = 50 + grain * 0.4;
-        g = 39 + grain * 0.35;
-        b = 31 + grain * 0.3;
-      } else {
-        const tone = (brickFrac - 0.5) * 26;
-        const bevel = ly === 0 || lx === 1 ? 12 : ly === rowH - 2 || lx === brickW - 1 ? -14 : 0;
-        r = 128 + tone + bevel + grain;
-        g = 108 + tone * 0.88 + bevel * 0.9 + grain * 0.85;
-        b = 89 + tone * 0.78 + bevel * 0.8 + grain * 0.75;
-      }
-
-      out[p] = Math.max(0, Math.min(255, Math.round(r * rimShade)));
-      out[p + 1] = Math.max(0, Math.min(255, Math.round(g * rimShade)));
-      out[p + 2] = Math.max(0, Math.min(255, Math.round(b * rimShade)));
-      out[p + 3] = 255;
+      const rimShade = Math.max(0.45, 1 - Math.max(0, rEll - 0.62) * 0.95);
+      const sxTile = (x + xShift) % tw;
+      const sp = (syTile * tw + sxTile) * 4;
+      const dp = (y * PORTAL_W + x) * 4;
+      dst[dp] = Math.round(tilePx[sp] * rimShade);
+      dst[dp + 1] = Math.round(tilePx[sp + 1] * rimShade);
+      dst[dp + 2] = Math.round(tilePx[sp + 2] * rimShade);
+      dst[dp + 3] = 255;
     }
   }
-  return out;
+  outCtx.putImageData(outImg, 0, 0);
+  return outCanvas;
 }
 
 function ensurePortalBuffer(scene: Phaser.Scene): PortalShimmerBuffer | null {
@@ -135,8 +131,8 @@ function ensurePortalBuffer(scene: Phaser.Scene): PortalShimmerBuffer | null {
   const vortexCtx = vortexCanvas.getContext('2d')!;
   const vortexImgData = vortexCtx.createImageData(GRID_W, GRID_H);
 
-  const dormantGrid = buildDormantBrickGrid();
-  shimmerBuf = { origGrid, dormantGrid, vortexCanvas, vortexCtx, vortexImgData, maskCanvas };
+  const dormantCanvas = buildDormantWallCanvas(src);
+  shimmerBuf = { origGrid, dormantCanvas, vortexCanvas, vortexCtx, vortexImgData, maskCanvas };
   return shimmerBuf;
 }
 
@@ -274,12 +270,16 @@ export class XalView {
     this.lastPortalStep = step;
     this.lastPortalUnlocked = unlocked;
 
-    const { origGrid, dormantGrid, vortexCanvas, vortexCtx, vortexImgData, maskCanvas } = buf;
-    const data = vortexImgData.data;
+    const { origGrid, dormantCanvas, vortexCanvas, vortexCtx, vortexImgData, maskCanvas } = buf;
+    const ctx = this.portalTex.getContext();
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0, 0, PORTAL_W, PORTAL_H);
 
     if (!unlocked) {
-      data.set(dormantGrid);
+      ctx.drawImage(dormantCanvas, 0, 0, PORTAL_W, PORTAL_H);
     } else {
+      const data = vortexImgData.data;
       const timeSec = timeMs / 1000;
       const speedMult = 1.2;
       const breath = Math.sin(timeSec * 2.6);
@@ -323,15 +323,10 @@ export class XalView {
           ptr += 4;
         }
       }
+      vortexCtx.putImageData(vortexImgData, 0, 0);
+      ctx.drawImage(vortexCanvas, 0, 0, PORTAL_W, PORTAL_H);
     }
 
-    vortexCtx.putImageData(vortexImgData, 0, 0);
-
-    const ctx = this.portalTex.getContext();
-    ctx.imageSmoothingEnabled = false;
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.clearRect(0, 0, PORTAL_W, PORTAL_H);
-    ctx.drawImage(vortexCanvas, 0, 0, PORTAL_W, PORTAL_H);
     ctx.globalCompositeOperation = 'destination-in';
     ctx.drawImage(maskCanvas, 0, 0, PORTAL_W, PORTAL_H);
     this.portalTex.refresh();
