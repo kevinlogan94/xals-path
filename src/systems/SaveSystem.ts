@@ -193,6 +193,7 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
             playerLevel: 20,
             region: 'river',
             unlockedRegions: ['meadow', 'river'],
+            portalUnlocked: true,
             influence: 900,
             buffEverCollected: true,
             newsShown: [
@@ -225,7 +226,7 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
             unlockedRegions: ['meadow', 'river', 'altar'],
             totalInfluenceEarned: experienceRequired,
             influence: 2500,
-            portalUnlocked: false,
+            portalUnlocked: true,
             buffEverCollected: true,
             newsShown: [
               'Outlook',

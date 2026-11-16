@@ -103,7 +103,7 @@ export class StorySystem {
     // Applied from PlayScene.onChapterButton — not here on finish.
 
     const allViewed = state.chapters.every((c) => c.sceneViewed);
-    if (allViewed && !state.portalUnlocked) {
+    if (allViewed) {
       state.portalUnlocked = true;
       for (const r of economy.regions as RegionId[]) {
         if (!state.unlockedRegions.includes(r)) state.unlockedRegions.push(r);
@@ -120,6 +120,7 @@ export class StorySystem {
     if (idx >= 0 && idx < order.length - 1) {
       const next = order[idx + 1];
       state.region = next;
+      state.portalUnlocked = true;
       if (!state.unlockedRegions.includes(next)) {
         state.unlockedRegions.push(next);
       }

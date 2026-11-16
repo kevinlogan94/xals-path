@@ -625,7 +625,7 @@ export class PlayScene extends Phaser.Scene {
     if (this.barlog.active() || this.ctx.story.reading) return;
     if (!this.ctx.state.portalUnlocked) {
       if (this.ctx.state.tutorialCompleted) {
-        this.showToast('Complete the story to unlock the Portal');
+        this.showToast('Unlocks in Chapter 3 (Level 10)');
       }
       return;
     }
@@ -975,7 +975,7 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private onPortalTravel(region: RegionId): void {
-    if (this.ctx.state.region === region) return;
+    if (!this.ctx.state.unlockedRegions.includes(region) || this.ctx.state.region === region) return;
     this.ctx.state.region = region;
     this.ctx.economy.drainMana(this.ctx.state);
     this.ctx.spawn.clear();

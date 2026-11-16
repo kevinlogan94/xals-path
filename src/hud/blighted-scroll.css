@@ -1519,6 +1519,15 @@
   cursor: default;
 }
 
+.portal-row.is-locked {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.portal-row.is-locked .portal-thumb-box img {
+  filter: grayscale(0.85) brightness(0.6);
+}
+
 .portal-thumb-box {
   width: 72px;
   height: 50px;
@@ -1574,6 +1583,12 @@
   border: 1px solid rgba(56, 189, 248, 0.7);
   background: rgba(56, 189, 248, 0.14);
   color: #7dd3fc;
+}
+
+.portal-pill.locked {
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 12, 18, 0.65);
+  color: #94a3b8;
 }
 
 .splash-meta-pills {

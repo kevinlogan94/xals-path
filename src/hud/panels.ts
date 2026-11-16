@@ -439,6 +439,7 @@ export const REGION_SHORT_TITLES: Record<RegionId, string> = {
 
 export function portalHtml(ctx: GameContext): string {
   const regions: RegionId[] = ['meadow', 'river', 'altar'];
+  const unlockedCount = regions.filter((r) => ctx.state.unlockedRegions.includes(r)).length;
   const rows = regions
     .map((region) => {
       const list = ctx.spawn.creatures.filter((c) => c.region === region);
@@ -446,16 +447,28 @@ export function portalHtml(ctx: GameContext): string {
         const h = ctx.state.helpers.find((x) => x.id === c.helperId);
         return (h?.amountOwned ?? 0) > 0;
       }).length;
-      const isCurrent = region === ctx.state.region;
-      const cls = `scroll-card portal-row ${isCurrent ? 'is-current' : 'is-travelable scroll-card-active'}`;
-      const pill = isCurrent
-        ? '<span class="portal-pill current">Current</span>'
-        : '<span class="portal-pill teleport">Teleport</span>';
-      return `<button type="button" class="${cls}" data-portal-region="${region}" ${isCurrent ? 'disabled' : ''}>
+      const isRegionUnlocked = ctx.state.unlockedRegions.includes(region);
+      const isCurrent = isRegionUnlocked && region === ctx.state.region;
+      const cls = `scroll-card portal-row ${
+        !isRegionUnlocked
+          ? 'is-locked'
+          : isCurrent
+            ? 'is-current'
+            : 'is-travelable scroll-card-active'
+      }`;
+      const sub = !isRegionUnlocked
+        ? 'Unlocks in Chapter 4'
+        : `${regionUnlocked} / ${list.length} Creatures Recorded`;
+      const pill = !isRegionUnlocked
+        ? '<span class="portal-pill locked">Locked</span>'
+        : isCurrent
+          ? '<span class="portal-pill current">Current</span>'
+          : '<span class="portal-pill teleport">Teleport</span>';
+      return `<button type="button" class="${cls}" data-portal-region="${region}" ${!isRegionUnlocked || isCurrent ? 'disabled' : ''}>
         <div class="portal-thumb-box"><img src="./assets/backgrounds/${region}.png" alt="" /></div>
         <div>
           <div class="portal-realm-name">${REGION_TITLES[region]}</div>
-          <div class="portal-realm-sub">${regionUnlocked} / ${list.length} Creatures Recorded</div>
+          <div class="portal-realm-sub">${sub}</div>
         </div>
         ${pill}
       </button>`;
@@ -468,7 +481,7 @@ export function portalHtml(ctx: GameContext): string {
     <p class="bestiary-instruction">Select a realm to teleport there instantly.</p>
     <p class="bestiary-flavor">Step through Xal's rift to tend any realm across the path.</p>
     <div class="scroll-body">
-      <p class="scroll-section">Realms of the Path (${regions.length}/${regions.length})</p>
+      <p class="scroll-section">Realms of the Path (${unlockedCount}/${regions.length})</p>
       ${rows}
     </div>
     <div class="splash-actions" style="margin-top:10px">
