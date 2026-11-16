@@ -30,6 +30,7 @@ const BOOK_IDLE_FRAMES = [0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6];
 
 interface PortalShimmerBuffer {
   origGrid: Uint8ClampedArray;
+  dormantGrid: Uint8ClampedArray;
   vortexCanvas: HTMLCanvasElement;
   vortexCtx: CanvasRenderingContext2D;
   vortexImgData: ImageData;
@@ -37,6 +38,54 @@ interface PortalShimmerBuffer {
 }
 
 let shimmerBuf: PortalShimmerBuffer | null = null;
+
+function buildDormantBrickGrid(): Uint8ClampedArray {
+  const out = new Uint8ClampedArray(GRID_W * GRID_H * 4);
+  const rowH = 8;
+  const brickW = 14;
+  for (let gy = 0; gy < GRID_H; gy++) {
+    const row = Math.floor(gy / rowH);
+    const ly = gy % rowH;
+    const shift = (row & 1) * 7;
+    const dyEll = (gy - 62.0) / 62.0;
+    for (let gx = 0; gx < GRID_W; gx++) {
+      const sx = gx + shift;
+      const col = Math.floor(sx / brickW);
+      const lx = sx % brickW;
+      const dxEll = (gx - 34.2) / 34.2;
+      const rEll = Math.hypot(dxEll, dyEll);
+      const rimShade = Math.max(0.42, 1.0 - Math.max(0, rEll - 0.56) * 0.85);
+
+      const p = (gy * GRID_W + gx) * 4;
+      const isMortar = ly === rowH - 1 || lx === 0;
+      const brickHash = Math.sin(row * 12.9898 + col * 78.233) * 43758.5453;
+      const brickFrac = brickHash - Math.floor(brickHash);
+      const grainHash = Math.sin(gx * 41.3 + gy * 97.7) * 19341.2;
+      const grain = (grainHash - Math.floor(grainHash) - 0.5) * 10;
+
+      let r: number;
+      let g: number;
+      let b: number;
+      if (isMortar) {
+        r = 50 + grain * 0.4;
+        g = 39 + grain * 0.35;
+        b = 31 + grain * 0.3;
+      } else {
+        const tone = (brickFrac - 0.5) * 26;
+        const bevel = ly === 0 || lx === 1 ? 12 : ly === rowH - 2 || lx === brickW - 1 ? -14 : 0;
+        r = 128 + tone + bevel + grain;
+        g = 108 + tone * 0.88 + bevel * 0.9 + grain * 0.85;
+        b = 89 + tone * 0.78 + bevel * 0.8 + grain * 0.75;
+      }
+
+      out[p] = Math.max(0, Math.min(255, Math.round(r * rimShade)));
+      out[p + 1] = Math.max(0, Math.min(255, Math.round(g * rimShade)));
+      out[p + 2] = Math.max(0, Math.min(255, Math.round(b * rimShade)));
+      out[p + 3] = 255;
+    }
+  }
+  return out;
+}
 
 function ensurePortalBuffer(scene: Phaser.Scene): PortalShimmerBuffer | null {
   if (shimmerBuf) return shimmerBuf;
@@ -86,7 +135,8 @@ function ensurePortalBuffer(scene: Phaser.Scene): PortalShimmerBuffer | null {
   const vortexCtx = vortexCanvas.getContext('2d')!;
   const vortexImgData = vortexCtx.createImageData(GRID_W, GRID_H);
 
-  shimmerBuf = { origGrid, vortexCanvas, vortexCtx, vortexImgData, maskCanvas };
+  const dormantGrid = buildDormantBrickGrid();
+  shimmerBuf = { origGrid, dormantGrid, vortexCanvas, vortexCtx, vortexImgData, maskCanvas };
   return shimmerBuf;
 }
 
@@ -123,6 +173,7 @@ export class XalView {
   private portal!: Phaser.GameObjects.Image;
   private portalTex: Phaser.Textures.CanvasTexture | null = null;
   private lastPortalStep = -1;
+  private lastPortalUnlocked: boolean | null = null;
   private idle!: Phaser.GameObjects.Sprite;
   private book!: Phaser.GameObjects.Sprite;
   private quoteBox: QuoteBox;
@@ -209,70 +260,68 @@ export class XalView {
     this.tapZone.setSize(width, playH);
   }
 
-  /** Original-art liquid ripple + inward spiral highlight pulse inside the exact portal mask. */
+  /** Original-art liquid ripple when unlocked, or recessed tower brick wall when dormant. */
   tickPortal(timeMs: number, unlocked: boolean): void {
     if (!this.portal.visible && timeMs > 0) return;
+    if (!unlocked && this.lastPortalUnlocked === false && timeMs > 0) return;
     const step = Math.floor(timeMs / 60);
-    if (step === this.lastPortalStep && timeMs > 0) return;
-    this.lastPortalStep = step;
+    if (unlocked && this.lastPortalUnlocked === true && step === this.lastPortalStep && timeMs > 0) {
+      return;
+    }
 
     const buf = ensurePortalBuffer(this.scene);
     if (!buf || !this.portalTex) return;
+    this.lastPortalStep = step;
+    this.lastPortalUnlocked = unlocked;
 
-    const timeSec = timeMs / 1000;
-    const speedMult = unlocked ? 1.2 : 0;
-    const breath = Math.sin(timeSec * (unlocked ? 2.6 : 1.1));
-    const waveAmt = unlocked ? 1.35 : 0;
-    const { origGrid, vortexCanvas, vortexCtx, vortexImgData, maskCanvas } = buf;
+    const { origGrid, dormantGrid, vortexCanvas, vortexCtx, vortexImgData, maskCanvas } = buf;
     const data = vortexImgData.data;
 
-    const cx = 33.4;
-    const cy = 60.6;
-    const rx = 34.2;
-    const ry = 62.0;
+    if (!unlocked) {
+      data.set(dormantGrid);
+    } else {
+      const timeSec = timeMs / 1000;
+      const speedMult = 1.2;
+      const breath = Math.sin(timeSec * 2.6);
+      const waveAmt = 1.35;
 
-    let ptr = 0;
-    for (let gy = 0; gy < GRID_H; gy++) {
-      const dy = gy - cy;
-      const dyEll = (gy - 62.0) / ry;
-      for (let gx = 0; gx < GRID_W; gx++) {
-        const dx = gx - cx;
-        const dxEll = (gx - 34.2) / rx;
-        const rEll = Math.hypot(dxEll, dyEll);
-        const theta = Math.atan2(dy / (rx * 1.15), dx / rx);
+      const cx = 33.4;
+      const cy = 60.6;
+      const rx = 34.2;
+      const ry = 62.0;
 
-        const damp = Math.max(0, 1 - rEll * 0.5);
-        const ox = Math.round(gx + Math.sin(gy * 0.22 - timeSec * 2.4 * speedMult) * waveAmt * damp);
-        const oy = Math.round(gy + Math.cos(gx * 0.22 - timeSec * 2.0 * speedMult) * waveAmt * damp);
-        const sx = Math.max(0, Math.min(GRID_W - 1, ox));
-        const sy = Math.max(0, Math.min(GRID_H - 1, oy));
-        const sPtr = (sy * GRID_W + sx) * 4;
+      let ptr = 0;
+      for (let gy = 0; gy < GRID_H; gy++) {
+        const dy = gy - cy;
+        const dyEll = (gy - 62.0) / ry;
+        for (let gx = 0; gx < GRID_W; gx++) {
+          const dx = gx - cx;
+          const dxEll = (gx - 34.2) / rx;
+          const rEll = Math.hypot(dxEll, dyEll);
+          const theta = Math.atan2(dy / (rx * 1.15), dx / rx);
 
-        const r = origGrid[sPtr];
-        const g = origGrid[sPtr + 1];
-        const b = origGrid[sPtr + 2];
+          const damp = Math.max(0, 1 - rEll * 0.5);
+          const ox = Math.round(gx + Math.sin(gy * 0.22 - timeSec * 2.4 * speedMult) * waveAmt * damp);
+          const oy = Math.round(gy + Math.cos(gx * 0.22 - timeSec * 2.0 * speedMult) * waveAmt * damp);
+          const sx = Math.max(0, Math.min(GRID_W - 1, ox));
+          const sy = Math.max(0, Math.min(GRID_H - 1, oy));
+          const sPtr = (sy * GRID_W + sx) * 4;
 
-        if (!unlocked) {
-          const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-          const dim = 0.56 + 0.04 * breath;
-          data[ptr] = Math.round((r * 0.28 + lum * 0.72) * dim);
-          data[ptr + 1] = Math.round((g * 0.3 + lum * 0.7) * dim);
-          data[ptr + 2] = Math.round((b * 0.36 + lum * 0.64) * dim);
+          const r = origGrid[sPtr];
+          const g = origGrid[sPtr + 1];
+          const b = origGrid[sPtr + 2];
+
+          const spiralWave = Math.sin(theta - rEll * 14.0 - timeSec * 2.8 * speedMult);
+          const centerPulse = (1.0 - Math.min(1.0, rEll)) * (0.12 + 0.12 * breath);
+          const boost =
+            (Math.max(0, spiralWave) * 0.24 + centerPulse) * Math.max(0, 1.0 - rEll * 0.45);
+
+          data[ptr] = Math.min(255, Math.round(r * (1 - boost * 0.3)));
+          data[ptr + 1] = Math.min(255, Math.round(g + boost * 85));
+          data[ptr + 2] = Math.min(255, Math.round(b + boost * 55));
           data[ptr + 3] = 255;
           ptr += 4;
-          continue;
         }
-
-        const spiralWave = Math.sin(theta - rEll * 14.0 - timeSec * 2.8 * speedMult);
-        const centerPulse = (1.0 - Math.min(1.0, rEll)) * (0.12 + 0.12 * breath);
-        const boost =
-          (Math.max(0, spiralWave) * 0.24 + centerPulse) * Math.max(0, 1.0 - rEll * 0.45);
-
-        data[ptr] = Math.min(255, Math.round(r * (1 - boost * 0.3)));
-        data[ptr + 1] = Math.min(255, Math.round(g + boost * 85));
-        data[ptr + 2] = Math.min(255, Math.round(b + boost * 55));
-        data[ptr + 3] = 255;
-        ptr += 4;
       }
     }
 
