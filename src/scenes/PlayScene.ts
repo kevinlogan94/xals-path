@@ -269,7 +269,7 @@ export class PlayScene extends Phaser.Scene {
       !this.barlog.active() &&
       !this.ctx.tutorial.shouldPausePassive(this.ctx.state)
     ) {
-      this.ctx.spawn.tick(this.ctx.state, dt, this.outlook.spawnBounds());
+      this.ctx.spawn.tick(this.ctx.state, dt, this.outlook.creatureBounds());
       this.passiveSpawnTimer += dt;
       if (this.passiveSpawnTimer >= 1) {
         this.passiveSpawnTimer = 0;

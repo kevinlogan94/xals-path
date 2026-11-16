@@ -39,6 +39,20 @@ export class OutlookView {
     };
   }
 
+  /** Ground-level spawn bounds for running creatures (excludes sky/horizon). */
+  creatureBounds(): { x: number; y: number; w: number; h: number } {
+    const h = this.scene.scale.height;
+    const groundTop =
+      this.bg.y - this.bg.displayHeight / 2 + this.bg.displayHeight * 0.32;
+    const top = Math.max(hudBottom(), groundTop);
+    return {
+      x: 0,
+      y: top,
+      w: this.scene.scale.width,
+      h: Math.max(80, h - NAV_H - top - 10),
+    };
+  }
+
   canCast(pointer: Phaser.Input.Pointer, ignoreCastUntil: number): boolean {
     if (this.scene.time.now < ignoreCastUntil) return false;
     if (pointer.y > this.scene.scale.height - NAV_H) return false;
