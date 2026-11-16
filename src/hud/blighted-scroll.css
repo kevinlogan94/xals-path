@@ -1377,8 +1377,12 @@
 }
 
 .portal-hotspot.is-dormant {
-  pointer-events: none;
-  cursor: default;
+  cursor: pointer;
+}
+
+.portal-hotspot.is-dormant .portal-rune-aura,
+.portal-hotspot.is-dormant .portal-mote {
+  display: none;
 }
 
 .portal-hotspot:not(.is-dormant):hover {
@@ -1404,12 +1408,6 @@
   border-right: 0;
   animation: bookcase-breathe 2.6s ease-in-out infinite;
   pointer-events: none;
-}
-
-.portal-hotspot.is-dormant .portal-rune-aura {
-  border-color: rgba(56, 189, 248, 0.14);
-  box-shadow: none;
-  opacity: 0.45;
 }
 
 .portal-mote {

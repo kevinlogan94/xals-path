@@ -623,7 +623,12 @@ export class PlayScene extends Phaser.Scene {
 
   private openPortal(): void {
     if (this.barlog.active() || this.ctx.story.reading) return;
-    if (!this.ctx.state.portalUnlocked) return;
+    if (!this.ctx.state.portalUnlocked) {
+      if (this.ctx.state.tutorialCompleted) {
+        this.showToast('Complete the story to unlock the Portal');
+      }
+      return;
+    }
     if (this.tab !== 'scene') {
       this.setTab('scene', true);
     }

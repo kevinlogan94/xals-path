@@ -229,9 +229,7 @@ export class HudOverlay {
     this.portal.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      if (!this.portal.classList.contains('is-dormant')) {
-        this.handlers.onOpenPortal();
-      }
+      this.handlers.onOpenPortal();
     });
 
     this.achBanner.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -403,7 +401,6 @@ export class HudOverlay {
     this.portal.hidden = !visible || this.view === 'bestiary' || this.view === 'portal';
     if (!this.portal.hidden) {
       this.portal.classList.toggle('is-dormant', !unlocked);
-      this.portal.disabled = !unlocked;
       this.portalPlaque.hidden = !unlocked;
       this.portalRealm.textContent = REGION_SHORT_TITLES[region];
     }

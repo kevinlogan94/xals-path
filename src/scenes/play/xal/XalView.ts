@@ -220,9 +220,9 @@ export class XalView {
     if (!buf || !this.portalTex) return;
 
     const timeSec = timeMs / 1000;
-    const speedMult = unlocked ? 1.2 : 0.65;
-    const breath = Math.sin(timeSec * (unlocked ? 2.6 : 1.6));
-    const waveAmt = unlocked ? 1.35 : 0.85;
+    const speedMult = unlocked ? 1.2 : 0;
+    const breath = Math.sin(timeSec * (unlocked ? 2.6 : 1.1));
+    const waveAmt = unlocked ? 1.35 : 0;
     const { origGrid, vortexCanvas, vortexCtx, vortexImgData, maskCanvas } = buf;
     const data = vortexImgData.data;
 
@@ -252,11 +252,21 @@ export class XalView {
         const g = origGrid[sPtr + 1];
         const b = origGrid[sPtr + 2];
 
+        if (!unlocked) {
+          const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+          const dim = 0.56 + 0.04 * breath;
+          data[ptr] = Math.round((r * 0.28 + lum * 0.72) * dim);
+          data[ptr + 1] = Math.round((g * 0.3 + lum * 0.7) * dim);
+          data[ptr + 2] = Math.round((b * 0.36 + lum * 0.64) * dim);
+          data[ptr + 3] = 255;
+          ptr += 4;
+          continue;
+        }
+
         const spiralWave = Math.sin(theta - rEll * 14.0 - timeSec * 2.8 * speedMult);
         const centerPulse = (1.0 - Math.min(1.0, rEll)) * (0.12 + 0.12 * breath);
         const boost =
-          (Math.max(0, spiralWave) * (unlocked ? 0.24 : 0.14) + centerPulse) *
-          Math.max(0, 1.0 - rEll * 0.45);
+          (Math.max(0, spiralWave) * 0.24 + centerPulse) * Math.max(0, 1.0 - rEll * 0.45);
 
         data[ptr] = Math.min(255, Math.round(r * (1 - boost * 0.3)));
         data[ptr + 1] = Math.min(255, Math.round(g + boost * 85));
