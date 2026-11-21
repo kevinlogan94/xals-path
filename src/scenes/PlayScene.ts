@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { getContext } from '../game/GameContext';
+import economy from '../data/economy.json';
 import { formatNumber } from '../utils/format';
-import type { RegionId, TabId } from '../types';
+import type { CreatureVariant, RegionId, TabId } from '../types';
 import { HudOverlay } from '../hud/HudOverlay';
 import type { RewardId } from '../hud/panels';
 import {
@@ -84,7 +85,7 @@ export class PlayScene extends Phaser.Scene {
       const gained = this.ctx.economy.addResonanceTick(this.ctx.state, 10);
       this.ctx.audio.playSfx('reward', 0.38);
       playCastBurst(this, cx, cy, `+${formatNumber(gained)}`, {
-        sublabel: 'THE GREAT WEAVE!',
+        sublabel: 'TRIAD BURST!',
         overcharge: true,
       });
       spawnHomingOrbs(
@@ -98,6 +99,37 @@ export class PlayScene extends Phaser.Scene {
       );
       this.hud.pulseInfluence();
       this.checkAchievements();
+    });
+    this.ctx.spawn.setVariantTrapHandler((_variant, vx, vy, stacks) => {
+      const gained = this.ctx.economy.awardVariantTrap(this.ctx.state, stacks);
+      this.ctx.audio.playSfx('reward', 0.42);
+      playCastBurst(this, vx, vy, `+${formatNumber(gained)}`, {
+        sublabel: `WILD FRENZY ×${this.ctx.economy.frenzyMultiplier()}!`,
+        overcharge: true,
+      });
+      spawnHomingOrbs(
+        this,
+        vx,
+        vy,
+        this.hud.crystalCenter(),
+        6,
+        () => this.hud.pulseInfluence(),
+        0xfbbf24,
+      );
+      this.hud.pulseInfluence();
+      this.checkAchievements();
+    });
+    this.ctx.spawn.setSiphonDrainHandler((dt) => {
+      this.ctx.economy.drainFrenzy(dt);
+    });
+    this.ctx.spawn.setFirstEncounterHandler((variant, creatureId) => {
+      if (!this.ctx.state.seenVariants.includes(variant)) {
+        this.ctx.state.seenVariants.push(variant);
+        this.ctx.persist();
+      }
+      if (!this.hud.isSplashOpen()) {
+        this.hud.showVariantEncounterSplash(variant, creatureId);
+      }
     });
     this.lastBuff = this.ctx.state.buffRemaining;
 
@@ -256,7 +288,8 @@ export class PlayScene extends Phaser.Scene {
 
   update(_t: number, delta: number): void {
     const dt = delta / 1000;
-    this.ctx.economy.tick(this.ctx.state, dt, this.ctx.tutorial);
+    const splashOpen = this.hud.isSplashOpen();
+    this.ctx.economy.tick(this.ctx.state, dt, this.ctx.tutorial, splashOpen);
     this.ctx.tutorial.tickEarlyPointer(
       dt,
       this.ctx.state,
@@ -267,6 +300,7 @@ export class PlayScene extends Phaser.Scene {
     if (
       this.tab === 'outlook' &&
       !this.barlog.active() &&
+      !splashOpen &&
       !this.ctx.tutorial.shouldPausePassive(this.ctx.state)
     ) {
       this.ctx.spawn.tick(this.ctx.state, dt, this.outlook.creatureBounds());
@@ -377,6 +411,46 @@ export class PlayScene extends Phaser.Scene {
     const tapX = hit.sprite.x;
     const tapY = hit.sprite.y;
 
+    if (hit.variant === 'volatile') {
+      hit.applyTap();
+      this.ctx.economy.triggerManaLock(
+        this.ctx.state,
+        economy.volatileManaLockSeconds,
+      );
+      this.ctx.audio.playSfx('barrier', 0.45, 0.85);
+      playCastBurst(
+        this,
+        tapX,
+        tapY,
+        `MANA LOCKED ${economy.volatileManaLockSeconds}s`,
+        {
+          sublabel: 'UNSTABLE!',
+          hazard: true,
+        },
+      );
+      return;
+    }
+
+    if (hit.variant === 'phasing' && hit.phasedOut) {
+      hit.applyTap();
+      this.ctx.economy.triggerManaLock(
+        this.ctx.state,
+        economy.phasingManaLockSeconds,
+      );
+      this.ctx.audio.playSfx('barrier', 0.45, 0.95);
+      playCastBurst(
+        this,
+        tapX,
+        tapY,
+        `MANA LOCKED ${economy.phasingManaLockSeconds}s`,
+        {
+          sublabel: 'PHANTOM MISS!',
+          hazard: true,
+        },
+      );
+      return;
+    }
+
     let gained: number;
     let sfx: Parameters<typeof this.ctx.audio.playSfx>[0];
     let vol = 0.42;
@@ -387,22 +461,48 @@ export class PlayScene extends Phaser.Scene {
     let orbCount: number;
     let orbColor = 0x34d399;
 
-    if (hit.vessel) {
+    if (hit.variant === 'phasing') {
+      const willClear = hit.shieldPips <= 1;
+      gained = willClear
+        ? this.ctx.economy.tryVariantClear(this.ctx.state, 1)
+        : this.ctx.economy.tryVariantHit(this.ctx.state);
+      sfx = willClear ? 'lock-shatter' : 'lock-rattle';
+      vol = willClear ? 0.45 : 0.36;
+      sublabel = willClear
+        ? `WILD FRENZY ×${this.ctx.economy.frenzyMultiplier()}!`
+        : `PHANTOM ${hit.shieldPips - 1}/2`;
+      overcharge = willClear;
+      orbCount = willClear ? 6 : 2;
+      orbColor = willClear ? 0xfbbf24 : 0x38bdf8;
+    } else if (hit.variant === 'siphon') {
+      const willClear = hit.shieldPips <= 1;
+      gained = willClear
+        ? this.ctx.economy.tryVariantClear(this.ctx.state, 2)
+        : this.ctx.economy.tryVariantHit(this.ctx.state);
+      sfx = willClear ? 'reward' : 'lock-rattle';
+      vol = willClear ? 0.45 : 0.36;
+      sublabel = willClear
+        ? `WILD FRENZY ×${this.ctx.economy.frenzyMultiplier()}!`
+        : `LEECH ${hit.shieldPips - 1}/2`;
+      overcharge = willClear;
+      orbCount = willClear ? 7 : 2;
+      orbColor = willClear ? 0xfbbf24 : 0x14b8a6;
+    } else if (hit.variant === 'vessel') {
       const willExtract = hit.shieldPips <= 1;
       gained = this.ctx.economy.tryVesselTap(this.ctx.state, willExtract);
       sfx = willExtract ? 'reward' : 'creature-tap';
       vol = willExtract ? 0.45 : 0.42;
       rate = willExtract ? 1 : 1.14;
-      sublabel = willExtract ? 'ESSENCE EXTRACTED!' : `VESSEL ${hit.shieldPips - 1}/3`;
+      sublabel = willExtract ? 'GOLDEN CAUGHT!' : `GOLDEN ${hit.shieldPips - 1}/3`;
       overcharge = true;
       orbCount = willExtract ? 6 : 3;
       orbColor = 0xfbbf24;
-    } else if (hit.blighted) {
+    } else if (hit.variant === 'blighted') {
       const willPurify = hit.shieldPips <= 1;
       gained = this.ctx.economy.tryBlightedTap(this.ctx.state, willPurify);
       sfx = willPurify ? 'lock-shatter' : 'lock-rattle';
       vol = willPurify ? 0.45 : 0.36;
-      sublabel = willPurify ? 'CLEANSED!' : `CORRUPTION ${hit.shieldPips - 1}/3`;
+      sublabel = willPurify ? 'CLEANSED!' : `CORRUPTED ${hit.shieldPips - 1}/3`;
       purified = willPurify;
       orbCount = willPurify ? 6 : 1;
       orbColor = willPurify ? 0x34d399 : 0xa855f7;
@@ -473,7 +573,7 @@ export class PlayScene extends Phaser.Scene {
             chId === 2
               ? 'Your maximum mana has increased, and Arcane Surge is unlocked! Every 10th combo spell arcs lightning across all creatures in the valley.'
               : chId === 3
-                ? 'Your maximum mana has increased, and Ancient Vessels are unlocked! A 25-spell combo draws out a golden vessel—tap it 3 times as it bounds across the valley.'
+                ? 'Your maximum mana has increased as your magic deepens.'
                 : 'Your maximum mana has increased, and Total Extraction is unlocked! Arcane Surge strikes twice and instantly cleanses Corrupted creatures.';
           this.hud.showAchievementSplash({
             description: unlockCopy,
@@ -1050,32 +1150,41 @@ export class PlayScene extends Phaser.Scene {
       this.ctx.state.portalUnlocked,
       this.ctx.state.region,
     );
-    const vesselActive = this.ctx.spawn.hasVessel();
-    const blightedActive = this.ctx.spawn.hasBlighted();
+    const frenzyVariant = this.ctx.spawn.activeFrenzyVariant();
+    const vesselActive = this.ctx.spawn.hasVariant('vessel');
+    const blightedActive = this.ctx.spawn.hasVariant('blighted');
+    const pillMode: 'normal' | CreatureVariant =
+      frenzyVariant ??
+      (vesselActive ? 'vessel' : blightedActive ? 'blighted' : 'normal');
     const showOutlookPill =
       this.tab === 'outlook' &&
       !this.blocked() &&
-      (vesselActive ||
-        blightedActive ||
+      (pillMode !== 'normal' ||
         (this.ctx.state.tutorialCompleted &&
           this.ctx.state.achievements.clickerCount < 25));
-    const pillMode = vesselActive
-      ? 'vessel'
-      : blightedActive
-        ? 'corrupted'
-        : 'normal';
     this.hud.setOutlookPill(showOutlookPill, pillMode);
+    const bannerOpen = this.hud.isAchBannerOpen() || this.news.isOpen();
+    const comboVisible =
+      this.tab === 'outlook' &&
+      !this.blocked() &&
+      this.ctx.economy.comboCount >= 2;
     this.hud.setComboHud({
-      visible:
-        this.tab === 'outlook' &&
-        !this.blocked() &&
-        this.ctx.economy.comboCount >= 2,
+      visible: comboVisible,
       multiplier: this.ctx.economy.comboMultiplier,
       steps: this.ctx.economy.surgeSteps(),
       decayRatio: this.ctx.economy.comboDecayRatio(),
       surgeUnlocked:
         this.ctx.state.manaLevel >= 2 || this.ctx.state.buffRemaining > 0,
-      bannerOpen: this.hud.isAchBannerOpen() || this.news.isOpen(),
+      bannerOpen,
+    });
+    const frenzyMult = this.ctx.economy.frenzyMultiplier();
+    this.hud.setFrenzyHud({
+      visible: this.tab === 'outlook' && !this.blocked() && frenzyMult > 1,
+      multiplier: frenzyMult,
+      remainingSeconds: this.ctx.economy.frenzyRemaining,
+      decayRatio: this.ctx.economy.frenzyDecayRatio(),
+      comboVisible,
+      bannerOpen,
     });
   }
 

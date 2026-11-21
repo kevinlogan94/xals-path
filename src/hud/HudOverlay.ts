@@ -1,6 +1,6 @@
 import './blighted-scroll.css';
 import type { GameContext } from '../game/GameContext';
-import type { ChapterDef, CreatureDef, GameSave, RegionId, TabId } from '../types';
+import type { ChapterDef, CreatureDef, CreatureVariant, GameSave, RegionId, TabId } from '../types';
 import { formatNumber } from '../utils/format';
 import {
   NAV,
@@ -32,6 +32,7 @@ import {
   bindCredits,
   bindEndGame,
   bindSimple,
+  bindVariantEncounter,
   buffSplash,
   endGameSplash,
   feedbackSplash,
@@ -93,6 +94,9 @@ export class HudOverlay {
   private readonly comboLabel: HTMLElement;
   private readonly comboPips: HTMLElement[];
   private readonly comboDecay: HTMLElement;
+  private readonly frenzyHud: HTMLElement;
+  private readonly frenzyLabel: HTMLElement;
+  private readonly frenzyDecay: HTMLElement;
   private toastTimer = 0;
   private achBannerTimer = 0;
   private achQueue: AchievementDef[] = [];
@@ -167,7 +171,11 @@ export class HudOverlay {
         </div>
         <div class="combo-decay" data-combo-decay></div>
       </div>
-      <div class="outlook-pill" data-outlook-pill hidden>Tap creatures to cleanse • Light up 3 for The Great Weave</div>
+      <div class="frenzy-hud" data-frenzy-hud hidden>
+        <span class="frenzy-label" data-frenzy-label>WILD FRENZY ×2 • 12s</span>
+        <div class="frenzy-decay" data-frenzy-decay></div>
+      </div>
+      <div class="outlook-pill" data-outlook-pill hidden>Tap creatures to cleanse • Light 3 for a Triad Burst</div>
       <nav class="nav-dock">${NAV.map(
         (n) =>
           `<button type="button" class="nav-btn" data-tab="${n.id}"><img src="${n.icon}" alt="" /><span>${n.label}</span><span class="nav-dot" data-dot="${n.id}" hidden>!</span></button>`,
@@ -216,6 +224,9 @@ export class HudOverlay {
     this.comboLabel = this.root.querySelector('[data-combo-label]')!;
     this.comboPips = Array.from(this.root.querySelectorAll<HTMLElement>('[data-combo-pip]'));
     this.comboDecay = this.root.querySelector('[data-combo-decay]')!;
+    this.frenzyHud = this.root.querySelector('[data-frenzy-hud]')!;
+    this.frenzyLabel = this.root.querySelector('[data-frenzy-label]')!;
+    this.frenzyDecay = this.root.querySelector('[data-frenzy-decay]')!;
 
     this.bookcase.addEventListener('pointerdown', (e) => e.stopPropagation());
     this.bookcase.addEventListener('click', (e) => {
@@ -371,6 +382,10 @@ export class HudOverlay {
   showCreatureInspectSplash(creature: CreatureDef): void {
     const def = this.ctx.economy.def(creature.helperId);
     this.openSplash('', bindCreatureInspect(creature, def?.name ?? creature.helperId));
+  }
+
+  showVariantEncounterSplash(variant: CreatureVariant, creatureId: string): void {
+    this.openSplash('', bindVariantEncounter(variant, creatureId));
   }
 
   isBestiaryOpen(): boolean {
@@ -567,16 +582,29 @@ export class HudOverlay {
 
   refresh(levelReady: boolean, reading: boolean, chapterReady: boolean): void {
     const s = this.ctx.state;
+    const frenzyMult = this.ctx.economy.frenzyMultiplier();
+    const effectivePps = this.ctx.economy.effectivePassivePerSecond(s);
     this.hudAmt.textContent = formatNumber(s.influence);
-    this.hudRate.textContent = `+${formatNumber(this.ctx.economy.passivePerSecond(s))}/sec`;
+    this.hudRate.textContent =
+      frenzyMult > 1
+        ? `+${formatNumber(effectivePps)}/sec (×${frenzyMult})`
+        : `+${formatNumber(effectivePps)}/sec`;
+    this.hudRate.classList.toggle('is-frenzy', frenzyMult > 1);
     this.hudLvl.textContent = `LVL ${s.playerLevel}`;
     this.hudUp.hidden = !levelReady;
     this.xpFill.style.width = `${Math.min(100, (s.totalInfluenceEarned / Math.max(1, s.experienceRequired)) * 100)}%`;
+    const locked = this.ctx.economy.isManaLocked();
     const buffOn = s.buffRemaining > 0;
-    this.manaBar.hidden = buffOn;
-    this.buff.hidden = !buffOn;
-    if (buffOn) this.buff.textContent = `${Math.ceil(s.buffRemaining)}s`;
-    else this.manaFill.style.width = `${Math.min(100, (s.mana / Math.max(1, s.manaMax)) * 100)}%`;
+    this.manaBar.hidden = locked || buffOn;
+    this.buff.hidden = !locked && !buffOn;
+    this.buff.classList.toggle('is-locked', locked);
+    if (locked) {
+      this.buff.textContent = `✕ LOCKED ${Math.ceil(this.ctx.economy.manaLockRemaining)}s`;
+    } else if (buffOn) {
+      this.buff.textContent = `∞ ${Math.ceil(s.buffRemaining)}s`;
+    } else {
+      this.manaFill.style.width = `${Math.min(100, (s.mana / Math.max(1, s.manaMax)) * 100)}%`;
+    }
     this.setDot('achievements', this.ctx.economy.anyClaimable(s));
     this.setDot('scene', chapterReady);
     this.setDot('shop', this.ctx.economy.anyAffordableHelper(s, reading));
@@ -714,23 +742,56 @@ export class HudOverlay {
     this.comboDecay.style.transform = `scaleX(${opts.decayRatio.toFixed(3)})`;
   }
 
+  setFrenzyHud(opts: {
+    visible: boolean;
+    multiplier: number;
+    remainingSeconds: number;
+    decayRatio: number;
+    comboVisible?: boolean;
+    bannerOpen?: boolean;
+  }): void {
+    this.frenzyHud.hidden = !opts.visible;
+    if (!opts.visible) return;
+    this.frenzyHud.classList.toggle('has-combo', !!opts.comboVisible);
+    this.frenzyHud.classList.toggle('has-banner', !!opts.bannerOpen);
+    this.frenzyLabel.textContent = `WILD FRENZY ×${opts.multiplier} • ${Math.ceil(opts.remainingSeconds)}s`;
+    this.frenzyDecay.style.transform = `scaleX(${opts.decayRatio.toFixed(3)})`;
+  }
+
   setOutlookPill(
     visible: boolean,
-    mode: 'normal' | 'corrupted' | 'vessel',
+    mode: 'normal' | CreatureVariant,
   ): void {
     this.outlookPill.hidden = !visible;
     if (!visible) return;
-    this.outlookPill.classList.toggle('is-blighted', mode === 'corrupted');
+    this.outlookPill.classList.toggle('is-blighted', mode === 'blighted');
     this.outlookPill.classList.toggle('is-vessel', mode === 'vessel');
-    if (mode === 'vessel') {
-      this.outlookPill.textContent =
-        'Ancient Vessel • Catch it 3× before it escapes!';
-    } else if (mode === 'corrupted') {
-      this.outlookPill.textContent =
-        'Corrupted creature • Tap 3× to cleanse';
-    } else {
-      this.outlookPill.textContent =
-        'Tap creatures to cleanse • Light 3 for The Great Weave';
+    this.outlookPill.classList.toggle('is-volatile', mode === 'volatile');
+    this.outlookPill.classList.toggle('is-phasing', mode === 'phasing');
+    this.outlookPill.classList.toggle('is-siphon', mode === 'siphon');
+    switch (mode) {
+      case 'volatile':
+        this.outlookPill.textContent = "Unstable • Don't tap! Cast ahead of it";
+        break;
+      case 'phasing':
+        this.outlookPill.textContent =
+          'Phantom • Tap 2× while solid, wait if faded';
+        break;
+      case 'siphon':
+        this.outlookPill.textContent =
+          'Leech • Tap 2× fast to stop the drain!';
+        break;
+      case 'vessel':
+        this.outlookPill.textContent =
+          'Golden • Catch it 3× before it escapes!';
+        break;
+      case 'blighted':
+        this.outlookPill.textContent = 'Corrupted • Tap 3× to cleanse';
+        break;
+      default:
+        this.outlookPill.textContent =
+          'Tap creatures to cleanse • Light 3 for a Triad Burst';
+        break;
     }
   }
 

@@ -1,6 +1,7 @@
 import type { GameSave } from '../types';
 
 export type WhatsNewId =
+  | 'variants-v1'
   | 'fold-v1'
   | 'outlook-v1'
   | 'sound-v1'
@@ -8,6 +9,7 @@ export type WhatsNewId =
   | 'achievements-v1';
 
 export const WHATS_NEW_IDS: WhatsNewId[] = [
+  'variants-v1',
   'fold-v1',
   'outlook-v1',
   'sound-v1',
@@ -82,7 +84,7 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   {
     id: 'tapper',
     title: 'Tapper',
-    description: 'Cast 100 spells during a single Blessing of the Gods.',
+    description: "Cast 100 spells during a single Sky's Grace.",
     icon: './assets/ui/achievements/tapper.png',
   },
   {

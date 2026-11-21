@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { CreatureVariant } from '../../../types';
 
 const DARK_BACKING = 0x050407;
 const EMERALD = 0x34d399;
@@ -7,6 +8,10 @@ const CYAN = 0x38bdf8;
 const PALE_CYAN = 0xbae6fd;
 const VIOLET = 0xa855f7;
 const PALE_VIOLET = 0xe9d5ff;
+const CRIMSON = 0xef4444;
+const PALE_CRIMSON = 0xfca5a5;
+const TEAL = 0x14b8a6;
+const PALE_TEAL = 0x99f6e4;
 
 function strokeOctagonRune(
   g: Phaser.GameObjects.Graphics,
@@ -96,43 +101,97 @@ export interface ShieldAuraHandle {
   setPips: (remaining: number) => void;
 }
 
-/** 3-pip shield aura for Corrupted creatures (purple) or Ancient Vessels (golden). */
+const VARIANT_AURA: Record<
+  CreatureVariant,
+  {
+    color: number;
+    pale: number;
+    pips: number;
+    angle: number;
+    duration: number;
+    radius: number;
+    pulse?: boolean;
+  }
+> = {
+  blighted: {
+    color: VIOLET,
+    pale: PALE_VIOLET,
+    pips: 3,
+    angle: -360,
+    duration: 3200,
+    radius: 56,
+  },
+  vessel: {
+    color: AMBER,
+    pale: 0xfef08a,
+    pips: 3,
+    angle: 360,
+    duration: 2100,
+    radius: 58,
+  },
+  volatile: {
+    color: CRIMSON,
+    pale: PALE_CRIMSON,
+    pips: 0,
+    angle: -360,
+    duration: 1600,
+    radius: 56,
+    pulse: true,
+  },
+  phasing: {
+    color: CYAN,
+    pale: PALE_CYAN,
+    pips: 2,
+    angle: 360,
+    duration: 2600,
+    radius: 56,
+  },
+  siphon: {
+    color: TEAL,
+    pale: PALE_TEAL,
+    pips: 2,
+    angle: -360,
+    duration: 1400,
+    radius: 56,
+  },
+};
+
+/** Shield / hazard aura ring for special creature variants. */
 export function makeShieldAura(
   scene: Phaser.Scene,
-  kind: 'blighted' | 'vessel',
+  kind: CreatureVariant,
 ): ShieldAuraHandle {
-  const isVessel = kind === 'vessel';
-  const color = isVessel ? AMBER : VIOLET;
-  const pipRing = isVessel ? 0xfef08a : PALE_VIOLET;
-  const r = isVessel ? 58 : 56;
+  const cfg = VARIANT_AURA[kind];
+  const r = cfg.radius;
 
   const backing = scene.add.graphics();
-  backing.fillStyle(DARK_BACKING, isVessel ? 0.72 : 0.76);
+  backing.fillStyle(DARK_BACKING, kind === 'vessel' ? 0.72 : 0.76);
   backing.fillCircle(0, 0, r);
-  backing.lineStyle(3, color, 0.95);
+  backing.lineStyle(3, cfg.color, 0.95);
   backing.strokeCircle(0, 0, r - 6);
 
   const rune = scene.add.graphics();
   strokeOctagonRune(rune, r - 10, 6, DARK_BACKING, 0.85);
-  strokeOctagonRune(rune, r - 10, 2.6, color, 0.98);
+  strokeOctagonRune(rune, r - 10, 2.6, cfg.color, 0.98);
 
   const pips = scene.add.graphics();
   const setPips = (remaining: number) => {
     pips.clear();
-    const xs = [-18, 0, 18];
-    for (let i = 0; i < 3; i++) {
+    if (cfg.pips <= 0) return;
+    const xs = cfg.pips === 2 ? [-10, 10] : [-18, 0, 18];
+    for (let i = 0; i < cfg.pips; i++) {
       const active = i < remaining;
       pips.fillStyle(DARK_BACKING, 0.9);
       pips.fillCircle(xs[i], -r, 7);
-      pips.lineStyle(2, active ? pipRing : 0x4b5563, 0.95);
+      pips.lineStyle(2, active ? cfg.pale : 0x4b5563, 0.95);
       pips.strokeCircle(xs[i], -r, 6);
       if (active) {
-        pips.fillStyle(color, 1);
+        pips.fillStyle(cfg.color, 1);
         pips.fillCircle(xs[i], -r, 4.3);
       }
     }
   };
-  setPips(3);
+  setPips(cfg.pips);
 
   const container = scene.add
     .container(0, 0, [backing, rune, pips])
@@ -140,13 +199,24 @@ export function makeShieldAura(
 
   scene.tweens.add({
     targets: rune,
-    angle: isVessel ? 360 : -360,
-    duration: isVessel ? 2100 : 3200,
+    angle: cfg.angle,
+    duration: cfg.duration,
     repeat: -1,
   });
 
+  if (cfg.pulse) {
+    scene.tweens.add({
+      targets: backing,
+      scale: { from: 0.92, to: 1.08 },
+      duration: 420,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+  }
+
   container.once('destroy', () => {
-    scene.tweens.killTweensOf(rune);
+    scene.tweens.killTweensOf([rune, backing]);
   });
 
   return { container, setPips };
@@ -398,6 +468,7 @@ export interface CastBurstOptions {
   sublabel?: string;
   overcharge?: boolean;
   purified?: boolean;
+  hazard?: boolean;
 }
 
 /** Cast & Creature-Tap: 4-part "Blighted Scroll" procedural VFX + floating text. */
@@ -408,9 +479,18 @@ export function playCastBurst(
   label: string,
   opts: CastBurstOptions = {},
 ): void {
-  const primaryColor = opts.purified ? VIOLET : opts.overcharge ? AMBER : EMERALD;
+  const primaryColor = opts.hazard
+    ? CRIMSON
+    : opts.purified
+      ? VIOLET
+      : opts.overcharge
+        ? AMBER
+        : EMERALD;
+  const emphasized = !!(opts.overcharge || opts.purified || opts.hazard);
 
-  if (opts.overcharge || opts.purified) {
+  if (opts.hazard) {
+    scene.cameras.main.shake(140, 0.006);
+  } else if (opts.overcharge || opts.purified) {
     scene.cameras.main.shake(110, 0.004);
   }
 
@@ -420,7 +500,7 @@ export function playCastBurst(
   flash.fillCircle(0, 0, 60);
   flash.fillStyle(primaryColor, 0.5);
   flash.fillCircle(0, 0, 34);
-  flash.fillStyle(PALE_CYAN, 0.95);
+  flash.fillStyle(opts.hazard ? PALE_CRIMSON : PALE_CYAN, 0.95);
   flash.fillPoints(
     [
       new Phaser.Math.Vector2(0, -20),
@@ -432,30 +512,30 @@ export function playCastBurst(
   );
   scene.tweens.add({
     targets: flash,
-    scale: opts.overcharge || opts.purified ? 1.7 : 1.4,
+    scale: emphasized ? 1.7 : 1.4,
     alpha: 0,
     duration: 380,
     ease: 'Quad.easeOut',
     onComplete: () => flash.destroy(),
   });
 
-  // 1. Spinning Ground Rune (0ms – 450ms)
+  // 1. Spinning Ground Rune (0ms - 450ms)
   const rune = scene.add.graphics({ x, y }).setDepth(8).setScale(0.65).setAlpha(1);
   strokeOctagonRune(rune, 52, 7, DARK_BACKING, 0.8);
-  strokeOctagonRune(rune, 52, 3, AMBER, 1);
-  rune.lineStyle(2, CYAN, 0.9);
+  strokeOctagonRune(rune, 52, 3, opts.hazard ? CRIMSON : AMBER, 1);
+  rune.lineStyle(2, opts.hazard ? PALE_CRIMSON : CYAN, 0.9);
   rune.strokeCircle(0, 0, 32);
   scene.tweens.add({
     targets: rune,
     angle: 45,
-    scale: opts.overcharge || opts.purified ? 1.55 : 1.3,
+    scale: emphasized ? 1.55 : 1.3,
     alpha: 0,
     duration: 450,
     ease: 'Cubic.easeOut',
     onComplete: () => rune.destroy(),
   });
 
-  // 2. Druidic Shockwave Ring (0ms – 500ms)
+  // 2. Druidic Shockwave Ring (0ms - 500ms)
   const ring = scene.add.graphics({ x, y }).setDepth(8);
   const ringState = { radius: 12, alpha: 1, width: 4.5 };
   const drawRing = () => {
@@ -468,7 +548,7 @@ export function playCastBurst(
   drawRing();
   scene.tweens.add({
     targets: ringState,
-    radius: opts.overcharge || opts.purified ? 110 : 85,
+    radius: emphasized ? 110 : 85,
     alpha: 0,
     width: 0.8,
     duration: 500,
@@ -477,13 +557,13 @@ export function playCastBurst(
     onComplete: () => ring.destroy(),
   });
 
-  // 3. Rising Mana Spores Burst (0ms – 650ms)
-  const count = opts.overcharge || opts.purified ? 14 : Phaser.Math.Between(10, 12);
+  // 3. Rising Mana Spores Burst (0ms - 650ms)
+  const count = emphasized ? 14 : Phaser.Math.Between(10, 12);
   for (let i = 0; i < count; i++) {
     const angle = (Math.PI * 2 * i) / count + Phaser.Math.FloatBetween(-0.22, 0.22);
     const dist = Phaser.Math.FloatBetween(38, 78);
     const pr = Phaser.Math.FloatBetween(4, 6);
-    const color = i % 2 === 0 ? primaryColor : AMBER;
+    const color = i % 2 === 0 ? primaryColor : opts.hazard ? PALE_CRIMSON : AMBER;
     const spore = scene.add.graphics({ x, y }).setDepth(9);
     spore.lineStyle(2, DARK_BACKING, 0.85);
     spore.fillStyle(color, 1);
@@ -512,15 +592,21 @@ export function playCastBurst(
     });
   }
 
-  // 4. Crisp Floating Influence Text (0ms – 800ms)
+  // 4. Crisp Floating Influence Text (0ms - 800ms)
   const textValue = opts.sublabel ? `${opts.sublabel}\n${label}` : label;
   const floater = scene.add
     .text(x, y - 6, textValue, {
       fontFamily: '"JetBrains Mono", monospace',
       fontStyle: 'bold',
-      fontSize: opts.overcharge || opts.purified ? '19px' : '18px',
+      fontSize: emphasized ? '19px' : '18px',
       align: 'center',
-      color: opts.purified ? '#e9d5ff' : opts.overcharge ? '#fde68a' : '#67e8f9',
+      color: opts.hazard
+        ? '#fca5a5'
+        : opts.purified
+          ? '#e9d5ff'
+          : opts.overcharge
+            ? '#fde68a'
+            : '#67e8f9',
       stroke: '#050407',
       strokeThickness: 4,
       shadow: {
@@ -538,7 +624,7 @@ export function playCastBurst(
 
   scene.tweens.add({
     targets: floater,
-    scale: opts.overcharge || opts.purified ? 1.28 : 1.2,
+    scale: emphasized ? 1.28 : 1.2,
     duration: 150,
     ease: 'Cubic.easeOut',
     onComplete: () => {

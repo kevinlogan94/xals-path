@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import type { CreatureDef, GameSave, RegionId } from '../types';
+import type { CreatureDef, CreatureVariant, GameSave, RegionId } from '../types';
 import creaturesData from '../data/creatures.json';
 import economy from '../data/economy.json';
 import {
@@ -11,6 +11,8 @@ import {
 } from '../scenes/play/outlook/creatureMagic';
 import { ensureRunAnim, texKey } from '../scenes/play/splash/creatureSplash';
 
+type FrenzyVariant = 'volatile' | 'phasing' | 'siphon';
+
 interface Spawned {
   sprite: Phaser.GameObjects.Sprite;
   magicAura: Phaser.GameObjects.Container;
@@ -19,8 +21,10 @@ interface Spawned {
   resonating: boolean;
   resonanceOrbAcc: number;
   countedInConvergence: boolean;
-  blighted: boolean;
-  vessel: boolean;
+  variant: CreatureVariant | null;
+  phasedOut: boolean;
+  siphonAcc: number;
+  encounterTriggered: boolean;
   shieldPips: number;
   done: boolean;
   age: number;
@@ -46,8 +50,8 @@ interface ActiveBloom {
 
 export interface CreatureTapHit {
   sprite: Phaser.GameObjects.Sprite;
-  blighted: boolean;
-  vessel: boolean;
+  variant: CreatureVariant | null;
+  phasedOut: boolean;
   shieldPips: number;
   resonating: boolean;
   applyTap: () => void;
@@ -57,20 +61,44 @@ const MAX_CREATURES = 6;
 const RESONANCE_TICK_INTERVAL = 0.55;
 const BLOOM_PAD_RADIUS = 72;
 const PROXIMITY_ARC_RADIUS = 135;
+const VOLATILE_GRACE_SECONDS = 0.6;
+const SIPHON_SNUFF_INTERVAL = 0.9;
+
+const VARIANT_TINT: Record<CreatureVariant, number> = {
+  blighted: 0xc084fc,
+  vessel: 0xfde047,
+  volatile: 0xfca5a5,
+  phasing: 0x7dd3fc,
+  siphon: 0x5eead4,
+};
+
+const VARIANT_PIPS: Record<CreatureVariant, number> = {
+  blighted: 3,
+  vessel: 3,
+  volatile: 0,
+  phasing: 2,
+  siphon: 2,
+};
+
+function isFrenzyVariant(v: CreatureVariant | null): v is FrenzyVariant {
+  return v === 'volatile' || v === 'phasing' || v === 'siphon';
+}
 
 /**
  * Fast-paced continuous creature stream on Outlook:
- * - Lvl 1+: Creatures run across (3.4–4.4s), ignite into Resonance on the run, detonate Bloom pads,
- *   and link 3 resonating creatures into The Great Weave.
- * - Ch 2+ (manaLevel >= 2): 10th-spell Arcane Surge chains lightning to all creatures.
- * - Ch 3+ (manaLevel >= 3): 25-spell streak summons an evasive golden Ancient Vessel (dodges on tap).
+ * - Lvl 1+: Creatures run across (3.4-4.4s), glow when cleansed, trigger spell flowers,
+ *   and link 3 glowing creatures into a Triad Burst.
+ * - Ch 2+ (manaLevel >= 2): 10th-spell Arcane Surge chains lightning to classic creatures.
+ * - Ch 3+ (manaLevel >= 3): 25-spell streak summons an evasive Golden Creature (dodges on tap).
  * - Ch 4+ (manaLevel >= 4): Twin Arcane Surge strikes twice and instantly cleanses Corrupted creatures.
+ * - Lvl 12/15/17+: Split-slot Frenzy threats (Unstable, Phantom, Leech) fuel Wild Frenzy.
  */
 export class SpawnSystem {
   readonly creatures: CreatureDef[] = creaturesData.creatures as CreatureDef[];
   private spawned: Spawned[] = [];
   private pending: PendingSpawn[] = [];
   private blooms: ActiveBloom[] = [];
+  private timeSinceLastFrenzySpawn = 0;
   private lastBounds: { x: number; y: number; w: number; h: number } = {
     x: 0,
     y: 76,
@@ -81,6 +109,13 @@ export class SpawnSystem {
   private onTap: ((hit: CreatureTapHit) => void) | null = null;
   private onResonanceOrb: ((x: number, y: number) => void) | null = null;
   private onConvergence: ((x: number, y: number) => void) | null = null;
+  private onVariantTrap:
+    | ((variant: 'volatile', x: number, y: number, stacks: number) => void)
+    | null = null;
+  private onSiphonDrain: ((dt: number) => void) | null = null;
+  private onFirstEncounter:
+    | ((variant: CreatureVariant, creatureId: string) => void)
+    | null = null;
 
   attach(scene: Phaser.Scene): void {
     this.scene = scene;
@@ -98,12 +133,39 @@ export class SpawnSystem {
     this.onConvergence = handler;
   }
 
-  hasBlighted(): boolean {
-    return this.spawned.some((s) => s.blighted);
+  setVariantTrapHandler(handler: NonNullable<SpawnSystem['onVariantTrap']>): void {
+    this.onVariantTrap = handler;
   }
 
-  hasVessel(): boolean {
-    return this.spawned.some((s) => s.vessel);
+  setSiphonDrainHandler(handler: NonNullable<SpawnSystem['onSiphonDrain']>): void {
+    this.onSiphonDrain = handler;
+  }
+
+  setFirstEncounterHandler(
+    handler: NonNullable<SpawnSystem['onFirstEncounter']>,
+  ): void {
+    this.onFirstEncounter = handler;
+  }
+
+  hasVariant(v: CreatureVariant): boolean {
+    return this.spawned.some((s) => !s.done && s.variant === v);
+  }
+
+  activeFrenzyVariant(): FrenzyVariant | null {
+    for (const s of this.spawned) {
+      if (!s.done && isFrenzyVariant(s.variant)) return s.variant;
+    }
+    return null;
+  }
+
+  hasClassicVariant(): boolean {
+    return this.spawned.some(
+      (s) => !s.done && (s.variant === 'blighted' || s.variant === 'vessel'),
+    );
+  }
+
+  hasFrenzyVariant(): boolean {
+    return this.activeFrenzyVariant() !== null;
   }
 
   hasActiveOrPending(): boolean {
@@ -122,15 +184,21 @@ export class SpawnSystem {
     this.spawned = [];
     this.pending = [];
     this.blooms = [];
+    this.timeSinceLastFrenzySpawn = 0;
   }
 
   hits(x: number, y: number): boolean {
-    return this.spawned.some(
-      (s) =>
-        !s.done &&
-        (s.sprite.getBounds().contains(x, y) ||
-          Phaser.Math.Distance.Between(x, y, s.x, s.sprite.y) <= 58),
-    );
+    return this.spawned.some((s) => {
+      if (s.done) return false;
+      if (s.variant === 'volatile') {
+        if (s.age < VOLATILE_GRACE_SECONDS) return false;
+        return Phaser.Math.Distance.Between(x, y, s.x, s.sprite.y) <= 44;
+      }
+      return (
+        s.sprite.getBounds().contains(x, y) ||
+        Phaser.Math.Distance.Between(x, y, s.x, s.sprite.y) <= 58
+      );
+    });
   }
 
   eligible(state: GameSave, region: RegionId): CreatureDef[] {
@@ -173,9 +241,9 @@ export class SpawnSystem {
 
   /**
    * Called on a manual ground cast:
-   * 1. Plants a Bloom Rune Pad that detonates when a running creature bounds over it.
-   * 2. On Arcane Surge (10th combo tap, unlocked at Ch 2 / manaLevel >= 2 or during Blessing),
-   *    chains golden lightning to ALL active creatures (and strikes twice / fully cleanses at Ch 4 / manaLevel >= 4).
+   * 1. Plants a spell flower that triggers when a running creature bounds over it.
+   * 2. On Arcane Surge (10th combo tap, unlocked at Ch 2 / manaLevel >= 2 or during Sky's Grace),
+   *    chains golden lightning to classic creatures (Frenzy threats resist or absorb it).
    * 3. Otherwise snaps a proximity arc to the nearest healthy runner within range.
    */
   onGroundCast(state: GameSave, x: number, y: number, overcharge = false): void {
@@ -201,7 +269,7 @@ export class SpawnSystem {
     let closest: Spawned | null = null;
     let bestDist = PROXIMITY_ARC_RADIUS;
     for (const s of this.spawned) {
-      if (s.blighted || s.vessel || s.resonating || s.done) continue;
+      if (s.variant !== null || s.resonating || s.done) continue;
       const d = Phaser.Math.Distance.Between(x, y, s.x, s.sprite.y);
       if (d <= bestDist) {
         bestDist = d;
@@ -223,14 +291,19 @@ export class SpawnSystem {
     const twinStorm = state.manaLevel >= 4;
     for (const s of this.spawned) {
       if (s.done) continue;
+      if (s.variant === 'volatile' || s.variant === 'phasing') continue;
+      if (s.variant === 'siphon') {
+        playLeylineArc(this.scene, x, y, s.x, s.sprite.y, 0x14b8a6);
+        continue;
+      }
       playLeylineArc(this.scene, x, y, s.x, s.sprite.y, 0xfbbf24);
       if (twinStorm) {
         playLeylineArc(this.scene, x, y - 8, s.x, s.sprite.y + 8, 0x34d399);
       }
-      if (s.blighted) {
-        this.crackBlightShield(s, twinStorm ? 3 : 1);
+      if (s.variant === 'blighted') {
+        this.crackShield(s, twinStorm ? 3 : 1);
         this.onResonanceOrb?.(s.x, s.sprite.y);
-      } else if (s.vessel) {
+      } else if (s.variant === 'vessel') {
         this.onResonanceOrb?.(s.x, s.sprite.y);
         if (twinStorm) this.onResonanceOrb?.(s.x, s.sprite.y);
       } else {
@@ -241,14 +314,23 @@ export class SpawnSystem {
     }
   }
 
-  private crackBlightShield(s: Spawned, amount = 1, checkWeave = true): void {
+  private clearVariantState(s: Spawned, checkWeave = true): void {
+    s.variant = null;
+    s.phasedOut = false;
+    s.shieldPips = 0;
+    s.sprite.setAlpha(1);
+    s.sprite.clearTint();
+    s.sprite.setDepth(5);
+    s.shieldAura?.container.setAlpha(1);
+    s.shieldAura?.container.setVisible(false);
+    this.enterResonance(s, checkWeave);
+  }
+
+  private crackShield(s: Spawned, amount = 1, checkWeave = true): void {
     s.shieldPips = Math.max(0, s.shieldPips - amount);
     s.shieldAura?.setPips(s.shieldPips);
     if (s.shieldPips <= 0) {
-      s.blighted = false;
-      s.shieldAura?.container.setVisible(false);
-      s.sprite.clearTint();
-      this.enterResonance(s, checkWeave);
+      this.clearVariantState(s, checkWeave);
     }
   }
 
@@ -256,17 +338,34 @@ export class SpawnSystem {
     s.shieldPips = Math.max(0, s.shieldPips - 1);
     s.shieldAura?.setPips(s.shieldPips);
     if (s.shieldPips <= 0) {
-      s.vessel = false;
-      s.shieldAura?.container.setVisible(false);
-      s.sprite.clearTint();
-      this.enterResonance(s);
+      this.clearVariantState(s);
       return;
     }
 
-    // Evasive vertical bound + forward surge so the player must track its leap
+    // Evasive vertical bound + forward surge; steer away from any active volatile
     const minY = this.lastBounds.y + 52;
     const maxY = this.lastBounds.y + Math.max(60, this.lastBounds.h - 56);
-    const jump = (Math.random() < 0.5 ? -1 : 1) * Phaser.Math.Between(65, 95);
+    const dist = Phaser.Math.Between(65, 95);
+    const volatile = this.spawned.find(
+      (other) => !other.done && other.variant === 'volatile',
+    );
+    let dirSign: 1 | -1;
+    if (volatile) {
+      const upY = s.baseY - dist;
+      const downY = s.baseY + dist;
+      const upValid = upY >= minY && upY <= maxY;
+      const downValid = downY >= minY && downY <= maxY;
+      const upGap = Math.abs(upY - volatile.baseY);
+      const downGap = Math.abs(downY - volatile.baseY);
+      if (upValid && downValid) dirSign = upGap >= downGap ? -1 : 1;
+      else if (upValid) dirSign = -1;
+      else if (downValid) dirSign = 1;
+      else dirSign = upGap >= downGap ? -1 : 1;
+    } else {
+      dirSign = Math.random() < 0.5 ? -1 : 1;
+    }
+
+    const jump = dirSign * dist;
     let nextY = s.baseY + jump;
     if (nextY < minY || nextY > maxY) {
       nextY = Phaser.Math.Clamp(s.baseY - jump, minY, maxY);
@@ -299,9 +398,9 @@ export class SpawnSystem {
   }
 
   /**
-   * The Great Weave (Level 1+):
-   * When 3 running creatures are resonating simultaneously, snaps a golden triangle between them
-   * and arcs to any other nearby creatures in the valley!
+   * Triad Burst (Level 1+):
+   * When 3 running creatures are glowing simultaneously, snaps a golden triangle between them
+   * and arcs to nearby classic creatures in the valley.
    */
   private checkGreatWeave(): void {
     if (!this.scene) return;
@@ -320,18 +419,48 @@ export class SpawnSystem {
     const cx = (trio[0].x + trio[1].x + trio[2].x) / 3;
     const cy = (trio[0].sprite.y + trio[1].sprite.y + trio[2].sprite.y) / 3;
 
-    // Also zap any other creatures around the weave triangle
     for (const other of this.spawned) {
-      if (other.done || trio.includes(other)) continue;
+      if (other.done || trio.includes(other) || isFrenzyVariant(other.variant)) continue;
       playLeylineArc(this.scene, cx, cy, other.x, other.sprite.y, 0x34d399);
-      if (other.blighted) {
-        this.crackBlightShield(other, 1, false);
-      } else if (!other.vessel) {
+      if (other.variant === 'blighted') {
+        this.crackShield(other, 1, false);
+      } else if (other.variant !== 'vessel') {
         this.enterResonance(other, false);
       }
     }
 
     this.onConvergence?.(cx, cy);
+  }
+
+  private snuffNearestResonating(siphon: Spawned): void {
+    if (!this.scene) return;
+    let target: Spawned | null = null;
+    let bestDist = Infinity;
+    for (const other of this.spawned) {
+      if (other.done || !other.resonating || other === siphon) continue;
+      const d = Phaser.Math.Distance.Between(
+        siphon.x,
+        siphon.sprite.y,
+        other.x,
+        other.sprite.y,
+      );
+      if (d < bestDist) {
+        bestDist = d;
+        target = other;
+      }
+    }
+    if (!target) return;
+    playLeylineArc(
+      this.scene,
+      siphon.x,
+      siphon.sprite.y,
+      target.x,
+      target.sprite.y,
+      0x14b8a6,
+    );
+    target.resonating = false;
+    target.magicAura.setVisible(false);
+    target.countedInConvergence = false;
   }
 
   tick(
@@ -342,34 +471,67 @@ export class SpawnSystem {
     if (!this.scene) return;
     this.lastBounds = bounds;
 
+    if (
+      state.playerLevel >= economy.volatileUnlockLevel &&
+      !this.hasFrenzyVariant()
+    ) {
+      this.timeSinceLastFrenzySpawn += dt;
+    }
+
     for (const p of this.pending) p.delay -= dt;
     const ready = this.pending.filter((p) => p.delay <= 0);
     this.pending = this.pending.filter((p) => p.delay > 0);
     for (const p of ready) this.spawnOne(state, bounds, p.creatureId, p.forceVessel);
 
     for (const s of this.spawned) {
+      if (s.done) continue;
       s.age += dt;
       const runMult = s.resonating ? 1.18 : 1;
       s.x += s.dir * s.speed * runMult * dt;
+      const isVessel = s.variant === 'vessel';
       s.sprite.x = s.x;
       s.sprite.y =
         s.baseY +
         s.hopY +
-        Math.sin(s.age * (s.vessel ? 7.5 : 5.5)) * (s.vessel ? 6 : 4);
+        Math.sin(s.age * (isVessel ? 7.5 : 5.5)) * (isVessel ? 6 : 4);
       s.magicAura.setPosition(s.sprite.x, s.sprite.y);
       s.shieldAura?.container.setPosition(s.sprite.x, s.sprite.y);
 
-      // Check if running creature bounds over an active Bloom Rune Pad
+      if (s.variant === 'phasing') {
+        s.phasedOut = s.age % 2.4 >= 1.35;
+        s.sprite.setAlpha(s.phasedOut ? 0.26 : 1);
+        s.shieldAura?.container.setAlpha(s.phasedOut ? 0.22 : 1);
+      } else if (s.variant === 'siphon') {
+        this.onSiphonDrain?.(dt);
+        s.siphonAcc += dt;
+        while (s.siphonAcc >= SIPHON_SNUFF_INTERVAL) {
+          s.siphonAcc -= SIPHON_SNUFF_INTERVAL;
+          this.snuffNearestResonating(s);
+        }
+      }
+
+      // Check if running creature bounds over an active spell flower
       for (const b of this.blooms) {
         if (b.consumed) continue;
         if (Phaser.Math.Distance.Between(s.x, s.sprite.y, b.x, b.y) <= BLOOM_PAD_RADIUS) {
-          if (s.blighted) {
+          if (s.variant === 'volatile') {
             b.consumed = true;
             b.graphic.destroy();
-            this.crackBlightShield(s, 1);
+            this.clearVariantState(s);
+            this.onVariantTrap?.('volatile', s.x, s.sprite.y, 1);
+            break;
+          } else if (s.variant === 'siphon') {
+            b.consumed = true;
+            b.graphic.destroy();
+            playLeylineArc(this.scene, b.x, b.y, s.x, s.sprite.y, 0x14b8a6);
+            break;
+          } else if (s.variant === 'blighted') {
+            b.consumed = true;
+            b.graphic.destroy();
+            this.crackShield(s, 1);
             this.onResonanceOrb?.(s.x, s.sprite.y);
             break;
-          } else if (!s.vessel && !s.resonating) {
+          } else if (s.variant === null && !s.resonating) {
             b.consumed = true;
             b.graphic.destroy();
             this.enterResonance(s);
@@ -405,6 +567,87 @@ export class SpawnSystem {
       }
       return true;
     });
+
+    // Trigger at most one first-encounter modal per tick once visibly inside bounds
+    for (const s of this.spawned) {
+      if (
+        s.variant === null ||
+        s.encounterTriggered ||
+        state.seenVariants.includes(s.variant)
+      ) {
+        continue;
+      }
+      if (s.x >= bounds.x + 56 && s.x <= bounds.x + bounds.w - 56) {
+        s.encounterTriggered = true;
+        this.onFirstEncounter?.(s.variant, s.creatureId);
+        break;
+      }
+    }
+  }
+
+  private pickVariant(
+    state: GameSave,
+    forceVessel: boolean,
+  ): CreatureVariant | null {
+    if (forceVessel && !this.hasVariant('vessel')) {
+      return 'vessel';
+    }
+    if (
+      state.playerLevel >= economy.volatileUnlockLevel &&
+      !this.hasFrenzyVariant()
+    ) {
+      const chance =
+        state.playerLevel >= economy.siphonUnlockLevel
+          ? economy.frenzySpawnChanceL17
+          : state.playerLevel >= economy.phasingUnlockLevel
+            ? economy.frenzySpawnChanceL15
+            : economy.frenzySpawnChanceL12;
+      if (
+        this.timeSinceLastFrenzySpawn >= economy.frenzyPitySeconds ||
+        Math.random() < chance
+      ) {
+        const pool: FrenzyVariant[] = ['volatile'];
+        if (state.playerLevel >= economy.phasingUnlockLevel) pool.push('phasing');
+        if (state.playerLevel >= economy.siphonUnlockLevel) pool.push('siphon');
+        this.timeSinceLastFrenzySpawn = 0;
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
+    }
+    if (!this.hasClassicVariant()) {
+      if (state.manaLevel >= 3 && Math.random() < 0.08) {
+        return 'vessel';
+      }
+      if (state.tutorialCompleted && Math.random() < economy.blightedSpawnChance) {
+        return 'blighted';
+      }
+    }
+    return null;
+  }
+
+  private pickBaseY(
+    bounds: { x: number; y: number; w: number; h: number },
+    variant: CreatureVariant | null,
+  ): number {
+    const minY = bounds.y + 52;
+    const spanY = Math.max(40, bounds.h - 108);
+    const randomY = () => minY + Math.random() * spanY;
+    if (variant === null) return randomY();
+
+    const specials = this.spawned.filter((s) => !s.done && s.variant !== null);
+    if (specials.length === 0) return randomY();
+
+    let bestY = randomY();
+    let bestMinDist = -1;
+    for (let i = 0; i < 5; i++) {
+      const cand = i === 0 ? bestY : randomY();
+      const minDist = Math.min(...specials.map((s) => Math.abs(cand - s.baseY)));
+      if (minDist >= 120) return cand;
+      if (minDist > bestMinDist) {
+        bestMinDist = minDist;
+        bestY = cand;
+      }
+    }
+    return bestY;
   }
 
   private spawnOne(
@@ -429,34 +672,36 @@ export class SpawnSystem {
     const runKey = ensureRunAnim(this.scene, pick.id);
     if (!runKey) return;
 
-    const isVessel =
-      (forceVessel || (state.manaLevel >= 3 && Math.random() < 0.08)) &&
-      !this.hasVessel();
-    const canBlight = !isVessel && state.tutorialCompleted && !this.hasBlighted();
-    const isBlighted = canBlight && Math.random() < economy.blightedSpawnChance;
-
+    const variant = this.pickVariant(state, forceVessel);
     const dir: 1 | -1 = Math.random() < 0.5 ? 1 : -1;
     const startX = dir > 0 ? bounds.x - 40 : bounds.x + bounds.w + 40;
     const span = bounds.w + 80;
-    const transitSeconds = isBlighted
-      ? Phaser.Math.FloatBetween(4.8, 5.8)
-      : isVessel
-        ? Phaser.Math.FloatBetween(3.6, 4.2)
-        : Phaser.Math.FloatBetween(3.4, 4.4);
+    const transitSeconds =
+      variant === 'blighted'
+        ? Phaser.Math.FloatBetween(4.8, 5.8)
+        : variant === 'vessel'
+          ? Phaser.Math.FloatBetween(3.6, 4.2)
+          : variant === 'volatile'
+            ? Phaser.Math.FloatBetween(4.2, 5.0)
+            : variant === 'phasing'
+              ? Phaser.Math.FloatBetween(4.4, 5.2)
+              : variant === 'siphon'
+                ? Phaser.Math.FloatBetween(3.0, 3.6)
+                : Phaser.Math.FloatBetween(3.4, 4.4);
     const speed = span / transitSeconds;
-    const baseY =
-      bounds.y + 52 + Math.random() * Math.max(40, bounds.h - 108);
+    const baseY = this.pickBaseY(bounds, variant);
 
     const sprite = this.scene.add
       .sprite(startX, baseY, texKey(pick.id), `${pick.id}-0`)
       .setOrigin(0.5, 0.5)
       .setFlipX(dir < 0)
-      .setDepth(5);
+      .setDepth(variant === 'volatile' ? 4 : 5);
     const baseScale = Math.min(96 / sprite.width, 72 / sprite.height);
-    const finalScale = isVessel ? baseScale * 1.15 : baseScale;
+    const finalScale = variant === 'vessel' ? baseScale * 1.15 : baseScale;
     sprite.setScale(finalScale);
+    const hitRadius = (variant === 'volatile' ? 44 : 58) / finalScale;
     sprite.setInteractive(
-      new Phaser.Geom.Circle(sprite.width / 2, sprite.height / 2, 58 / finalScale),
+      new Phaser.Geom.Circle(sprite.width / 2, sprite.height / 2, hitRadius),
       Phaser.Geom.Circle.Contains,
     );
     sprite.input!.cursor = 'pointer';
@@ -465,9 +710,9 @@ export class SpawnSystem {
     const magicAura = makeMagicAura(this.scene).setPosition(startX, baseY);
     let shieldAura: ShieldAuraHandle | null = null;
 
-    if (isVessel || isBlighted) {
-      sprite.setTint(isVessel ? 0xfde047 : 0xc084fc);
-      shieldAura = makeShieldAura(this.scene, isVessel ? 'vessel' : 'blighted');
+    if (variant !== null) {
+      sprite.setTint(VARIANT_TINT[variant]);
+      shieldAura = makeShieldAura(this.scene, variant);
       shieldAura.container.setPosition(startX, baseY);
     }
 
@@ -479,9 +724,11 @@ export class SpawnSystem {
       resonating: false,
       resonanceOrbAcc: 0,
       countedInConvergence: false,
-      blighted: isBlighted,
-      vessel: isVessel,
-      shieldPips: isBlighted || isVessel ? 3 : 0,
+      variant,
+      phasedOut: false,
+      siphonAcc: 0,
+      encounterTriggered: false,
+      shieldPips: variant !== null ? VARIANT_PIPS[variant] : 0,
       done: false,
       age: 0,
       x: startX,
@@ -493,15 +740,28 @@ export class SpawnSystem {
 
     sprite.on('pointerdown', () => {
       if (entry.done) return;
+      if (entry.variant === 'volatile' && entry.age < VOLATILE_GRACE_SECONDS) {
+        return;
+      }
       this.onTap?.({
         sprite,
-        blighted: entry.blighted,
-        vessel: entry.vessel,
+        variant: entry.variant,
+        phasedOut: entry.phasedOut,
         shieldPips: entry.shieldPips,
         resonating: entry.resonating,
         applyTap: () => {
-          if (entry.vessel) {
+          if (entry.variant === 'volatile') {
+            entry.done = true;
+            entry.sprite.setVisible(false);
+            entry.magicAura.setVisible(false);
+            entry.shieldAura?.container.setVisible(false);
+            return;
+          }
+          if (entry.variant === 'vessel') {
             this.dodgeVessel(entry);
+            return;
+          }
+          if (entry.variant === 'phasing' && entry.phasedOut) {
             return;
           }
           if (this.scene) {
@@ -513,8 +773,12 @@ export class SpawnSystem {
               ease: 'Quad.easeOut',
             });
           }
-          if (entry.blighted) {
-            this.crackBlightShield(entry, 1);
+          if (
+            entry.variant === 'blighted' ||
+            entry.variant === 'phasing' ||
+            entry.variant === 'siphon'
+          ) {
+            this.crackShield(entry, 1);
           } else if (!entry.resonating) {
             this.enterResonance(entry);
           }

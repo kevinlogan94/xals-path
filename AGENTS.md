@@ -39,3 +39,7 @@ Examples from this repo: `:sound: warm the cast and creature tap sparks`, `:rewi
 ## Scene colocation
 
 Keep scene-specific UI and helpers next to the scene that uses them under `src/scenes/`. Shared systems live in `src/systems/`, shared data in `src/data/`. Move code to the closest shared parent only when multiple scenes use it.
+
+## No em dashes
+
+Do not use em dashes in player-facing copy, docs, or comments. Use periods, commas, colons, or hyphens instead.

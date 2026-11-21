@@ -28,7 +28,7 @@
     "description": "The blessing is offered once per level, after 200 casts or creature taps. Reaching that count does not open the splash. Leveling up allows the offer again.",
     "steps": [
       "Cast or tap creatures until the count reaches 200 this level",
-      "Confirm the Blessing of the Gods splash does not open",
+      "Confirm the Sky's Grace splash does not open",
       "Confirm another 200 taps this level do not start a second offer",
       "Level up, then reach 200 taps again",
       "Confirm the offer can happen again on the new level"
@@ -37,14 +37,14 @@
   },
   {
     "category": "functional",
-    "description": "While a blessing is offered, a Pegasus flies across the screen. If it is not tapped, it comes back from the other direction and keeps alternating until the player taps it. Tapping it opens the Blessing of the Gods splash.",
+    "description": "While a blessing is offered, a Pegasus flies across the screen. If it is not tapped, it comes back from the other direction and keeps alternating until the player taps it. Tapping it opens the Sky's Grace splash.",
     "steps": [
       "Reach a blessing offer",
       "Confirm a Pegasus flies across the screen",
       "Let it leave without tapping",
       "Confirm it returns from the opposite direction",
       "Confirm it keeps alternating directions until tapped",
-      "Tap the Pegasus and confirm the Blessing splash opens"
+      "Tap the Pegasus and confirm the Sky's Grace splash opens"
     ],
     "passes": true
   },
@@ -74,9 +74,9 @@
   },
   {
     "category": "functional",
-    "description": "Collect on the Blessing splash starts 15 seconds of infinite mana. The mana bar is replaced by a countdown for those seconds.",
+    "description": "Collect on the Sky's Grace splash starts 15 seconds of infinite mana. The mana bar is replaced by a countdown for those seconds.",
     "steps": [
-      "Open the Blessing of the Gods splash by tapping the Pegasus",
+      "Open the Sky's Grace splash by tapping the Pegasus",
       "Tap Collect",
       "Confirm casts no longer spend mana",
       "Confirm the mana bar shows a countdown from 15s down to 1s",
@@ -173,6 +173,83 @@
       "Confirm a chime plays as the creature card appears, around 3 seconds",
       "Buy another first tome and close the splash during the lock shake",
       "Confirm the later sounds do not play"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "The first time each special creature variant (Corrupted, Golden, Unstable, Phantom, Leech) visibly enters Outlook, a unified First-Encounter Modal pauses Outlook and introduces it once per save. Legacy saves without seenVariants pre-mark Corrupted at level 2+ and Golden at level 11+.",
+    "steps": [
+      "On a fresh save or level 12, 15, or 17 jump, watch a new creature variant enter Outlook",
+      "Confirm the First-Encounter Modal opens with an animated variant preview and pauses creatures and timers",
+      "Dismiss the modal and confirm Outlook resumes and the same variant modal does not open again on later spawns",
+      "Load a legacy save missing seenVariants at level 2+ or 11+ and confirm Corrupted (2+) and Golden (11+) are pre-marked while Unstable, Phantom, and Leech remain unseen"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Outlook uses split-slot variant spawning: at most one Classic variant (Corrupted or Golden) and at most one Frenzy threat (Unstable, Phantom, or Leech) active at once, with 28%/32%/38% Frenzy roll by level (12/15/17), an 8.5s backup timer, Y-lane separation between active specials, and mobile hitbox fairness for Unstable.",
+    "steps": [
+      "Play on Outlook at levels 12, 15, and 17+",
+      "Confirm at most one Classic variant and one Frenzy threat are active simultaneously",
+      "Confirm a Frenzy threat spawns within 8.5 seconds of Outlook play when none is active",
+      "Confirm simultaneous special variants spawn in separated vertical lanes and Unstable sits below other creatures with a tighter tap radius and 0.6s spawn grace"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Unstable Creature (level 12+) ignores Arcane Surge and Triad Burst secondary arcs. Direct tap after spawn grace detonates it and triggers a 5s Mana-Lock, while planting a ground spell flower ahead of it traps it and triggers Wild Frenzy.",
+    "steps": [
+      "Encounter an Unstable Creature at level 12+",
+      "Trigger Arcane Surge and confirm it does not detonate or zap the Unstable Creature",
+      "Tap the ground ahead of an Unstable Creature to plant a spell flower and confirm walking over it traps the creature and sparks Wild Frenzy",
+      "Directly tap another Unstable Creature after 0.6s and confirm it detonates and triggers a 5s Mana-Lock"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Phantom Creature (level 15+) ignores Arcane Surge, Triad Burst secondary arcs, and spell flowers. It cycles between solid and faded states: 2 solid taps clear it for Wild Frenzy, while tapping it while faded triggers a 3s Mana-Lock without cracking its shields.",
+    "steps": [
+      "Encounter a Phantom Creature at level 15+ and observe it cycling between solid and faded",
+      "Confirm Arcane Surge and spell flowers do not affect it",
+      "Tap it while faded and confirm a 3s Mana-Lock triggers and its shield count does not drop",
+      "Tap it twice while solid and confirm it clears, glows, and adds a Wild Frenzy stack"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Leech (level 17+) runs quickly, absorbs Arcane Surge without taking damage, eats spell flowers without taking damage, snuffs nearby glowing creatures, and drains Wild Frenzy at double speed. Two quick direct taps stop it and grant +2 Wild Frenzy stacks.",
+    "steps": [
+      "Encounter a Leech at level 17+ while glowing creatures and Wild Frenzy are active",
+      "Confirm Arcane Surge draws a teal deflect arc and spell flowers are eaten without harming the Leech",
+      "Confirm the Leech snuffs glowing creatures and accelerates Wild Frenzy drain",
+      "Tap the Leech twice and confirm it clears and grants +2 Wild Frenzy stacks"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Wild Frenzy stacks across 2x, 3x, 5x, and 8x for 12 seconds, multiplying all live Influence and XP (casts, creature taps, resonance, passive per-second rate) while excluding offline rewards, level-up rewards, and achievement payouts, and pausing while modals are open.",
+    "steps": [
+      "Clear or trap Frenzy threats in succession and confirm the Wild Frenzy bar stacks 2x, 3x, 5x, up to 8x and refreshes to 12s",
+      "Confirm live casts, glowing ticks, and the HUD per-second rate reflect the Wild Frenzy multiplier",
+      "Confirm offline, level-up, and achievement rewards still use the base passive rate",
+      "Open a modal while Wild Frenzy is active and confirm its timer pauses until the modal closes"
+    ],
+    "passes": false
+  },
+  {
+    "category": "functional",
+    "description": "Mana-Lock shows a crimson LOCKED countdown in the mana slot identically in normal play and during Sky's Grace, clears combo, reduces casts to unempowered 1x without spending mana, drops 1 Wild Frenzy stack, and resumes Sky's Grace automatically if time remains after the lock expires.",
+    "steps": [
+      "Trigger Mana-Lock in normal play and confirm mana empties, combo resets, casts deal 1x, 1 Wild Frenzy stack drops, and the mana slot displays crimson LOCKED Xs",
+      "Activate Sky's Grace and trigger Mana-Lock during it",
+      "Confirm the same crimson LOCKED Xs countdown replaces the Sky's Grace timer and casts deal 1x without spending stored mana",
+      "Wait for Mana-Lock to end while Sky's Grace still has time left and confirm Sky's Grace free 5x casting resumes"
     ],
     "passes": false
   }

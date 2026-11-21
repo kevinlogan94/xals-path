@@ -1,5 +1,5 @@
 import type { Sfx } from '../systems/AudioSystem';
-import type { CreatureDef, RegionId } from '../types';
+import type { CreatureDef, CreatureVariant, RegionId } from '../types';
 import { formatNumber } from '../utils/format';
 import { creatureFirstFrame, creatureRun } from '../scenes/play/splash/creatureSplash';
 
@@ -88,7 +88,7 @@ export function achievementSplash(opts: {
 
 export function buffSplash(): string {
   return shell(
-    'Blessing of the Gods',
+    "Sky's Grace",
     'Yes!! Way to go!!',
     `<p class="splash-stat">15 Seconds</p>${collect()}`,
   );
@@ -167,6 +167,38 @@ function renderWhatsNewCard(c: WhatsNewCardSpec, clickable = true): string {
 export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
   const entries: WhatsNewEntrySpec[] = [
     {
+      id: 'variants-v1',
+      intro:
+        'The corruption across the realm is growing bolder. New mid-late threats now challenge your aim, timing, and focus for much bigger rewards.',
+      cta: opts.canViewOutlook
+        ? { label: 'Open Outlook', attr: 'data-whats-new-outlook' }
+        : undefined,
+      cards: [
+        {
+          icon: './assets/ui/OutlookFlower.png',
+          title: 'New Creature Variants (Lvl 12-17)',
+          hint: 'Face Unstable, Phantom, and Leech creatures as you level up, with visual guides on your first encounter.',
+        },
+        {
+          icon: './assets/ui/influence.png',
+          title: 'Wild Frenzy Multiplier',
+          hint: 'Outsmart these threats to spark Wild Frenzy, stacking up to 8× all live Influence and XP for 12 seconds.',
+        },
+        {
+          icon: './assets/ui/manaIcon.png',
+          title: 'Watch Your Taps',
+          hint: 'Tripping an Unstable or faded Phantom briefly locks your mana and cools your multiplier.',
+        },
+      ],
+      listSummaryCard: {
+        icon: './assets/ui/OutlookFlower.png',
+        title: 'Creature Variants & Wild Frenzy',
+        hint: 'Face new Unstable, Phantom, and Leech threats (Lvl 12-17) to stack up to 8× Wild Frenzy across all live Influence and XP.',
+        actionAttr: 'data-whats-new-outlook',
+        enabled: opts.canViewOutlook,
+      },
+    },
+    {
       id: 'fold-v1',
       heroIcon: './assets/ui/Portal2.png',
       intro:
@@ -175,7 +207,7 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
         {
           icon: './assets/ui/Portal2.png',
           title: 'Foldable Display Support',
-          hint: 'Tailored layout for unfolded screens—full-bleed realm art with centered chapter cards, scrolls, and dialogue.',
+          hint: 'Tailored layout for unfolded screens: full-bleed realm art with centered chapter cards, scrolls, and dialogue.',
         },
       ],
     },
@@ -194,8 +226,8 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
         },
         {
           icon: './assets/ui/OutlookFlower.png',
-          title: 'Cleansing & The Great Weave',
-          hint: 'Tap running creatures or plant Bloom Runes in their path to cleanse them. Light up 3 at once to link The Great Weave (+10× burst!).',
+          title: 'Cleansing & Triad Burst',
+          hint: 'Tap running creatures or plant Bloom Runes in their path to cleanse them. Light up 3 at once to link a Triad Burst (+10× burst!).',
         },
         {
           icon: './assets/ui/tomes/lightning.png',
@@ -206,7 +238,7 @@ export function whatsNewSplash(opts: WhatsNewSplashOpts): string {
       listSummaryCard: {
         icon: './assets/ui/OutlookFlower.png',
         title: 'Living Valley & Spell Weaving',
-        hint: 'Build 5× spell combos, cleanse running & corrupted beasts, link 3 for The Great Weave, and unlock chapter mana powers.',
+        hint: 'Build 5× spell combos, cleanse running & corrupted beasts, link 3 for a Triad Burst, and unlock chapter mana powers.',
         actionAttr: 'data-whats-new-outlook',
         enabled: opts.canViewOutlook,
       },
@@ -472,5 +504,102 @@ export function bindCredits(onFeedback: () => void): SplashBind {
     host.querySelector('[data-credits-feedback]')?.addEventListener('click', onFeedback);
     host.querySelector('[data-credits-close]')?.addEventListener('click', () => close());
     return () => undefined;
+  };
+}
+
+const VARIANT_ENCOUNTER: Record<
+  CreatureVariant,
+  {
+    kicker: string;
+    title: string;
+    lore: string;
+    callout: string;
+    cta: string;
+    pips: number;
+  }
+> = {
+  blighted: {
+    kicker: 'Corruption Spreads',
+    title: 'Corrupted Creature',
+    lore: 'The rot Xal warned you of has reached the wilds, wrapping creatures in dark purple haze.',
+    callout:
+      '<strong>Tap it 3 times</strong> to shatter the purple haze, unleashing a <strong>huge burst of Influence</strong> and leaving it glowing with magic.',
+    cta: 'Cleanse It',
+    pips: 3,
+  },
+  vessel: {
+    kicker: 'Rare Sighting',
+    title: 'Golden Creature',
+    lore: 'As your power deepens, rare creatures gleaming with pure golden essence have begun darting through the wilds.',
+    callout:
+      'It leaps away every time you strike. <strong>Catch it 3 times</strong> before it flees for rich bursts of Influence and a <strong>giant jackpot</strong> on the final tap. A 25-spell combo also draws one out.',
+    cta: 'Chase It',
+    pips: 3,
+  },
+  volatile: {
+    kicker: "Barlog's Corruption Deepens",
+    title: 'Unstable Creature',
+    lore: "Barlog's corruption is growing volatile. Some creatures now crackle with unstable crimson energy ready to blow.",
+    callout:
+      "<strong>Don't tap it directly</strong> or it locks your mana for 5s. Instead, <strong>tap the ground ahead of it</strong> to snare it with a glowing spell flower, sparking <strong>Wild Frenzy</strong> to multiply all Influence and XP.",
+    cta: 'Trap It',
+    pips: 0,
+  },
+  phasing: {
+    kicker: 'The Wilds Fray',
+    title: 'Phantom Creature',
+    lore: 'The spreading curse is thinning the air itself, letting tainted creatures slip in and out of sight.',
+    callout:
+      '<strong>Tap it twice while solid</strong>. Striking while it is faded locks your mana for 3s. Snaring it fuels <strong>Wild Frenzy</strong>, multiplying everything you earn.',
+    cta: 'Watch Closely',
+    pips: 2,
+  },
+  siphon: {
+    kicker: 'The Curse Pushes Back',
+    title: 'Leech',
+    lore: "Barlog's rot is learning to fight back. Swift, hungry creatures now drain the magic right out of the wilds.",
+    callout:
+      'It snuffs glowing creatures and drains <strong>Wild Frenzy</strong> fast. <strong>Tap it twice quickly</strong> to stop the drain and earn a <strong>double Wild Frenzy boost</strong>.',
+    cta: 'Stop It',
+    pips: 2,
+  },
+};
+
+export function variantEncounterSplash(
+  variant: CreatureVariant,
+  creatureId: string,
+): string {
+  const spec = VARIANT_ENCOUNTER[variant];
+  const frame = creatureFirstFrame(creatureId);
+  const pipsHtml =
+    spec.pips > 0
+      ? `<div class="variant-preview-pips">${Array.from({ length: spec.pips }, () => '<span class="variant-preview-pip"></span>').join('')}</div>`
+      : '';
+  const preview = frame
+    ? `<div class="variant-preview is-${variant}">
+        <span class="variant-preview-ring" aria-hidden="true"></span>
+        ${pipsHtml}
+        <div class="splash-portrait"><img data-creature-frame src="${frame.src}" alt="" /></div>
+      </div>`
+    : '';
+  return shell(
+    spec.kicker,
+    spec.title,
+    `${preview}
+    <p class="splash-copy">${spec.lore}</p>
+    <p class="variant-callout is-${variant}">${spec.callout}</p>
+    ${collect(spec.cta)}`,
+  );
+}
+
+export function bindVariantEncounter(
+  variant: CreatureVariant,
+  creatureId: string,
+): SplashBind {
+  return (host, close) => {
+    host.innerHTML = variantEncounterSplash(variant, creatureId);
+    const stopRun = playCreatureRun(host, creatureId);
+    bindGo(host, close);
+    return () => stopRun();
   };
 }
