@@ -13,6 +13,9 @@ export class EconomySystem {
   lastCastMultiplier = 1;
   lastOvercharge = false;
   lastVesselSummon = false;
+  manaLockRemaining = 0;
+  frenzyStacks = 0;
+  frenzyRemaining = 0;
   private comboTimer = 0;
   private passiveAcc = 0;
 
@@ -23,6 +26,56 @@ export class EconomySystem {
     this.lastOvercharge = false;
     this.lastVesselSummon = false;
     this.comboTimer = 0;
+  }
+
+  resetSession(): void {
+    this.resetCombo();
+    this.manaLockRemaining = 0;
+    this.frenzyStacks = 0;
+    this.frenzyRemaining = 0;
+  }
+
+  frenzyMultiplier(): number {
+    if (this.frenzyRemaining <= 0 || this.frenzyStacks <= 0) return 1;
+    const mults = economy.wildFrenzyMultipliers;
+    return mults[Math.min(this.frenzyStacks, mults.length) - 1];
+  }
+
+  frenzyDecayRatio(): number {
+    return Math.max(0, Math.min(1, this.frenzyRemaining / economy.wildFrenzyDurationSeconds));
+  }
+
+  effectivePassivePerSecond(state: GameSave): number {
+    return this.passivePerSecond(state) * this.frenzyMultiplier();
+  }
+
+  isManaLocked(): boolean {
+    return this.manaLockRemaining > 0;
+  }
+
+  triggerManaLock(state: GameSave, seconds: number): void {
+    if (state.buffRemaining <= 0) state.mana = 0;
+    this.resetCombo();
+    this.manaLockRemaining = Math.max(this.manaLockRemaining, seconds);
+    if (this.frenzyStacks > 0) {
+      this.frenzyStacks -= 1;
+      if (this.frenzyStacks <= 0) this.frenzyRemaining = 0;
+    }
+  }
+
+  addFrenzyStacks(count = 1): number {
+    this.frenzyStacks = Math.min(
+      economy.wildFrenzyMultipliers.length,
+      this.frenzyStacks + count,
+    );
+    this.frenzyRemaining = economy.wildFrenzyDurationSeconds;
+    return this.frenzyMultiplier();
+  }
+
+  drainFrenzy(dt: number): void {
+    if (this.frenzyRemaining <= 0) return;
+    this.frenzyRemaining = Math.max(0, this.frenzyRemaining - dt);
+    if (this.frenzyRemaining <= 0) this.frenzyStacks = 0;
   }
 
   passivePerSecond(state: GameSave): number {
@@ -54,8 +107,9 @@ export class EconomySystem {
    */
   private advanceCastState(state: GameSave): boolean {
     const infinite = state.buffRemaining > 0;
+    const locked = this.manaLockRemaining > 0;
     const cost = this.castCost(state);
-    const empowered = infinite || state.mana >= cost;
+    const empowered = !locked && (infinite || state.mana >= cost);
 
     if (infinite) {
       this.buffSessionClicks += 1;
@@ -94,7 +148,8 @@ export class EconomySystem {
       ? this.comboMultiplier +
         (this.lastOvercharge ? economy.overchargeBonusMultiplier : 0)
       : 1;
-    const gained = state.clickerIncrement * (overrideMult ?? defaultMult);
+    const gained =
+      state.clickerIncrement * (overrideMult ?? defaultMult) * this.frenzyMultiplier();
     this.addInfluence(state, gained);
     state.achievements.clickerCount += 1;
     state.buffClickProgress += 1;
@@ -121,7 +176,7 @@ export class EconomySystem {
     return this.recordCast(state, purified ? economy.blightedPurifyMultiplier : 1);
   }
 
-  /** Tap on an Ancient Vessel (unlocked Ch 3): 5x on dodges 1–2, 15x on 3rd tap full extraction. */
+  /** Tap on a Golden Creature (unlocked Ch 3): 5x on dodges 1-2, 15x on 3rd tap catch. */
   tryVesselTap(state: GameSave, finalExtraction: boolean): number {
     return this.recordCast(
       state,
@@ -129,10 +184,27 @@ export class EconomySystem {
     );
   }
 
+  tryVariantHit(state: GameSave): number {
+    return this.recordCast(state, economy.creatureTapBonusNormal);
+  }
+
+  tryVariantClear(state: GameSave, stacks = 1): number {
+    this.addFrenzyStacks(stacks);
+    return this.recordCast(state, economy.variantClearMultiplier);
+  }
+
+  awardVariantTrap(state: GameSave, stacks = 1): number {
+    this.addFrenzyStacks(stacks);
+    const gained =
+      state.clickerIncrement * economy.variantClearMultiplier * this.frenzyMultiplier();
+    this.addInfluence(state, gained);
+    return gained;
+  }
+
   /** Passive 1x clickerIncrement per second emitted by each resonating creature. */
   addResonanceTick(state: GameSave, count = 1): number {
     if (count <= 0) return 0;
-    const gained = state.clickerIncrement * count;
+    const gained = state.clickerIncrement * count * this.frenzyMultiplier();
     this.addInfluence(state, gained);
     return gained;
   }
@@ -157,15 +229,30 @@ export class EconomySystem {
     return true;
   }
 
-  tick(state: GameSave, dt: number, tutorial?: TutorialSystem): void {
-    if (this.comboTimer > 0) {
-      this.comboTimer = Math.max(0, this.comboTimer - dt);
-      if (this.comboTimer <= 0) {
-        this.resetCombo();
+  tick(
+    state: GameSave,
+    dt: number,
+    tutorial?: TutorialSystem,
+    pauseTimers = false,
+  ): void {
+    if (!pauseTimers) {
+      if (this.comboTimer > 0) {
+        this.comboTimer = Math.max(0, this.comboTimer - dt);
+        if (this.comboTimer <= 0) {
+          this.resetCombo();
+        }
       }
+      if (this.manaLockRemaining > 0) {
+        this.manaLockRemaining = Math.max(0, this.manaLockRemaining - dt);
+      }
+      this.drainFrenzy(dt);
     }
 
-    if (state.buffRemaining <= 0 && state.mana < state.manaMax) {
+    if (
+      state.buffRemaining <= 0 &&
+      this.manaLockRemaining <= 0 &&
+      state.mana < state.manaMax
+    ) {
       const scale = 1 + (state.manaLevel - 1) * 0.65;
       state.mana = Math.min(
         state.manaMax,
@@ -179,12 +266,12 @@ export class EconomySystem {
       if (this.passiveAcc >= 1) {
         const secs = Math.floor(this.passiveAcc);
         this.passiveAcc -= secs;
-        const passive = this.passivePerSecond(state) * secs;
+        const passive = this.effectivePassivePerSecond(state) * secs;
         if (passive > 0) this.addInfluence(state, passive);
       }
     }
 
-    if (state.buffRemaining > 0) {
+    if (!pauseTimers && state.buffRemaining > 0) {
       state.buffRemaining = Math.max(0, state.buffRemaining - dt);
       if (state.buffRemaining <= 0) this.buffSessionClicks = 0;
     }

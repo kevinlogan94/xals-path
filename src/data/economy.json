@@ -27,6 +27,23 @@
   "vesselFinalMultiplier": 15,
   "blightedSpawnChance": 0.25,
   "blightedPurifyMultiplier": 20,
+  "wildFrenzyMultipliers": [
+    2,
+    3,
+    5,
+    8
+  ],
+  "wildFrenzyDurationSeconds": 12,
+  "variantClearMultiplier": 25,
+  "volatileUnlockLevel": 12,
+  "volatileManaLockSeconds": 5,
+  "phasingUnlockLevel": 15,
+  "phasingManaLockSeconds": 3,
+  "siphonUnlockLevel": 17,
+  "frenzyPitySeconds": 8.5,
+  "frenzySpawnChanceL12": 0.28,
+  "frenzySpawnChanceL15": 0.32,
+  "frenzySpawnChanceL17": 0.38,
   "chapterGates": [
     1,
     5,

@@ -1,9 +1,16 @@
-import type { GameSave, HelperDef, RegionId } from '../types';
+import type { CreatureVariant, GameSave, HelperDef, RegionId } from '../types';
 import helpersData from '../data/helpers.json';
 import economy from '../data/economy.json';
 import { WHATS_NEW_IDS, evaluateAchievements } from './AchievementSystem';
 
 const SAVE_KEY = 'xals-path-web-save-v1';
+
+function legacySeenVariants(playerLevel: number): CreatureVariant[] {
+  const seen: CreatureVariant[] = [];
+  if (playerLevel >= 2) seen.push('blighted');
+  if (playerLevel >= 11) seen.push('vessel');
+  return seen;
+}
 
 function defaultHelpers(): GameSave['helpers'] {
   return (helpersData.helpers as HelperDef[]).map((h) => ({
@@ -54,6 +61,7 @@ function createDefaultSave(): GameSave {
     newsShown: [],
     unlockedAchievements: [],
     whatsNewSeen: [...WHATS_NEW_IDS],
+    seenVariants: [],
     bestiarySeenCount: 0,
     savedAt: new Date().toISOString(),
   };
@@ -123,6 +131,7 @@ function devSave(
     experienceRequired,
     chapters: chaptersViewed(viewed),
     totalInfluenceEarned: patch.totalInfluenceEarned ?? 0,
+    seenVariants: patch.seenVariants ?? legacySeenVariants(patch.playerLevel),
   });
   buyHelpers(save, owned);
   evaluateAchievements(save);
@@ -204,7 +213,6 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
               'ClickerAchievement',
               'TomeAchievement',
               'Ch2Power',
-              'Ch3Power',
             ],
           },
           [1, 2, 3],
@@ -236,7 +244,6 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
               'ClickerAchievement',
               'TomeAchievement',
               'Ch2Power',
-              'Ch3Power',
               'Ch4Power',
             ],
           },
@@ -279,7 +286,6 @@ export function devPresets(): { label: string; save: () => GameSave }[] {
               'LoginAchievement',
               'TomeAchievement',
               'Ch2Power',
-              'Ch3Power',
               'Ch4Power',
             ],
           },
@@ -390,6 +396,7 @@ export class SaveSystem {
     );
     if (ch3Done) unlockedSet.add('river');
     if (ch4Done) unlockedSet.add('altar');
+    const playerLevel = finite(save.playerLevel, fresh.playerLevel);
     return {
       ...fresh,
       version: 1,
@@ -398,7 +405,7 @@ export class SaveSystem {
         save.totalInfluenceEarned,
         fresh.totalInfluenceEarned,
       ),
-      playerLevel: finite(save.playerLevel, fresh.playerLevel),
+      playerLevel,
       experienceRequired: finite(
         save.experienceRequired,
         fresh.experienceRequired,
@@ -490,6 +497,9 @@ export class SaveSystem {
         ? save.unlockedAchievements
         : [],
       whatsNewSeen: Array.isArray(save.whatsNewSeen) ? save.whatsNewSeen : [],
+      seenVariants: Array.isArray(save.seenVariants)
+        ? save.seenVariants
+        : legacySeenVariants(playerLevel),
       bestiarySeenCount: finite(save.bestiarySeenCount, 0),
       savedAt: typeof save.savedAt === 'string' ? save.savedAt : fresh.savedAt,
     };

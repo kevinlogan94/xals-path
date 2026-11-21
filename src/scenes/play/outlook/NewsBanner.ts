@@ -26,8 +26,6 @@ function matches(state: GameSave, id: string): boolean {
       return a.helperCount >= a.helperGoal;
     case 'Ch2Power':
       return state.manaLevel >= 2;
-    case 'Ch3Power':
-      return state.manaLevel >= 3;
     case 'Ch4Power':
       return state.manaLevel >= 4;
     default:

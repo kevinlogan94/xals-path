@@ -1,4 +1,5 @@
 export type RegionId = 'meadow' | 'river' | 'altar';
+export type CreatureVariant = 'blighted' | 'vessel' | 'volatile' | 'phasing' | 'siphon';
 /** Matches Unity BottomNav: overlays + Xal (tower) + Outlook (world). */
 export type TabId =
   | 'outlook'
@@ -81,7 +82,7 @@ export interface GameSave {
   buffedThisLevel: boolean;
   buffClickProgress: number;
   buffOfferPending: boolean;
-  /** True after the player has collected Blessing of the Gods once. */
+  /** True after the player has collected Sky's Grace once. */
   buffEverCollected: boolean;
   buffRemaining: number;
   portalUnlocked: boolean;
@@ -92,6 +93,7 @@ export interface GameSave {
   newsShown: string[];
   unlockedAchievements: string[];
   whatsNewSeen: string[];
+  seenVariants: CreatureVariant[];
   bestiarySeenCount: number;
   savedAt: string;
 }
