@@ -195,7 +195,7 @@ export function makeShieldAura(
 
   const container = scene.add
     .container(0, 0, [backing, rune, pips])
-    .setDepth(4);
+    .setDepth(kind === 'volatile' ? 3.5 : 4);
 
   scene.tweens.add({
     targets: rune,

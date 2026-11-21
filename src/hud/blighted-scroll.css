@@ -114,6 +114,7 @@
 .hud-rate {
   font-size: 11px;
   color: #6ee7b7;
+  white-space: nowrap;
 }
 
 .hud-rate.is-frenzy {
@@ -198,6 +199,7 @@
 .hud-buff {
   font-size: 11px;
   color: #fde68a;
+  white-space: nowrap;
 }
 
 .hud-buff.is-locked {

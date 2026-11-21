@@ -321,6 +321,10 @@ export class SpawnSystem {
     s.sprite.setAlpha(1);
     s.sprite.clearTint();
     s.sprite.setDepth(5);
+    const hitArea = s.sprite.input?.hitArea;
+    if (hitArea instanceof Phaser.Geom.Circle) {
+      hitArea.radius = 58 / Math.max(0.01, s.sprite.scaleX);
+    }
     s.shieldAura?.container.setAlpha(1);
     s.shieldAura?.container.setVisible(false);
     this.enterResonance(s, checkWeave);
@@ -515,10 +519,12 @@ export class SpawnSystem {
         if (b.consumed) continue;
         if (Phaser.Math.Distance.Between(s.x, s.sprite.y, b.x, b.y) <= BLOOM_PAD_RADIUS) {
           if (s.variant === 'volatile') {
+            if (s.age < VOLATILE_GRACE_SECONDS) continue;
             b.consumed = true;
             b.graphic.destroy();
-            this.clearVariantState(s);
+            this.clearVariantState(s, false);
             this.onVariantTrap?.('volatile', s.x, s.sprite.y, 1);
+            this.checkGreatWeave();
             break;
           } else if (s.variant === 'siphon') {
             b.consumed = true;
@@ -577,7 +583,7 @@ export class SpawnSystem {
       ) {
         continue;
       }
-      if (s.x >= bounds.x + 56 && s.x <= bounds.x + bounds.w - 56) {
+      if (s.x >= bounds.x + 36 && s.x <= bounds.x + bounds.w - 36) {
         s.encounterTriggered = true;
         this.onFirstEncounter?.(s.variant, s.creatureId);
         break;
@@ -695,7 +701,7 @@ export class SpawnSystem {
       .sprite(startX, baseY, texKey(pick.id), `${pick.id}-0`)
       .setOrigin(0.5, 0.5)
       .setFlipX(dir < 0)
-      .setDepth(variant === 'volatile' ? 4 : 5);
+      .setDepth(variant === 'volatile' ? 4.5 : 5);
     const baseScale = Math.min(96 / sprite.width, 72 / sprite.height);
     const finalScale = variant === 'vessel' ? baseScale * 1.15 : baseScale;
     sprite.setScale(finalScale);
