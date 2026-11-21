@@ -5,6 +5,8 @@ const QUOTE_PAD_X = 24;
 const QUOTE_MAX_W = 390;
 const QUOTE_ASPECT = 300 / 460;
 const QUOTE_MAX_H = 132;
+const QUOTE_FONT_MAX = 16;
+const QUOTE_FONT_MIN = 11;
 /** Just above Xal's head — bubble tail points down toward him. */
 const QUOTE_Y_RATIO = 0.36;
 
@@ -58,10 +60,17 @@ export class QuoteBox {
     this.layoutText();
   }
 
-  /** Center copy in the bubble body (above the tail). */
+  /** Center copy in the bubble body (above the tail), shrinking font if it overflows. */
   private layoutText(): void {
-    const bodyTop = this.bubbleY - this.boxH * 0.36;
-    const bodyBottom = this.bubbleY + this.boxH * 0.04;
+    const bodyTop = this.bubbleY - this.boxH * 0.375;
+    const bodyBottom = this.bubbleY + this.boxH * 0.18;
+    const maxH = bodyBottom - bodyTop;
+    let size = QUOTE_FONT_MAX;
+    this.text.setFontSize(size);
+    while (size > QUOTE_FONT_MIN && this.text.height > maxH) {
+      size -= 1;
+      this.text.setFontSize(size);
+    }
     this.text.setY((bodyTop + bodyBottom) / 2);
   }
 
